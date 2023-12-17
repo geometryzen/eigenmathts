@@ -1,22 +1,18 @@
-function
-    alloc_matrix(nrow, ncol) {
+function alloc_tensor(): { dim: unknown[]; elem: unknown[] } {
+    return { dim: [], elem: [] };
+}
+function alloc_matrix(nrow: number, ncol: number) {
     var p = alloc_tensor();
     p.dim[0] = nrow;
     p.dim[1] = ncol;
     return p;
 }
-function
-    alloc_tensor() {
-    return { dim: [], elem: [] };
-}
-function
-    alloc_vector(n) {
+function alloc_vector(n: number) {
     var p = alloc_tensor();
     p.dim[0] = n;
     return p;
 }
-function
-    any_radical_factors(h) {
+function any_radical_factors(h: number) {
     var i, n;
     n = stack.length;
     for (i = h; i < n; i++)
@@ -26,8 +22,7 @@ function
 }
 const BIGM = 0x1000000; // 24 bits
 
-function
-    bignum_int(n) {
+function bignum_int(n: number) {
     var u = [];
 
     if (n < BIGM)
@@ -40,8 +35,7 @@ function
     return u;
 }
 
-function
-    bignum_copy(u) {
+function bignum_copy(u: number[]) {
     var i, v = [];
     for (i = 0; i < u.length; i++)
         v[i] = u[i];
@@ -50,29 +44,24 @@ function
 
 // remove leading zeroes
 
-function
-    bignum_norm(u) {
+function bignum_norm(u: number[]) {
     while (u.length > 1 && u[u.length - 1] == 0)
         u.pop();
 }
 
-function
-    bignum_iszero(u) {
+function bignum_iszero(u: number[]) {
     return bignum_equal(u, 0);
 }
 
-function
-    bignum_equal(u, n) {
+function bignum_equal(u: number[], n: number) {
     return u.length == 1 && u[0] == n;
 }
 
-function
-    bignum_odd(u) {
+function bignum_odd(u: number[]) {
     return u[0] % 2 == 1;
 }
 
-function
-    bignum_float(u) {
+function bignum_float(u: number[]) {
     var d, i;
 
     d = 0;
@@ -88,8 +77,7 @@ function
 
 // convert bignum to int32
 
-function
-    bignum_smallnum(u) {
+function bignum_smallnum(u: number[]): number {
     if (u.length == 1)
         return u[0];
 
@@ -99,13 +87,11 @@ function
     return null;
 }
 
-function
-    bignum_issmallnum(u) {
+function bignum_issmallnum(u: number[]) {
     return u.length == 1 || (u.length == 2 && u[1] < 128);
 }
 
-function
-    push_bignum(sign, a, b) {
+function push_bignum(sign: number, a: number[], b: number[]) {
     // normalize zero
 
     if (bignum_iszero(a)) {
@@ -116,8 +102,7 @@ function
 
     push({ sign: sign, a: a, b: b });
 }
-function
-    bignum_add(u, v) {
+function bignum_add(u: number[], v: number[]) {
     var i, nu, nv, nw, t, w = [];
 
     nu = u.length;
@@ -154,8 +139,7 @@ function
 }
 // convert string to bignum (7 decimal digits fits in 24 bits)
 
-function
-    bignum_atoi(s) {
+function bignum_atoi(s: string) {
     var a, b, k;
     a = bignum_int(0);
     if (s.length == 0)
@@ -176,8 +160,7 @@ function
     }
     return a;
 }
-function
-    bignum_cmp(u, v) {
+function bignum_cmp(u: number[], v: number[]) {
     var i;
 
     if (u.length < v.length)
@@ -197,8 +180,7 @@ function
 }
 // floor(u / v)
 
-function
-    bignum_div(u, v) {
+function bignum_div(u: number[], v: number[]) {
     var a, b, i, k, nu, nv, q, qhat, t, w;
 
     nu = u.length;
@@ -289,8 +271,7 @@ function
 
     return q;
 }
-function
-    bignum_gcd(u, v) {
+function bignum_gcd(u: number[], v: number[]) {
     var r;
 
     if (u.length == 1 && v.length == 1) {
@@ -607,12 +588,10 @@ function
 
     return w;
 }
-function
-    caaddr(p) {
+function caaddr(p: unknown) {
     return car(car(cdr(cdr(p))));
 }
-function
-    caadr(p) {
+function caadr(p: unknown) {
     return car(car(cdr(p)));
 }
 function
@@ -690,8 +669,7 @@ function
     cddr(p) {
     return cdr(cdr(p));
 }
-function
-    cdr(p) {
+function cdr(p: unknown) {
     if ("cdr" in p)
         return p.cdr;
     else
@@ -6534,8 +6512,7 @@ function
     push(p1);
     list(2);
 }
-function
-    eval_float(p1) {
+function eval_float(p1: unknown) {
     push(cadr(p1));
     evalf();
     floatfunc();
@@ -6626,8 +6603,7 @@ function
 
     push(p1);
 }
-function
-    eval_floor(p1) {
+function eval_floor(p1: unknown) {
     push(cadr(p1));
     evalf();
     floorfunc();
@@ -6680,8 +6656,7 @@ function
     push(p1);
     list(2);
 }
-function
-    eval_for(p1) {
+function eval_for(p1: unknown) {
     var j, k, p2, p3;
 
     p2 = cadr(p1);
@@ -6723,8 +6698,7 @@ function
 
     push_symbol(NIL); // return value
 }
-function
-    eval_hadamard(p1) {
+function eval_hadamard(p1: unknown) {
     push(cadr(p1));
     evalf();
     p1 = cddr(p1);
@@ -8066,8 +8040,7 @@ function
     integral_nib(F, X);
 }
 
-function
-    integral_nib(F, X) {
+function integral_nib(F, X) {
     var h;
 
     save_symbol(symbol(SA));
@@ -8589,8 +8562,7 @@ function
     minormatrix(i, j);
 }
 
-function
-    minormatrix(row, col) {
+function minormatrix(row: number, col: number): void {
     var i, j, k, m, n, p1, p2;
 
     p1 = pop();
@@ -8643,8 +8615,7 @@ function
 
     push(p2);
 }
-function
-    eval_mod(p1) {
+function eval_mod(p1) {
     push(cadr(p1));
     evalf();
     push(caddr(p1));
@@ -8694,8 +8665,7 @@ function
     push_double(d1 % d2);
 }
 
-function
-    mod_rationals(p1, p2) {
+function mod_rationals(p1: unknown, p2: unknown) {
     if (isinteger(p1) && isinteger(p2)) {
         mod_integers(p1, p2);
         return;
@@ -15521,8 +15491,7 @@ function
 
     push(p3);
 }
-function
-    push(a) {
+function push(a: unknown): void {
     stack.push(a);
 }
 function
@@ -15696,7 +15665,8 @@ function
 export function run() {
     try {
         run_nib();
-    } catch (errmsg) {
+    }
+    catch (errmsg) {
         if (errmsg.length > 0) {
             if (trace1 < trace2 && inbuf[trace2 - 1] == '\n')
                 trace2--;
@@ -15705,9 +15675,7 @@ export function run() {
     }
 }
 
-function
-    run_nib() {
-    let k = 0;
+function run_nib() {
 
     inbuf = document.getElementById("stdin").value;
     stdout = document.getElementById("stdout");
@@ -15715,6 +15683,8 @@ function
 
     init();
     initscript();
+
+    let k = 0;
 
     for (; ;) {
 
@@ -15783,27 +15753,24 @@ const T_EQ = 1009;
 const T_END = 1010;
 
 var scan_mode;
-var instring;
-var scan_index;
-var scan_level;
+let instring: string;
+let scan_index: number;
+let scan_level: number;
 var token;
 var token_index;
 var token_buf;
 
-function
-    scan(s, k) {
+function scan(s: string, k: number) {
     scan_mode = 0;
     return scan_nib(s, k);
 }
 
-function
-    scan1(s) {
+function scan1(s: string) {
     scan_mode = 1; // mode for table of integrals
     return scan_nib(s, 0);
 }
 
-function
-    scan_nib(s, k) {
+function scan_nib(s: string, k: number) {
     instring = s;
     scan_index = k;
     scan_level = 0;
@@ -16251,8 +16218,7 @@ function
     token_buf = instring.substring(j, k);
 }
 
-function
-    scan_error(s) {
+function scan_error(s) {
     var t = inbuf.substring(trace1, scan_index);
 
     t += "\nStop: Syntax error, " + s;
@@ -16271,7 +16237,7 @@ function
     inchar() {
     return instring.charAt(scan_index); // returns empty string if index out of range
 }
-function scan_inbuf(k) {
+function scan_inbuf(k: number): number {
     trace1 = k;
     k = scan(inbuf, k);
     if (k) {
@@ -16514,23 +16480,23 @@ function
     if (p1 != symbol(TRACE) && !iszero(p1))
         printbuf(instring.substring(trace1, trace2), BLUE);
 }
-var inbuf;
+let inbuf: string;
 var outbuf;
 let stdout: HTMLElement;
-var stack;
+let stack: unknown[];
 var frame;
 var binding;
 var usrfunc;
 var zero;
 var one;
 var minusone;
-var imaginaryunit;
-var eval_level;
-var expanding;
-var drawing;
-var nonstop;
-var trace1;
-var trace2;
+let imaginaryunit: unnown;
+let eval_level: number;
+let expanding: number;
+let drawing: number;
+let nonstop: number;
+let trace1: number;
+let trace2: number;
 
 var symtab = {
     "abs": { printname: ABS, func: eval_abs },
@@ -16663,8 +16629,7 @@ var symtab = {
     "$8": { printname: ARG8, func: eval_user_symbol },
     "$9": { printname: ARG9, func: eval_user_symbol },
 };
-function
-    vector(h) {
+function vector(h: number): void {
     var n, p;
 
     n = stack.length - h;
