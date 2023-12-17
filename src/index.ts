@@ -12858,11 +12858,10 @@ function
 
     return 0;
 }
-function flatten_factors(h: number) {
-    var i, n, p1;
-    n = stack.length;
-    for (i = h; i < n; i++) {
-        p1 = stack[i];
+function flatten_factors(h: number): void {
+    const n = stack.length;
+    for (let i = h; i < n; i++) {
+        let p1 = stack[i];
         if (car(p1) == symbol(MULTIPLY)) {
             p1 = cdr(p1);
             stack[i] = car(p1);
@@ -12874,8 +12873,7 @@ function flatten_factors(h: number) {
         }
     }
 }
-function
-    fmtnum(n) {
+function fmtnum(n: number): string {
     n = Math.abs(n);
 
     if (n > 0 && n < 0.0001)
