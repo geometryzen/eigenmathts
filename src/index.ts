@@ -26,8 +26,8 @@ function any_radical_factors(h: number): 0 | 1 {
 }
 const BIGM = 0x1000000; // 24 bits
 
-function bignum_int(n: number) {
-    var u = [];
+function bignum_int(n: number): number[] {
+    const u: number[] = [];
 
     if (n < BIGM)
         u[0] = n;
@@ -39,25 +39,27 @@ function bignum_int(n: number) {
     return u;
 }
 
-function bignum_copy(u: number[]) {
-    var i, v = [];
-    for (i = 0; i < u.length; i++)
+function bignum_copy(u: number[]): number[] {
+    const v: number[] = [];
+    for (let i = 0; i < u.length; i++) {
         v[i] = u[i];
+    }
     return v;
 }
 
 // remove leading zeroes
 
-function bignum_norm(u: number[]) {
-    while (u.length > 1 && u[u.length - 1] == 0)
+function bignum_norm(u: number[]): void {
+    while (u.length > 1 && u[u.length - 1] == 0) {
         u.pop();
+    }
 }
 
 function bignum_iszero(u: number[]) {
     return bignum_equal(u, 0);
 }
 
-function bignum_equal(u: number[], n: number) {
+function bignum_equal(u: number[], n: number): boolean {
     return u.length == 1 && u[0] == n;
 }
 
@@ -143,18 +145,17 @@ function bignum_add(u: number[], v: number[]) {
 }
 // convert string to bignum (7 decimal digits fits in 24 bits)
 
-function bignum_atoi(s: string) {
-    var a, b, k;
-    a = bignum_int(0);
+function bignum_atoi(s: string): number[] {
+    let a = bignum_int(0);
     if (s.length == 0)
         return a;
-    k = s.length % 7;
+    let k = s.length % 7;
     if (k == 0)
         k = 7;
     a[0] = Number(s.substr(0, k));
     if (k == s.length)
         return a;
-    b = bignum_int(0);
+    const b = bignum_int(0);
     while (k < s.length) {
         b[0] = 10000000; // 10^7
         a = bignum_mul(a, b);
@@ -164,16 +165,14 @@ function bignum_atoi(s: string) {
     }
     return a;
 }
-function bignum_cmp(u: number[], v: number[]) {
-    var i;
-
+function bignum_cmp(u: number[], v: number[]): 0 | 1 | -1 {
     if (u.length < v.length)
         return -1; // u < v
 
     if (u.length > v.length)
         return 1; // u > v
 
-    for (i = u.length - 1; i >= 0; i--) {
+    for (let i = u.length - 1; i >= 0; i--) {
         if (u[i] < v[i])
             return -1; // u < v
         if (u[i] > v[i])
