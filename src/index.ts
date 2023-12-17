@@ -1,4 +1,9 @@
-function alloc_tensor(): { dim: unknown[]; elem: unknown[] } {
+export interface Tensor {
+    dim: number[];
+    elem: unknown[];
+}
+
+function alloc_tensor(): Tensor {
     return { dim: [], elem: [] };
 }
 function alloc_matrix(nrow: number, ncol: number) {
@@ -675,9 +680,7 @@ function cdr(p: unknown) {
     else
         return symbol(NIL);
 }
-function
-    cmp(p1, p2) {
-    var t;
+function cmp(p1: unknown, p2: unknown): 1 | 0 | -1 {
 
     if (p1 == p2)
         return 0;
@@ -725,7 +728,7 @@ function
         return 1;
 
     while (iscons(p1) && iscons(p2)) {
-        t = cmp(car(p1), car(p2));
+        const t = cmp(car(p1), car(p2));
         if (t)
             return t;
         p1 = cdr(p1);
@@ -777,8 +780,7 @@ function
 
     return c;
 }
-function
-    cmp_factors_provisional(p1, p2) {
+function cmp_factors_provisional(p1: unknown, p2: unknown) {
     if (car(p1) == symbol(POWER))
         p1 = cadr(p1); // p1 = base
 
@@ -835,31 +837,27 @@ function
 }
 // this way matches strcmp (localeCompare differs from strcmp)
 
-function
-    cmp_strings(s1, s2) {
+function cmp_strings(s1, s2) {
     if (s1 < s2)
         return -1;
     if (s1 > s2)
         return 1;
     return 0;
 }
-function
-    cmp_tensors(p1, p2) {
-    var i, t;
-
-    t = p1.dim.length - p2.dim.length;
+function cmp_tensors(p1: Tensor, p2: Tensor): 1 | 0 | -1 {
+    const t = p1.dim.length - p2.dim.length;
 
     if (t)
         return t;
 
-    for (i = 0; i < p1.dim.length; i++) {
-        t = p1.dim[i] - p2.dim[i];
+    for (let i = 0; i < p1.dim.length; i++) {
+        const t = p1.dim[i] - p2.dim[i];
         if (t)
             return t;
     }
 
-    for (i = 0; i < p1.elem.length; i++) {
-        t = cmp(p1.elem[i], p2.elem[i]);
+    for (let i = 0; i < p1.elem.length; i++) {
+        const t = cmp(p1.elem[i], p2.elem[i]);
         if (t)
             return t;
     }
@@ -897,12 +895,10 @@ function
         P = pop();
     }
 }
-function
-    combine_factors(h) {
-    var i, n;
+function combine_factors(h: number): void {
     sort_factors_provisional(h);
-    n = stack.length;
-    for (i = h; i < n - 1; i++) {
+    let n = stack.length;
+    for (let i = h; i < n - 1; i++) {
         if (combine_factors_nib(i, i + 1)) {
             stack.splice(i + 1, 1); // remove factor
             i--; // use same index again
@@ -1137,20 +1133,18 @@ const ARG6 = "$6";
 const ARG7 = "$7";
 const ARG8 = "$8";
 const ARG9 = "$9";
-function
-    copy_tensor(p1) {
-    var i, n, p2;
+function copy_tensor(p1: Tensor) {
 
-    p2 = alloc_tensor();
+    const p2 = alloc_tensor();
 
-    n = p1.dim.length;
+    let n = p1.dim.length;
 
-    for (i = 0; i < n; i++)
+    for (let i = 0; i < n; i++)
         p2.dim[i] = p1.dim[i];
 
     n = p1.elem.length;
 
-    for (i = 0; i < n; i++)
+    for (let i = 0; i < n; i++)
         p2.elem[i] = p1.elem[i];
 
     return p2;
@@ -1366,7 +1360,7 @@ const EMIT_FRACTION = 8;
 const EMIT_SMALL_FRACTION = 9;
 const EMIT_TABLE = 10;
 
-var emit_level;
+let emit_level: number;
 
 function display() {
     var d, h, p1, w, x, y;
@@ -5523,8 +5517,7 @@ function
     multiply();
 }
 
-function
-    dlog(p1, p2) {
+function dlog(p1, p2) {
     push(cadr(p1));
     push(p2);
     derivative();
@@ -8565,7 +8558,7 @@ function
 function minormatrix(row: number, col: number): void {
     var i, j, k, m, n, p1, p2;
 
-    p1 = pop();
+    p1 = pop() as unknown as Tensor;
 
     n = p1.dim[0];
     m = p1.dim[1];
@@ -8690,9 +8683,8 @@ function
     b = bignum_int(1);
     push_bignum(p1.sign, a, b);
 }
-function
-    eval_multiply(p1) {
-    var h = stack.length;
+function eval_multiply(p1: unknown): void {
+    const h = stack.length;
     expanding--; // undo expanding++ in evalf
     p1 = cdr(p1);
     while (iscons(p1)) {
@@ -11576,8 +11568,7 @@ function
 
     add_terms(stack.length - h);
 }
-function
-    eval_tensor(p1) {
+function eval_tensor(p1: Tensor) {
     var i, n;
 
     p1 = copy_tensor(p1);
@@ -11871,10 +11862,8 @@ function
     restore_symbol();
     restore_symbol();
 }
-function
-    eval_user_symbol(p1) {
-    var p2;
-    p2 = get_binding(p1);
+function eval_user_symbol(p1) {
+    const p2 = get_binding(p1);
     if (p1 == p2)
         push(p1); // symbol evaluates to itself
     else {
@@ -11920,21 +11909,18 @@ function
 
     push(p1);
 }
-function
-    evalf() {
+function evalf() {
     eval_level++;
     evalf_nib();
     eval_level--;
 }
 
-function
-    evalf_nib() {
-    var p1;
+function evalf_nib(): void {
 
     if (eval_level == 200)
         stopf("circular definition?");
 
-    p1 = pop();
+    const p1 = pop();
 
     if (iscons(p1) && iskeyword(car(p1))) {
         expanding++;
@@ -12872,8 +12858,7 @@ function
 
     return 0;
 }
-function
-    flatten_factors(h) {
+function flatten_factors(h: number) {
     var i, n, p1;
     n = stack.length;
     for (i = h; i < n; i++) {
@@ -13922,8 +13907,7 @@ function
     issymbol(p) {
     return "func" in p;
 }
-function
-    istensor(p) {
+function istensor(p: unknown): p is Tensor {
     return "elem" in p;
 }
 function
@@ -14008,19 +13992,20 @@ function
     multiply();
     expanding = t;
 }
-function
-    multiply_factors(n) // n is number of factors on stack
-{
-    var h, T;
+/**
+ * 
+ * @param n number of factors on stack
+ */
+function multiply_factors(n: number): void {
 
     if (n < 2)
         return;
 
-    h = stack.length - n;
+    const h = stack.length - n;
 
     flatten_factors(h);
 
-    T = multiply_tensor_factors(h);
+    const T = multiply_tensor_factors(h);
 
     multiply_scalar_factors(h);
 
@@ -14086,11 +14071,9 @@ function
 
     push_bignum(sign, a, b);
 }
-function
-    multiply_scalar_factors(h) {
-    var n, COEFF;
+function multiply_scalar_factors(h: number): void {
 
-    COEFF = combine_numerical_factors(h, one);
+    let COEFF = combine_numerical_factors(h, one);
 
     if (iszero(COEFF) || h == stack.length) {
         stack.splice(h); // pop all
@@ -14122,7 +14105,7 @@ function
     if (expanding)
         expand_sum_factors(h); // success leaves one expr on stack
 
-    n = stack.length - h;
+    const n = stack.length - h;
 
     switch (n) {
         case 0:
@@ -14139,8 +14122,7 @@ function
             break;
     }
 }
-function
-    multiply_tensor_factors(h) {
+function multiply_tensor_factors(h: number) {
     var i, n, p1, T;
     T = symbol(NIL);
     n = stack.length;
@@ -16364,9 +16346,8 @@ function
     var t = stack.splice(h).sort(cmp_factors);
     stack = stack.concat(t);
 }
-function
-    sort_factors_provisional(h) {
-    var t = stack.splice(h).sort(cmp_factors_provisional);
+function sort_factors_provisional(h: number) {
+    const t = stack.splice(h).sort(cmp_factors_provisional);
     stack = stack.concat(t);
 }
 function
@@ -16490,7 +16471,7 @@ var usrfunc;
 var zero;
 var one;
 var minusone;
-let imaginaryunit: unnown;
+let imaginaryunit: unknown;
 let eval_level: number;
 let expanding: number;
 let drawing: number;
