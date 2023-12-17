@@ -325,8 +325,7 @@ function
 }
 // u mod v
 
-function
-    bignum_mod(u, v) {
+function bignum_mod(u: number[], v: number[]): number[] {
     var a, b, i, k, nu, nv, qhat, t, w;
 
     nu = u.length;
@@ -410,8 +409,7 @@ function
 
     return u;
 }
-function
-    bignum_mul(u, v) {
+function bignum_mul(u: number[], v: number[]): number[] {
     var i, j, nu, nv, nw, t, w = [];
 
     nu = u.length;
@@ -618,8 +616,7 @@ function
     caddr(p) {
     return car(cdr(cdr(p)));
 }
-function
-    cadr(p) {
+function cadr(p: unknown) {
     return car(cdr(p));
 }
 function
@@ -673,7 +670,7 @@ function
     cddr(p) {
     return cdr(cdr(p));
 }
-function cdr(p: unknown) {
+function cdr(p) {
     if ("cdr" in p)
         return p.cdr;
     else
@@ -742,13 +739,11 @@ function cmp(p1: unknown, p2: unknown): 1 | 0 | -1 {
 
     return 0;
 }
-function
-    cmp_factors(p1, p2) {
-    var a, b, c;
+function cmp_factors(p1: unknown, p2: unknown): 0 | 1 | -1 {
     var base1, base2, expo1, expo2;
 
-    a = order_factor(p1);
-    b = order_factor(p2);
+    const a = order_factor(p1);
+    const b = order_factor(p2);
 
     if (a < b)
         return -1;
@@ -772,7 +767,7 @@ function
         expo2 = one;
     }
 
-    c = cmp(base1, base2);
+    let c = cmp(base1, base2);
 
     if (c == 0)
         c = cmp(expo2, expo1); // swapped to reverse sort order
@@ -788,8 +783,7 @@ function cmp_factors_provisional(p1: unknown, p2: unknown) {
 
     return cmp(p1, p2);
 }
-function
-    cmp_numbers(p1, p2) {
+function cmp_numbers(p1: unknown, p2: unknown): 1 | 0 | -1 {
     var d1, d2;
 
     if (isrational(p1) && isrational(p2))
@@ -8675,11 +8669,9 @@ function mod_rationals(p1: unknown, p2: unknown) {
     add();
 }
 
-function
-    mod_integers(p1, p2) {
-    var a, b;
-    a = bignum_mod(p1.a, p2.a);
-    b = bignum_int(1);
+function mod_integers(p1, p2) {
+    const a = bignum_mod(p1.a, p2.a);
+    const b = bignum_int(1);
     push_bignum(p1.sign, a, b);
 }
 function eval_multiply(p1: unknown): void {
@@ -14414,15 +14406,19 @@ function
         }
     }
 }
-//  1   number
-//  2   number to power (root)
-//  3   -1 to power (imaginary)
-//  4   other factor (symbol, power, func, etc)
-//  5   exponential
-//  6   derivative
 
-function
-    order_factor(p) {
+/**
+ *  1   number
+ *  2   number to power (root)
+ *  3   -1 to power (imaginary)
+ *  4   other factor (symbol, power, func, etc)
+ *  5   exponential
+ *  6   derivative
+ * 
+ * @param p 
+ * @returns 
+ */
+function order_factor(p: unknown): 1 | 2 | 3 | 4 | 5 | 6 {
     if (isnum(p))
         return 1;
 
@@ -16336,9 +16332,8 @@ function
     var t = stack.splice(stack.length - n).sort(cmp);
     stack = stack.concat(t);
 }
-function
-    sort_factors(h) {
-    var t = stack.splice(h).sort(cmp_factors);
+function sort_factors(h: number) {
+    const t = stack.splice(h).sort(cmp_factors);
     stack = stack.concat(t);
 }
 function sort_factors_provisional(h: number) {
