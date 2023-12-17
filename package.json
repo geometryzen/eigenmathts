@@ -1,5 +1,5 @@
 {
-    "name": "@geometryzen/my-lib",
+    "name": "@geometryzen/eigenmathts",
     "version": "0.9.5",
     "description": "My Library",
     "exports": {
@@ -43,7 +43,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/geometryzen/my-lib.git"
+        "url": "git+https://github.com/geometryzen/eigenmathts.git"
     },
     "author": {
         "name": "David Geo Holmes",
@@ -51,9 +51,9 @@
     },
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/geometryzen/my-lib/issues"
+        "url": "https://github.com/geometryzen/eigenmathts/issues"
     },
-    "homepage": "https://github.com/geometryzen/my-lib#readme",
+    "homepage": "https://github.com/geometryzen/eigenmathts#readme",
     "devDependencies": {
         "@rollup/plugin-commonjs": "^25.0.7",
         "@rollup/plugin-node-resolve": "^15.2.3",
