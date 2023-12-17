@@ -7,20 +7,19 @@ function alloc_tensor(): Tensor {
     return { dim: [], elem: [] };
 }
 function alloc_matrix(nrow: number, ncol: number) {
-    var p = alloc_tensor();
+    const p = alloc_tensor();
     p.dim[0] = nrow;
     p.dim[1] = ncol;
     return p;
 }
 function alloc_vector(n: number) {
-    var p = alloc_tensor();
+    const p = alloc_tensor();
     p.dim[0] = n;
     return p;
 }
-function any_radical_factors(h: number) {
-    var i, n;
-    n = stack.length;
-    for (i = h; i < n; i++)
+function any_radical_factors(h: number): 0 | 1 {
+    const n = stack.length;
+    for (let i = h; i < n; i++)
         if (isradical(stack[i]))
             return 1;
     return 0;
@@ -16606,15 +16605,11 @@ var symtab = {
     "$8": { printname: ARG8, func: eval_user_symbol },
     "$9": { printname: ARG9, func: eval_user_symbol },
 };
+
 function vector(h: number): void {
-    var n, p;
-
-    n = stack.length - h;
-
-    p = alloc_tensor();
-
+    const n = stack.length - h;
+    const p = alloc_tensor();
     p.dim[0] = n;
     p.elem = stack.splice(h, n);
-
     push(p);
 }
