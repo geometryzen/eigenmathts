@@ -13643,12 +13643,10 @@ const init_script = [
     "choose(n,k) = n! / k! / (n - k)!",
 ];
 
-function initscript() {
-    var i, n;
+function initscript(): void {
+    const n = init_script.length;
 
-    n = init_script.length;
-
-    for (i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
         scan(init_script[i], 0);
         evalf();
         pop();
