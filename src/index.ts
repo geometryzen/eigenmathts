@@ -1,3 +1,6 @@
+export interface Sym {
+    printname: string;
+}
 export interface Tensor {
     dim: number[];
     elem: unknown[];
@@ -10281,9 +10284,7 @@ function
         rotate_h(PSI, 0, i);
     }
 }
-function
-    eval_run(p1) {
-    var f, k, save_inbuf, save_trace1, save_trace2;
+function eval_run(p1: unknwown): void {
 
     push(cadr(p1));
     evalf();
@@ -10292,21 +10293,23 @@ function
     if (!isstring(p1))
         stopf("run: string expected");
 
-    f = new XMLHttpRequest();
+    const f = new XMLHttpRequest();
     f.open("GET", p1.string, false);
-    f.onerror = function () { stopf("run: network error") };
+    f.onerror = function () {
+        stopf("run: network error");
+    };
     f.send();
 
     if (f.status == 404 || f.responseText.length == 0)
         stopf("run: file not found");
 
-    save_inbuf = inbuf;
-    save_trace1 = trace1;
-    save_trace2 = trace2;
+    const save_inbuf = inbuf;
+    const save_trace1 = trace1;
+    const save_trace2 = trace2;
 
     inbuf = f.responseText;
 
-    k = 0;
+    let k = 0;
 
     for (; ;) {
 
@@ -10324,9 +10327,7 @@ function
 
     push_symbol(NIL);
 }
-function
-    eval_setq(p1) {
-    var p2;
+function eval_setq(p1): void {
 
     push_symbol(NIL); // return value
 
@@ -10345,7 +10346,7 @@ function
 
     push(caddr(p1));
     evalf();
-    p2 = pop();
+    const p2 = pop();
 
     set_symbol(cadr(p1), p2, symbol(NIL));
 }
@@ -15642,7 +15643,7 @@ export function run() {
 
 function run_nib() {
 
-    inbuf = document.getElementById("stdin").value;
+    inbuf = (document.getElementById("stdin") as HTMLTextAreaElement).value;
     stdout = document.getElementById("stdout");
     stdout.innerHTML = "";
 
@@ -15661,12 +15662,12 @@ function run_nib() {
         eval_and_print_result();
     }
 }
-function
-    sample(F, T, t) {
-    var x, y, p1, X, Y;
+function sample(F, T, t) {
+    let X: unknown;
+    let Y: unknown;
 
     push_double(t);
-    p1 = pop();
+    let p1 = pop();
     set_symbol(T, p1, symbol(NIL));
 
     push(F);
@@ -15677,7 +15678,8 @@ function
     if (istensor(p1)) {
         X = p1.elem[0];
         Y = p1.elem[1];
-    } else {
+    }
+    else {
         push_double(t);
         X = pop();
         Y = p1;
@@ -15687,10 +15689,10 @@ function
         return;
 
     push(X);
-    x = pop_double();
+    let x = pop_double();
 
     push(Y);
-    y = pop_double();
+    let y = pop_double();
 
     if (!isFinite(x) || !isFinite(y))
         return;
@@ -15717,25 +15719,25 @@ const T_LTEQ = 1008;
 const T_EQ = 1009;
 const T_END = 1010;
 
-var scan_mode;
+let scan_mode: 0 | 1;
 let instring: string;
 let scan_index: number;
 let scan_level: number;
-var token;
-var token_index;
-var token_buf;
+let token: number | string;
+let token_index: number;
+let token_buf: string;
 
 function scan(s: string, k: number) {
     scan_mode = 0;
     return scan_nib(s, k);
 }
 
-function scan1(s: string) {
+function scan1(s: string): number {
     scan_mode = 1; // mode for table of integrals
     return scan_nib(s, 0);
 }
 
-function scan_nib(s: string, k: number) {
+function scan_nib(s: string, k: number): number {
     instring = s;
     scan_index = k;
     scan_level = 0;
@@ -15793,9 +15795,9 @@ function
     list(3);
 }
 
-function
-    scan_expression() {
-    var h = stack.length, t = token;
+function scan_expression(): void {
+    const h = stack.length;
+    let t = token;
     if (token == "+" || token == "-")
         get_token_skip_newlines();
     scan_term();
@@ -15816,15 +15818,14 @@ function
     }
 }
 
-function
-    scan_term() {
-    var h = stack.length, t;
+function scan_term(): void {
+    const h = stack.length;
 
     scan_power();
 
     while (scan_factor_pending()) {
 
-        t = token;
+        const t = token;
 
         if (token == "*" || token == "/")
             get_token_skip_newlines();
@@ -15843,8 +15844,7 @@ function
     }
 }
 
-function
-    scan_factor_pending() {
+function scan_factor_pending(): 0 | 1 {
     switch (token) {
         case "*":
         case "/":
@@ -15876,11 +15876,9 @@ function
     }
 }
 
-function
-    scan_factor() {
-    var a, b, d, h;
+function scan_factor(): void {
 
-    h = stack.length;
+    const h = stack.length;
 
     switch (token) {
 
@@ -15896,19 +15894,19 @@ function
             scan_function_call();
             break;
 
-        case T_INTEGER:
-            a = bignum_atoi(token_buf);
-            b = bignum_int(1);
+        case T_INTEGER: {
+            const a = bignum_atoi(token_buf);
+            const b = bignum_int(1);
             push_bignum(1, a, b);
             get_token();
             break;
-
-        case T_DOUBLE:
-            d = parseFloat(token_buf);
+        }
+        case T_DOUBLE: {
+            const d = parseFloat(token_buf);
             push_double(d);
             get_token();
             break;
-
+        }
         case T_STRING:
             scan_string();
             break;
@@ -15953,8 +15951,7 @@ function
     }
 }
 
-function
-    scan_symbol() {
+function scan_symbol(): void {
     if (scan_mode == 1 && token_buf.length == 1) {
         switch (token_buf[0]) {
             case "a":
@@ -15970,20 +15967,20 @@ function
                 push(lookup(token_buf));
                 break;
         }
-    } else
+    }
+    else {
         push(lookup(token_buf));
+    }
     get_token();
 }
 
-function
-    scan_string() {
+function scan_string(): void {
     push_string(token_buf);
     get_token();
 }
 
-function
-    scan_function_call() {
-    var h = stack.length;
+function scan_function_call(): void {
+    const h = stack.length;
     scan_level++;
     push(lookup(token_buf)); // push function name
     get_token(); // get token after function name
@@ -16006,9 +16003,8 @@ function
     list(stack.length - h);
 }
 
-function
-    scan_subexpr() {
-    var h = stack.length;
+function scan_subexpr(): void {
+    const h = stack.length;
 
     scan_level++;
 
@@ -16187,7 +16183,7 @@ function
 }
 
 function scan_error(s) {
-    var t = inbuf.substring(trace1, scan_index);
+    let t = inbuf.substring(trace1, scan_index);
 
     t += "\nStop: Syntax error, " + s;
 
@@ -16214,19 +16210,16 @@ function scan_inbuf(k: number): number {
     }
     return k;
 }
-function
-    set_symbol(p1, p2, p3) {
+function set_symbol(p1: Sym, p2: unknown, p3: unknown): void {
     if (!isusersymbol(p1))
         stopf("symbol error");
     binding[p1.printname] = p2;
     usrfunc[p1.printname] = p3;
 }
-function
-    setup_final(F, T) {
-    var p1;
+function setup_final(F, T) {
 
     push_double(tmin);
-    p1 = pop();
+    let p1 = pop();
     set_symbol(T, p1, symbol(NIL));
 
     push(F);
@@ -16238,14 +16231,12 @@ function
         tmax = xmax;
     }
 }
-function
-    setup_trange() {
-    var p1, p2, p3;
+function setup_trange() {
 
     tmin = -Math.PI;
     tmax = Math.PI;
 
-    p1 = lookup("trange");
+    let p1 = lookup("trange");
     push(p1);
     eval_nonstop();
     floatfunc();
@@ -16254,8 +16245,8 @@ function
     if (!istensor(p1) || p1.dim.length != 1 || p1.dim[0] != 2)
         return;
 
-    p2 = p1.elem[0];
-    p3 = p1.elem[1];
+    const p2 = p1.elem[0];
+    const p3 = p1.elem[1];
 
     if (!isnum(p2) || !isnum(p3))
         return;
@@ -16266,14 +16257,12 @@ function
     push(p3);
     tmax = pop_double();
 }
-function
-    setup_xrange() {
-    var p1, p2, p3;
+function setup_xrange(): void {
 
     xmin = -10;
     xmax = 10;
 
-    p1 = lookup("xrange");
+    let p1 = lookup("xrange");
     push(p1);
     eval_nonstop();
     floatfunc();
@@ -16282,8 +16271,8 @@ function
     if (!istensor(p1) || p1.dim.length != 1 || p1.dim[0] != 2)
         return;
 
-    p2 = p1.elem[0];
-    p3 = p1.elem[1];
+    const p2 = p1.elem[0];
+    const p3 = p1.elem[1];
 
     if (!isnum(p2) || !isnum(p3))
         return;
@@ -16294,14 +16283,12 @@ function
     push(p3);
     xmax = pop_double();
 }
-function
-    setup_yrange() {
-    var p1, p2, p3;
+function setup_yrange(): void {
 
     ymin = -10;
     ymax = 10;
 
-    p1 = lookup("yrange");
+    let p1 = lookup("yrange");
     push(p1);
     eval_nonstop();
     floatfunc();
@@ -16310,8 +16297,8 @@ function
     if (!istensor(p1) || p1.dim.length != 1 || p1.dim[0] != 2)
         return;
 
-    p2 = p1.elem[0];
-    p3 = p1.elem[1];
+    const p2 = p1.elem[0];
+    const p3 = p1.elem[1];
 
     if (!isnum(p2) || !isnum(p3))
         return;
@@ -16322,22 +16309,20 @@ function
     push(p3);
     ymax = pop_double();
 }
-function
-    sort(n) {
-    var t = stack.splice(stack.length - n).sort(cmp);
+function sort(n: number): void {
+    const t = stack.splice(stack.length - n).sort(cmp);
     stack = stack.concat(t);
 }
-function sort_factors(h: number) {
+function sort_factors(h: number): void {
     const t = stack.splice(h).sort(cmp_factors);
     stack = stack.concat(t);
 }
-function sort_factors_provisional(h: number) {
+function sort_factors_provisional(h: number): void {
     const t = stack.splice(h).sort(cmp_factors_provisional);
     stack = stack.concat(t);
 }
-function
-    static_negate() {
-    var p1 = pop();
+function static_negate() {
+    const p1 = pop();
 
     if (isnum(p1)) {
         push(p1);
@@ -16351,7 +16336,8 @@ function
             push(cadr(p1));
             negate();
             push(cddr(p1));
-        } else {
+        }
+        else {
             push_integer(-1);
             push(cdr(p1));
         }
@@ -16365,12 +16351,9 @@ function
     push(p1);
     list(3);
 }
-function
-    static_reciprocate() {
-    var p1, p2;
-
-    p2 = pop();
-    p1 = pop();
+function static_reciprocate(): void {
+    const p2 = pop();
+    const p1 = pop();
 
     // save divide by zero error for runtime
 
@@ -16418,8 +16401,7 @@ function
     push_integer(-1);
     list(3);
 }
-function
-    stopf(errmsg) {
+function stopf(errmsg: string): never {
     throw errmsg;
 }
 function
@@ -16427,35 +16409,31 @@ function
     negate();
     add();
 }
-function
-    swap() {
-    var p1, p2;
-    p2 = pop();
-    p1 = pop();
+function swap() {
+    const p2 = pop();
+    const p1 = pop();
     push(p2);
     push(p1);
 }
-function
-    symbol(s) {
+function symbol(s) {
     return symtab[s];
 }
-function
-    trace_input() {
-    var p1;
-    p1 = get_binding(symbol(TRACE));
-    if (p1 != symbol(TRACE) && !iszero(p1))
+function trace_input() {
+    const p1 = get_binding(symbol(TRACE));
+    if (p1 != symbol(TRACE) && !iszero(p1)) {
         printbuf(instring.substring(trace1, trace2), BLUE);
+    }
 }
 let inbuf: string;
-var outbuf;
+let outbuf: string;
 let stdout: HTMLElement;
 let stack: unknown[];
-var frame;
-var binding;
-var usrfunc;
-var zero;
-var one;
-var minusone;
+let frame: unknown[];
+let binding: { [printname: string]: unknown };
+let usrfunc: { [printname: string]: unknown };
+let zero: unknown;
+let one: unknown;
+let minusone: unknown;
 let imaginaryunit: unknown;
 let eval_level: number;
 let expanding: number;
@@ -16464,7 +16442,7 @@ let nonstop: number;
 let trace1: number;
 let trace2: number;
 
-var symtab = {
+const symtab = {
     "abs": { printname: ABS, func: eval_abs },
     "adj": { printname: ADJ, func: eval_adj },
     "and": { printname: AND, func: eval_and },
