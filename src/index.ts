@@ -8689,11 +8689,8 @@ function
     eval_nil() {
     push_symbol(NIL);
 }
-function
-    eval_noexpand(p1) {
-    var t;
-
-    t = expanding;
+function eval_noexpand(p1) {
+    const t = expanding;
     expanding = 0;
 
     push(cadr(p1));
@@ -11944,9 +11941,8 @@ function evalf_nib(): void {
 
     push(p1); // rational, double, or string
 }
-function
-    evalp() {
-    var p1 = pop();
+function evalp() {
+    const p1 = pop();
     if (car(p1) == symbol(SETQ))
         eval_testeq(p1);
     else {
@@ -12118,7 +12114,7 @@ function
     if (!bignum_equal(denom, 1))
         factor_bignum(denom, minusone);
 }
-var primetab = [
+const primetab = [
     2, 3, 5, 7, 11, 13, 17, 19,
     23, 29, 31, 37, 41, 43, 47, 53,
     59, 61, 67, 71, 73, 79, 83, 89,
@@ -12720,20 +12716,18 @@ var primetab = [
     46271, 46273, 46279, 46301, 46307, 46309, 46327, 46337,
 ];
 
-function
-    factor_int(n) {
-    var d, k, m;
+function factor_int(n: number): void {
 
     n = Math.abs(n);
 
     if (n < 2)
         return;
 
-    for (k = 0; k < primetab.length; k++) {
+    for (let k = 0; k < primetab.length; k++) {
 
-        d = primetab[k];
+        const d = primetab[k];
 
-        m = 0;
+        let m = 0;
 
         while (n % d == 0) {
             n /= d;
@@ -13650,9 +13644,8 @@ function
     isalnum(s) {
     return isalpha(s) || isdigit(s);
 }
-function
-    isalpha(s) {
-    var c = s.charCodeAt(0);
+function isalpha(s: string): boolean {
+    const c = s.charCodeAt(0);
     return (c >= 65 && c <= 90) || (c >= 97 && c <= 122);
 }
 function
@@ -16055,9 +16048,8 @@ function
             get_token_nib(); // skip over newlines
 }
 
-function
-    get_token_nib() {
-    var c;
+function get_token_nib() {
+    let c: string;
 
     // skip spaces
 
@@ -16096,8 +16088,10 @@ function
         if (inchar() == "\n") {
             scan_index++;
             token = T_NEWLINE;
-        } else
+        }
+        else {
             token = T_END;
+        }
 
         return;
     }
@@ -16120,8 +16114,10 @@ function
                 scan_error("expected decimal digit"); // only a decimal point
 
             token = T_DOUBLE;
-        } else
+        }
+        else {
             token = T_INTEGER;
+        }
 
         update_token_buf(token_index, scan_index);
 
