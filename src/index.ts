@@ -5898,8 +5898,8 @@ function eval_eigenvec(punk: unknown): void {
 
     T = alloc_matrix(n, n);
 
-    for (i = 0; i < n; i++) {
-        for (j = 0; j < n; j++) {
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
             push_double(Q[n * j + i]); // transpose
             T.elem[n * i + j] = pop();
         }
@@ -5994,8 +5994,7 @@ function eval_erf(p1: unknown): void {
     erffunc();
 }
 
-function
-    erffunc() {
+function erffunc(): void {
     var d, i, n, p1;
 
     p1 = pop();
