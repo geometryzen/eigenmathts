@@ -4588,7 +4588,7 @@ function conjfunc_subst(): void {
 
     push(p1);
 }
-function eval_contract(p1: unknown): void {
+function    eval_contract(p1) {
     push(cadr(p1));
     evalf();
 
@@ -4611,26 +4611,27 @@ function eval_contract(p1: unknown): void {
     }
 }
 
-function contract() {
-    // var h, i, j, k, m, n, ncol, ndim, nelem, nrow, p1, p2, p3;
-    const index: number[] = [];
+function
+    contract() {
+    var h, i, j, k, m, n, ncol, ndim, nelem, nrow, p1, p2, p3;
+    var index = [];
 
-    const p3 = pop();
-    let p2 = pop();
-    const p1 = pop();
+    p3 = pop();
+    p2 = pop();
+    p1 = pop();
 
     if (!istensor(p1)) {
         push(p1);
         return;
     }
 
-    const ndim = p1.dim.length;
+    ndim = p1.dim.length;
 
     push(p2);
-    let n = pop_integer();
+    n = pop_integer();
 
     push(p3);
-    let m = pop_integer();
+    m = pop_integer();
 
     if (n < 1 || n > ndim || m < 1 || m > ndim || n == m)
         stopf("contract: index error");
@@ -4638,28 +4639,28 @@ function contract() {
     n--; // make zero based
     m--;
 
-    const ncol = p1.dim[n];
-    const nrow = p1.dim[m];
+    ncol = p1.dim[n];
+    nrow = p1.dim[m];
 
     if (ncol != nrow)
         stopf("contract: unequal tensor dimensions");
 
     // nelem is the number of elements in result
 
-    const nelem = p1.elem.length / ncol / nrow;
+    nelem = p1.elem.length / ncol / nrow;
 
     p2 = alloc_tensor();
 
-    for (let i = 0; i < ndim; i++)
+    for (i = 0; i < ndim; i++)
         index[i] = 0;
 
-    for (let i = 0; i < nelem; i++) {
+    for (i = 0; i < nelem; i++) {
 
-        for (let j = 0; j < ncol; j++) {
+        for (j = 0; j < ncol; j++) {
             index[n] = j;
             index[m] = j;
-            let k = index[0];
-            for (let h = 1; h < ndim; h++)
+            k = index[0];
+            for (h = 1; h < ndim; h++)
                 k = k * p1.dim[h] + index[h];
             push(p1.elem[k]);
         }
@@ -4670,7 +4671,7 @@ function contract() {
 
         // increment index
 
-        for (let j = ndim - 1; j >= 0; j--) {
+        for (j = ndim - 1; j >= 0; j--) {
             if (j == n || j == m)
                 continue;
             if (++index[j] < p1.dim[j])
@@ -4686,9 +4687,9 @@ function contract() {
 
     // add dim info
 
-    let k = 0;
+    k = 0;
 
-    for (let i = 0; i < ndim; i++)
+    for (i = 0; i < ndim; i++)
         if (i != n && i != m)
             p2.dim[k++] = p1.dim[i];
 
