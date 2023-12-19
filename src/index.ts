@@ -4548,20 +4548,19 @@ function conjfunc(): void {
     evalf();
 }
 
-function conjfunc_subst() {
-    var h, i, n, p1;
+function conjfunc_subst(): void {
 
-    p1 = pop();
+    let p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
+        const T = copy_tensor(p1);
+        const n = T.elem.length;
+        for (let i = 0; i < n; i++) {
+            push(T.elem[i]);
             conjfunc_subst();
-            p1.elem[i] = pop();
+            T.elem[i] = pop();
         }
-        push(p1);
+        push(T);
         return;
     }
 
@@ -4577,7 +4576,7 @@ function conjfunc_subst() {
     }
 
     if (iscons(p1)) {
-        h = stack.length;
+        const h = stack.length;
         push(car(p1));
         p1 = cdr(p1);
         while (iscons(p1)) {
@@ -4591,8 +4590,7 @@ function conjfunc_subst() {
 
     push(p1);
 }
-function
-    eval_contract(p1) {
+function eval_contract(p1: unknown): void {
     push(cadr(p1));
     evalf();
 
@@ -4615,27 +4613,25 @@ function
     }
 }
 
-function
-    contract() {
-    var h, i, j, k, m, n, ncol, ndim, nelem, nrow, p1, p2, p3;
-    var index = [];
+function contract(): void {
+    const index: number[] = [];
 
-    p3 = pop();
-    p2 = pop();
-    p1 = pop();
+    const p3 = pop();
+    const p2 = pop();
+    const p1 = pop();
 
     if (!istensor(p1)) {
         push(p1);
         return;
     }
 
-    ndim = p1.dim.length;
+    const ndim = p1.dim.length;
 
     push(p2);
-    n = pop_integer();
+    let n = pop_integer();
 
     push(p3);
-    m = pop_integer();
+    let m = pop_integer();
 
     if (n < 1 || n > ndim || m < 1 || m > ndim || n == m)
         stopf("contract: index error");
@@ -4643,39 +4639,39 @@ function
     n--; // make zero based
     m--;
 
-    ncol = p1.dim[n];
-    nrow = p1.dim[m];
+    const ncol = p1.dim[n];
+    const nrow = p1.dim[m];
 
     if (ncol != nrow)
         stopf("contract: unequal tensor dimensions");
 
     // nelem is the number of elements in result
 
-    nelem = p1.elem.length / ncol / nrow;
+    const nelem = p1.elem.length / ncol / nrow;
 
-    p2 = alloc_tensor();
+    const T = alloc_tensor();
 
-    for (i = 0; i < ndim; i++)
+    for (let i = 0; i < ndim; i++)
         index[i] = 0;
 
-    for (i = 0; i < nelem; i++) {
+    for (let i = 0; i < nelem; i++) {
 
-        for (j = 0; j < ncol; j++) {
+        for (let j = 0; j < ncol; j++) {
             index[n] = j;
             index[m] = j;
-            k = index[0];
-            for (h = 1; h < ndim; h++)
+            let k = index[0];
+            for (let h = 1; h < ndim; h++)
                 k = k * p1.dim[h] + index[h];
             push(p1.elem[k]);
         }
 
         add_terms(ncol);
 
-        p2.elem[i] = pop();
+        T.elem[i] = pop();
 
         // increment index
 
-        for (j = ndim - 1; j >= 0; j--) {
+        for (let j = ndim - 1; j >= 0; j--) {
             if (j == n || j == m)
                 continue;
             if (++index[j] < p1.dim[j])
@@ -4685,22 +4681,21 @@ function
     }
 
     if (nelem == 1) {
-        push(p2.elem[0]);
+        push(T.elem[0]);
         return;
     }
 
     // add dim info
 
-    k = 0;
+    let k = 0;
 
-    for (i = 0; i < ndim; i++)
+    for (let i = 0; i < ndim; i++)
         if (i != n && i != m)
-            p2.dim[k++] = p1.dim[i];
+            T.dim[k++] = p1.dim[i];
 
-    push(p2);
+    push(T);
 }
-function
-    eval_cos(p1) {
+function eval_cos(p1: unknown): void {
     push(cadr(p1));
     evalf();
     cosfunc();
