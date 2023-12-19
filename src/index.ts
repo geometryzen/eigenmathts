@@ -8890,21 +8890,12 @@ function eval_polar(p1: unknown): void {
     polar();
 }
 
-function
-    polar() {
-    var i, n, p1, p2;
+function polar(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
-            polar();
-            p1.elem[i] = pop();
-        }
-        push(p1);
+        push(elementwise(p1, polar));
         return;
     }
 
@@ -8913,21 +8904,20 @@ function
     push(imaginaryunit);
     push(p1);
     arg();
-    p2 = pop();
+    const p2 = pop();
     if (isdouble(p2)) {
         push_double(p2.d / Math.PI);
         push_symbol(PI);
         multiply_factors(3);
-    } else {
+    }
+    else {
         push(p2);
         multiply_factors(2);
     }
     expfunc();
     multiply();
 }
-function
-    eval_power(p1) {
-    var t, p2;
+function eval_power(p1: unknown) {
 
     expanding--;
 
@@ -8940,17 +8930,18 @@ function
     push(caddr(p1));
     evalf();
     dupl();
-    p2 = pop();
+    const p2 = pop();
 
     // if exponent is negative then evaluate base without expanding
 
     swap();
-    if (isnegativenumber(p2)) {
-        t = expanding;
+    if (isnum(p2) && isnegativenumber(p2)) {
+        const t = expanding;
         expanding = 0;
         evalf();
         expanding = t;
-    } else
+    }
+    else
         evalf();
     swap();
 
@@ -8959,12 +8950,10 @@ function
     expanding++;
 }
 
-function
-    power() {
-    var h, i, n, p1, BASE, EXPO;
+function power(): void {
 
-    EXPO = pop();
-    BASE = pop();
+    const EXPO = pop();
+    let BASE = pop();
 
     if (istensor(BASE) && istensor(EXPO)) {
         push_symbol(POWER);
@@ -8975,28 +8964,28 @@ function
     }
 
     if (istensor(EXPO)) {
-        p1 = copy_tensor(EXPO);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
+        const T = copy_tensor(EXPO);
+        const n = T.elem.length;
+        for (let i = 0; i < n; i++) {
             push(BASE);
-            push(p1.elem[i]);
+            push(T.elem[i]);
             power();
-            p1.elem[i] = pop();
+            T.elem[i] = pop();
         }
-        push(p1);
+        push(T);
         return;
     }
 
     if (istensor(BASE)) {
-        p1 = copy_tensor(BASE);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
+        const T = copy_tensor(BASE);
+        const n = T.elem.length;
+        for (let i = 0; i < n; i++) {
+            push(T.elem[i]);
             push(EXPO);
             power();
-            p1.elem[i] = pop();
+            T.elem[i] = pop();
         }
-        push(p1);
+        push(T);
         return;
     }
 
@@ -9048,15 +9037,15 @@ function
 
     // BASE is an integer?
 
-    if (isinteger(BASE)) {
+    if (isrational(BASE) && isinteger(BASE)) {
         // raise each factor in BASE to power EXPO
         // EXPO is not numerical, that case was handled by power_numbers() above
-        h = stack.length;
+        const h = stack.length;
         push(BASE);
         factor_factor();
-        n = stack.length - h;
-        for (i = 0; i < n; i++) {
-            p1 = stack[h + i];
+        const n = stack.length - h;
+        for (let i = 0; i < n; i++) {
+            const p1 = stack[h + i];
             if (car(p1) == symbol(POWER)) {
                 push_symbol(POWER);
                 push(cadr(p1)); // base
@@ -9064,7 +9053,8 @@ function
                 push(EXPO);
                 multiply();
                 list(3);
-            } else {
+            }
+            else {
                 push_symbol(POWER);
                 push(p1);
                 push(EXPO);
@@ -9117,8 +9107,8 @@ function
     // (a b) ^ c  -->  (a ^ c) (b ^ c)
 
     if (car(BASE) == symbol(MULTIPLY)) {
-        h = stack.length;
-        p1 = cdr(BASE);
+        const h = stack.length;
+        let p1 = cdr(BASE);
         while (iscons(p1)) {
             push(car(p1));
             push(EXPO);
@@ -9147,8 +9137,7 @@ function
     push(EXPO);
     list(3);
 }
-function
-    eval_prefixform(p1) {
+function eval_prefixform(p1: unknown): void {
     push(cadr(p1));
     evalf();
     p1 = pop();
@@ -9156,8 +9145,7 @@ function
     prefixform(p1);
     push_string(outbuf);
 }
-function
-    eval_print(p1) {
+function eval_print(p1: unknown): void {
     p1 = cdr(p1);
     while (iscons(p1)) {
         push(car(p1));
@@ -9169,11 +9157,10 @@ function
     push_symbol(NIL);
 }
 
-function print_result() {
-    var p1, p2;
+function print_result(): void {
 
-    p2 = pop(); // result
-    p1 = pop(); // input
+    let p2 = pop(); // result
+    let p1 = pop(); // input
 
     if (p2 == symbol(NIL))
         return;
@@ -9191,15 +9178,15 @@ function print_result() {
     if (p1 == symbol(TTY) || iszero(p1)) {
         push(p2);
         display();
-    } else
+    }
+    else
         print_infixform(p2);
 }
 
 // returns 1 if result should be annotated
 
-function
-    annotate_result(p1, p2) {
-    if (!isusersymbol(p1))
+function annotate_result(p1: unknown, p2: unknown): 0 | 1 {
+    if (!(issymbol(p1) && isusersymbol(p1)))
         return 0;
 
     if (p1 == p2)
@@ -9213,9 +9200,7 @@ function
 
     return 1;
 }
-function
-    eval_product(p1) {
-    var h, i, j, k, n, p2, p3;
+function eval_product(p1: unknown): void {
 
     if (lengthf(p1) == 2) {
         push(cadr(p1));
@@ -9225,34 +9210,34 @@ function
             push(p1);
             return;
         }
-        n = p1.elem.length;
-        for (i = 0; i < n; i++)
+        const n = p1.elem.length;
+        for (let i = 0; i < n; i++)
             push(p1.elem[i]);
         multiply_factors(n);
         return;
     }
 
-    p2 = cadr(p1);
-    if (!isusersymbol(p2))
+    const p2 = cadr(p1);
+    if (!(issymbol(p2) && isusersymbol(p2)))
         stopf("product: symbol error");
 
     push(caddr(p1));
     evalf();
-    j = pop_integer();
+    let j = pop_integer();
 
     push(cadddr(p1));
     evalf();
-    k = pop_integer();
+    const k = pop_integer();
 
     p1 = caddddr(p1);
 
     save_symbol(p2);
 
-    h = stack.length;
+    const h = stack.length;
 
     for (; ;) {
         push_integer(j);
-        p3 = pop();
+        const p3 = pop();
         set_symbol(p2, p3, symbol(NIL));
         push(p1);
         evalf();
@@ -9268,12 +9253,10 @@ function
 
     restore_symbol();
 }
-function
-    eval_quote(p1) {
+function eval_quote(p1: unknown): void {
     push(cadr(p1)); // not evaluated
 }
-function
-    eval_rank(p1) {
+function eval_rank(p1: unknown): void {
     push(cadr(p1));
     evalf();
     p1 = pop();
@@ -9282,35 +9265,25 @@ function
     else
         push_integer(0);
 }
-function
-    eval_rationalize(p1) {
+function eval_rationalize(p1: unknown): void {
     push(cadr(p1));
     evalf();
     rationalize();
 }
 
-function
-    rationalize() {
-    var i, n, p0, p1, p2;
+function rationalize(): void {
 
-    p1 = pop();
+    let p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
-            rationalize();
-            p1.elem[i] = pop();
-        }
-        push(p1);
+        push(elementwise(p1, rationalize));
         return;
     }
 
-    p2 = one;
+    let p2 = one;
 
     while (find_divisor(p1)) {
-        p0 = pop();
+        const p0 = pop();
         push(p0);
         push(p1);
         cancel_factor();
@@ -9326,28 +9299,18 @@ function
     reciprocate();
     multiply_noexpand();
 }
-function
-    eval_real(p1) {
+function eval_real(p1: unknown): void {
     push(cadr(p1));
     evalf();
     real();
 }
 
-function
-    real() {
-    var i, n, p1;
+function real(): void {
 
-    p1 = pop();
+    let p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
-            real();
-            p1.elem[i] = pop();
-        }
-        push(p1);
+        push(elementwise(p1, real));
         return;
     }
 
@@ -9361,34 +9324,24 @@ function
     push_rational(1, 2);
     multiply();
 }
-function
-    eval_rect(p1) {
+function eval_rect(p1: unknown): void {
     push(cadr(p1));
     evalf();
     rect();
 }
 
-function
-    rect() {
-    var h, i, n, p1, p2, BASE, EXPO;
+function rect(): void {
 
-    p1 = pop();
+    let p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
-            rect();
-            p1.elem[i] = pop();
-        }
-        push(p1);
+        push(elementwise(p1, rect));
         return;
     }
 
     if (car(p1) == symbol(ADD)) {
         p1 = cdr(p1);
-        h = stack.length;
+        const h = stack.length;
         while (iscons(p1)) {
             push(car(p1));
             rect();
@@ -9400,7 +9353,7 @@ function
 
     if (car(p1) == symbol(MULTIPLY)) {
         p1 = cdr(p1);
-        h = stack.length;
+        const h = stack.length;
         while (iscons(p1)) {
             push(car(p1));
             rect();
@@ -9415,14 +9368,14 @@ function
         return;
     }
 
-    BASE = cadr(p1);
-    EXPO = caddr(p1);
+    const BASE = cadr(p1);
+    const EXPO = caddr(p1);
 
     // handle sum in exponent
 
     if (car(EXPO) == symbol(ADD)) {
         p1 = cdr(EXPO);
-        h = stack.length;
+        const h = stack.length;
         while (iscons(p1)) {
             push_symbol(POWER);
             push(BASE);
@@ -9442,7 +9395,7 @@ function
 
     push(p1);
     arg();
-    p2 = pop();
+    const p2 = pop();
 
     push(p2);
     cosfunc();
@@ -9456,8 +9409,7 @@ function
 
     multiply();
 }
-function
-    eval_roots(p1) {
+function eval_roots(p1: unknown): void {
     push(cadr(p1));
     evalf();
 
@@ -9466,31 +9418,29 @@ function
     if (iscons(p1)) {
         push(car(p1));
         evalf();
-    } else
+    }
+    else
         push_symbol(X_LOWER);
 
     roots();
 }
 
-function
-    roots() {
-    var h, i, j, k, n;
-    var A, P, X;
+function roots(): void {
 
-    X = pop();
-    P = pop();
+    const X = pop();
+    const P = pop();
 
-    h = stack.length;
+    const h = stack.length;
 
     coeffs(P, X); // put coeffs on stack
 
-    k = stack.length;
+    const k = stack.length;
 
-    n = k - h; // number of coeffs on stack
+    let n = k - h; // number of coeffs on stack
 
     // check coeffs
 
-    for (i = 0; i < n; i++)
+    for (let i = 0; i < n; i++)
         if (!isrational(stack[h + i]))
             stopf("roots: coeffs");
 
@@ -9503,7 +9453,7 @@ function
 
         // A is the root
 
-        A = stack[stack.length - 1];
+        const A = stack[stack.length - 1];
 
         // divide p(x) by X - A
 
@@ -9524,24 +9474,24 @@ function
 
     // eliminate repeated roots
 
-    for (i = 0; i < n - 1; i++)
+    for (let i = 0; i < n - 1; i++)
         if (equal(stack[k + i], stack[k + i + 1])) {
-            for (j = i + 1; j < n - 1; j++)
+            for (let j = i + 1; j < n - 1; j++)
                 stack[k + j] = stack[k + j + 1];
             i--;
             n--;
         }
 
     if (n == 1) {
-        A = stack[k];
+        const A = stack[k];
         stack.length = h; // pop all
         push(A); // one root
         return;
     }
 
-    A = alloc_vector(n);
+    const A = alloc_vector(n);
 
-    for (i = 0; i < n; i++)
+    for (let i = 0; i < n; i++)
         A.elem[i] = stack[k + i];
 
     stack.length = h; // pop all
@@ -9549,10 +9499,7 @@ function
     push(A);
 }
 
-function
-    findroot(h, n) {
-    var i, j, m, p, q, r;
-    var A, C, PA;
+function findroot(h: number, n: number): 1 | 0 {
 
     // check constant term
 
@@ -9563,14 +9510,14 @@ function
 
     // eliminate denominators
 
-    for (i = 0; i < n; i++) {
-        C = stack[h + i];
-        if (isinteger(C))
+    for (let i = 0; i < n; i++) {
+        let C = stack[h + i];
+        if (isrational(C) && isinteger(C))
             continue;
         push(C);
         denominator();
         C = pop();
-        for (j = 0; j < n; j++) {
+        for (let j = 0; j < n; j++) {
             push(stack[h + j]);
             push(C);
             multiply();
@@ -9578,33 +9525,33 @@ function
         }
     }
 
-    p = stack.length;
+    const p = stack.length;
 
     push(stack[h]);
-    m = pop_integer();
+    let m = pop_integer();
     divisors(m); // divisors of constant term
 
-    q = stack.length;
+    const q = stack.length;
 
     push(stack[h + n - 1]);
     m = pop_integer();
     divisors(m); // divisors of leading coeff
 
-    r = stack.length;
+    const r = stack.length;
 
-    for (i = p; i < q; i++) {
-        for (j = q; j < r; j++) {
+    for (let i = p; i < q; i++) {
+        for (let j = q; j < r; j++) {
 
             // try positive A
 
             push(stack[i]);
             push(stack[j]);
             divide();
-            A = pop();
+            let A = pop();
 
             horner(h, n, A);
 
-            PA = pop(); // polynomial evaluated at A
+            let PA = pop(); // polynomial evaluated at A
 
             if (iszero(PA)) {
                 stack.length = p; // pop all
@@ -9637,13 +9584,11 @@ function
 
 // evaluate p(x) at x = A using horner's rule
 
-function
-    horner(h, n, A) {
-    var i;
+function horner(h: number, n: number, A: unknown): void {
 
     push(stack[h + n - 1]);
 
-    for (i = n - 2; i >= 0; i--) {
+    for (let i = n - 2; i >= 0; i--) {
         push(A);
         multiply();
         push(stack[h + i]);
@@ -9653,15 +9598,13 @@ function
 
 // push all divisors of n
 
-function
-    divisors(n) {
-    var h, i, k;
+function divisors(n: number): void {
 
-    h = stack.length;
+    const h = stack.length;
 
     factor_int(n);
 
-    k = stack.length;
+    const k = stack.length;
 
     // contruct divisors by recursive descent
 
@@ -9673,7 +9616,7 @@ function
 
     n = stack.length - k;
 
-    for (i = 0; i < n; i++)
+    for (let i = 0; i < n; i++)
         stack[h + i] = stack[k + i];
 
     stack.length = h + n; // pop all
@@ -9693,23 +9636,20 @@ function
 //
 //	1, 2, 3, 4, 6, 12
 
-function
-    divisors_nib(h, k) {
-    var i, n;
-    var ACCUM, BASE, EXPO;
+function divisors_nib(h: number, k: number): void {
 
     if (h == k)
         return;
 
-    ACCUM = pop();
+    const ACCUM = pop();
 
-    BASE = stack[h + 0];
-    EXPO = stack[h + 1];
+    const BASE = stack[h + 0];
+    const EXPO = stack[h + 1];
 
     push(EXPO);
-    n = pop_integer();
+    const n = pop_integer();
 
-    for (i = 0; i <= n; i++) {
+    for (let i = 0; i <= n; i++) {
         push(ACCUM);
         push(BASE);
         push_integer(i);
@@ -9721,11 +9661,9 @@ function
 
 // divide by X - A
 
-function
-    reduce(h, n, A) {
-    var i;
+function reduce(h: number, n: number, A: unknown): void {
 
-    for (i = n - 1; i > 0; i--) {
+    for (let i = n - 1; i > 0; i--) {
         push(A);
         push(stack[h + i]);
         multiply();
@@ -9739,21 +9677,19 @@ function
 
     // move
 
-    for (i = 0; i < n - 1; i++)
+    for (let i = 0; i < n - 1; i++)
         stack[h + i] = stack[h + i + 1];
 }
-function
-    eval_rotate(p1) {
-    var m, n, c, PSI, OPCODE, PHASE;
+function eval_rotate(p1: unknown): void {
 
     push(cadr(p1));
     evalf();
-    PSI = pop();
+    const PSI = pop();
 
     if (!istensor(PSI) || PSI.dim.length > 1 || PSI.elem.length > 32768 || (PSI.elem.length & (PSI.elem.length - 1)) != 0)
         stopf("rotate error 1 first argument is not a vector or dimension error");
 
-    c = 0;
+    let c = 0;
 
     p1 = cddr(p1);
 
@@ -9762,10 +9698,10 @@ function
         if (!iscons(cdr(p1)))
             stopf("rotate error 2 unexpected end of argument list");
 
-        OPCODE = car(p1);
+        const OPCODE = car(p1);
         push(cadr(p1));
         evalf();
-        n = pop_integer();
+        let n = pop_integer();
 
         if (n > 14 || (1 << n) >= PSI.elem.length)
             stopf("rotate error 3 qubit number format or range");
@@ -9792,7 +9728,7 @@ function
             push(imaginaryunit);
             multiply();
             expfunc();
-            PHASE = pop();
+            const PHASE = pop();
             rotate_p(PSI, PHASE, c, n);
             c = 0;
             continue;
@@ -9811,7 +9747,7 @@ function
         }
 
         if (OPCODE == symbol("W")) {
-            m = n;
+            const m = n;
             if (!iscons(p1))
                 stopf("rotate error 2 unexpected end of argument list");
             push(car(p1));
@@ -9851,11 +9787,9 @@ function
 
 // hadamard
 
-function
-    rotate_h(PSI, c, n) {
-    var i;
+function rotate_h(PSI: Tensor, c: number, n: number): void {
     n = 1 << n;
-    for (i = 0; i < PSI.elem.length; i++) {
+    for (let i = 0; i < PSI.elem.length; i++) {
         if ((i & c) != c)
             continue;
         if (i & n) {
@@ -9880,10 +9814,9 @@ function
 // phase
 
 function
-    rotate_p(PSI, PHASE, c, n) {
-    var i;
+    rotate_p(PSI: Tensor, PHASE: unknown, c: number, n: number): void {
     n = 1 << n;
-    for (i = 0; i < PSI.elem.length; i++) {
+    for (let i = 0; i < PSI.elem.length; i++) {
         if ((i & c) != c)
             continue;
         if (i & n) {
@@ -9897,12 +9830,10 @@ function
 
 // swap
 
-function
-    rotate_w(PSI, c, m, n) {
-    var i;
+function rotate_w(PSI: Tensor, c: number, m: number, n: number): void {
     m = 1 << m;
     n = 1 << n;
-    for (i = 0; i < PSI.elem.length; i++) {
+    for (let i = 0; i < PSI.elem.length; i++) {
         if ((i & c) != c)
             continue;
         if ((i & m) && !(i & n)) {
@@ -9914,11 +9845,9 @@ function
     }
 }
 
-function
-    rotate_x(PSI, c, n) {
-    var i;
+function rotate_x(PSI: Tensor, c: number, n: number): void {
     n = 1 << n;
-    for (i = 0; i < PSI.elem.length; i++) {
+    for (let i = 0; i < PSI.elem.length; i++) {
         if ((i & c) != c)
             continue;
         if (i & n) {
@@ -9930,11 +9859,9 @@ function
     }
 }
 
-function
-    rotate_y(PSI, c, n) {
-    var i;
+function rotate_y(PSI: Tensor, c: number, n: number): void {
     n = 1 << n;
-    for (i = 0; i < PSI.elem.length; i++) {
+    for (let i = 0; i < PSI.elem.length; i++) {
         if ((i & c) != c)
             continue;
         if (i & n) {
@@ -9951,11 +9878,9 @@ function
     }
 }
 
-function
-    rotate_z(PSI, c, n) {
-    var i;
+function rotate_z(PSI: Tensor, c: number, n: number): void {
     n = 1 << n;
-    for (i = 0; i < PSI.elem.length; i++) {
+    for (let i = 0; i < PSI.elem.length; i++) {
         if ((i & c) != c)
             continue;
         if (i & n) {
@@ -14261,21 +14186,22 @@ function
 
     return d;
 }
-function
-    pop_integer() {
-    var n, p;
+function pop_integer(): number {
 
-    p = pop();
+    const p = pop();
 
     if (!issmallinteger(p))
         stopf("small integer expected");
+
+    let n: number;
 
     if (isrational(p)) {
         n = bignum_smallnum(p.a);
         if (isnegativenumber(p))
             n = -n;
-    } else
-        n = p.d;
+    }
+    else
+        n = (p as Flt).d;
 
     return n;
 }
