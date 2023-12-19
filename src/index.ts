@@ -5433,8 +5433,7 @@ function dsin(p1: unknown, p2: unknown): void {
     multiply();
 }
 
-function
-    dcos(p1, p2) {
+function dcos(p1: unknown, p2: unknown): void {
     push(cadr(p1));
     push(p2);
     derivative();
@@ -5444,8 +5443,7 @@ function
     negate();
 }
 
-function
-    dtan(p1, p2) {
+function dtan(p1: unknown, p2: unknown): void {
     push(cadr(p1));
     push(p2);
     derivative();
@@ -5456,8 +5454,7 @@ function
     multiply();
 }
 
-function
-    darcsin(p1, p2) {
+function darcsin(p1: unknown, p2: unknown): void {
     push(cadr(p1));
     push(p2);
     derivative();
@@ -5471,8 +5468,7 @@ function
     multiply();
 }
 
-function
-    darccos(p1, p2) {
+function darccos(p1: unknown, p2: unknown): void {
     push(cadr(p1));
     push(p2);
     derivative();
@@ -5487,8 +5483,7 @@ function
     negate();
 }
 
-function
-    darctan(p1, p2) {
+function darctan(p1: unknown, p2: unknown): void {
     push(cadr(p1));
     push(p2);
     derivative();
@@ -5501,8 +5496,7 @@ function
     multiply();
 }
 
-function
-    dsinh(p1, p2) {
+function dsinh(p1: unknown, p2: unknown): void {
     push(cadr(p1));
     push(p2);
     derivative();
@@ -5511,8 +5505,7 @@ function
     multiply();
 }
 
-function
-    dcosh(p1, p2) {
+function dcosh(p1: unknown, p2: unknown): void {
     push(cadr(p1));
     push(p2);
     derivative();
@@ -5521,8 +5514,7 @@ function
     multiply();
 }
 
-function
-    dtanh(p1, p2) {
+function dtanh(p1: unknown, p2: unknown): void {
     push(cadr(p1));
     push(p2);
     derivative();
@@ -5533,8 +5525,7 @@ function
     multiply();
 }
 
-function
-    darcsinh(p1, p2) {
+function darcsinh(p1: unknown, p2: unknown): void {
     push(cadr(p1));
     push(p2);
     derivative();
@@ -5548,8 +5539,7 @@ function
     multiply();
 }
 
-function
-    darccosh(p1, p2) {
+function darccosh(p1: unknown, p2: unknown): void {
     push(cadr(p1));
     push(p2);
     derivative();
@@ -5563,8 +5553,7 @@ function
     multiply();
 }
 
-function
-    darctanh(p1, p2) {
+function darctanh(p1: unknown, p2: unknown): void {
     push(cadr(p1));
     push(p2);
     derivative();
@@ -5577,8 +5566,7 @@ function
     multiply();
 }
 
-function
-    derf(p1, p2) {
+function derf(p1: unknown, p2: unknown): void {
     push(cadr(p1));
     push_integer(2);
     power();
@@ -15276,16 +15264,13 @@ function
 function push(a: unknown): void {
     stack.push(a);
 }
-function
-    push_double(d) {
+function push_double(d) {
     push({ d: d });
 }
-function
-    push_integer(n) {
+function push_integer(n: number): void {
     push_rational(n, 1);
 }
-function
-    push_rational(a, b) {
+function push_rational(a, b) {
     var sign;
 
     if (a < 0)
@@ -15304,8 +15289,7 @@ function
     push_string(s) {
     push({ string: s });
 }
-function
-    push_symbol(p) {
+function push_symbol(p: string): void {
     push(symbol(p));
 }
 function
@@ -16229,7 +16213,7 @@ function swap() {
     push(p2);
     push(p1);
 }
-function symbol(s) {
+function symbol(s: string) {
     return symtab[s];
 }
 function trace_input() {
@@ -16256,7 +16240,7 @@ let nonstop: number;
 let trace1: number;
 let trace2: number;
 
-const symtab = {
+const symtab: { [name: string]: Sym } = {
     "abs": { printname: ABS, func: eval_abs },
     "adj": { printname: ADJ, func: eval_adj },
     "and": { printname: AND, func: eval_and },
