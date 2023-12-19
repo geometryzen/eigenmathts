@@ -4328,7 +4328,7 @@ function ceilingfunc(): void {
         return;
     }
 
-    if (isrational(p1) && isinteger(p1)) {
+    if (isinteger(p1)) {
         push(p1);
         return;
     }
@@ -4507,18 +4507,21 @@ function clockfunc(): void {
 
     multiply();
 }
-function eval_cofactor(p1: unknown) {
+function
+    eval_cofactor(p1) {
+    var i, j, p2;
+
     push(cadr(p1));
     evalf();
-    const p2 = pop() as Tensor;
+    p2 = pop();
 
     push(caddr(p1));
     evalf();
-    const i = pop_integer();
+    i = pop_integer();
 
     push(cadddr(p1));
     evalf();
-    const j = pop_integer();
+    j = pop_integer();
 
     if (!issquarematrix(p2))
         stopf("cofactor: square matrix expected");
@@ -4535,30 +4538,34 @@ function eval_cofactor(p1: unknown) {
     if ((i + j) % 2)
         negate();
 }
-function eval_conj(p1: unknown): void {
+function
+    eval_conj(p1) {
     push(cadr(p1));
     evalf();
     conjfunc();
 }
 
-function conjfunc(): void {
+function
+    conjfunc() {
     conjfunc_subst();
     evalf();
 }
 
-function conjfunc_subst(): void {
+function
+    conjfunc_subst() {
+    var h, i, n, p1;
 
-    let p1 = pop();
+    p1 = pop();
 
     if (istensor(p1)) {
-        const T = copy_tensor(p1);
-        const n = T.elem.length;
-        for (let i = 0; i < n; i++) {
-            push(T.elem[i]);
+        p1 = copy_tensor(p1);
+        n = p1.elem.length;
+        for (i = 0; i < n; i++) {
+            push(p1.elem[i]);
             conjfunc_subst();
-            T.elem[i] = pop();
+            p1.elem[i] = pop();
         }
-        push(T);
+        push(p1);
         return;
     }
 
@@ -4574,7 +4581,7 @@ function conjfunc_subst(): void {
     }
 
     if (iscons(p1)) {
-        const h = stack.length;
+        h = stack.length;
         push(car(p1));
         p1 = cdr(p1);
         while (iscons(p1)) {
@@ -4588,7 +4595,8 @@ function conjfunc_subst(): void {
 
     push(p1);
 }
-function    eval_contract(p1) {
+function
+    eval_contract(p1) {
     push(cadr(p1));
     evalf();
 
@@ -13590,7 +13598,8 @@ function
 
     return 0;
 }
-function isdoublez(p: unknown) {
+function
+    isdoublez(p) {
     if (car(p) == symbol(ADD)) {
 
         if (lengthf(p) != 3)
@@ -13624,15 +13633,17 @@ function isdoublez(p: unknown) {
 
     return 1;
 }
-function isequaln(p: unknown, n: number): boolean {
+function
+    isequaln(p, n) {
     return isequalq(p, n, 1);
 }
-function isequalq(p: unknown, a: number, b: number): boolean {
+function
+    isequalq(p, a, b) {
     if (isrational(p)) {
         if (isnegativenumber(p) && a >= 0)
-            return false;
+            return 0;
         if (!isnegativenumber(p) && a < 0)
-            return false;
+            return 0;
         a = Math.abs(a);
         return bignum_equal(p.a, a) && bignum_equal(p.b, b);
     }
@@ -13640,7 +13651,7 @@ function isequalq(p: unknown, a: number, b: number): boolean {
     if (isdouble(p))
         return p.d == a / b;
 
-    return false;
+    return 0;
 }
 function
     isfraction(p) {
@@ -13654,10 +13665,11 @@ function
     isimaginaryunit(p) {
     return car(p) == symbol(POWER) && isminusone(cadr(p)) && isequalq(caddr(p), 1, 2);
 }
-function isinteger(p: Rat): boolean {
+function isinteger(p: unknown): boolean {
     return isrational(p) && bignum_equal(p.b, 1);
 }
-function isinteger1(p: Rat): boolean {
+function
+    isinteger1(p) {
     return isinteger(p) && isplusone(p);
 }
 function
@@ -13695,7 +13707,8 @@ function
     isoneoversqrttwo(p) {
     return car(p) == symbol(POWER) && isequaln(cadr(p), 2) && isequalq(caddr(p), -1, 2);
 }
-function isplusone(p: unknown) {
+function
+    isplusone(p) {
     return isequaln(p, 1);
 }
 function
@@ -14385,10 +14398,11 @@ function
 
     return d;
 }
-function pop_integer(): number {
-    let n: number;
+function
+    pop_integer() {
+    var n, p;
 
-    const p = pop();
+    p = pop();
 
     if (!issmallinteger(p))
         stopf("small integer expected");
@@ -14398,23 +14412,25 @@ function pop_integer(): number {
         if (isnegativenumber(p))
             n = -n;
     } else
-        n = (p as Flt).d;
+        n = p.d;
 
     return n;
 }
-function power_complex_double(BASE: unknown, EXPO: unknown, X: unknown, Y: unknown): void {
+function
+    power_complex_double(BASE, EXPO, X, Y) {
+    var expo, r, theta, x, y;
 
     push(X);
-    let x = pop_double();
+    x = pop_double();
 
     push(Y);
-    let y = pop_double();
+    y = pop_double();
 
     push(EXPO);
-    const expo = pop_double();
+    expo = pop_double();
 
-    let r = Math.sqrt(x * x + y * y);
-    let theta = Math.atan2(y, x);
+    r = Math.sqrt(x * x + y * y);
+    theta = Math.atan2(y, x);
 
     r = Math.pow(r, expo);
     theta = expo * theta;
@@ -14428,7 +14444,10 @@ function power_complex_double(BASE: unknown, EXPO: unknown, X: unknown, Y: unkno
     multiply();
     add();
 }
-function power_complex_minus(X: unknown, Y: unknown, n: number): void {
+function
+    power_complex_minus(X, Y, n) {
+    var i, R, PX, PY;
+
     // R = X^2 + Y^2
 
     push(X);
@@ -14438,7 +14457,7 @@ function power_complex_minus(X: unknown, Y: unknown, n: number): void {
     push(Y);
     multiply();
     add();
-    const R = pop();
+    R = pop();
 
     // X = X / R
 
@@ -14455,10 +14474,10 @@ function power_complex_minus(X: unknown, Y: unknown, n: number): void {
     divide();
     Y = pop();
 
-    let PX = X;
-    let PY = Y;
+    PX = X;
+    PY = Y;
 
-    for (let i = 1; i < n; i++) {
+    for (i = 1; i < n; i++) {
 
         push(PX);
         push(X);
@@ -14488,7 +14507,10 @@ function power_complex_minus(X: unknown, Y: unknown, n: number): void {
     multiply();
     add();
 }
-function power_complex_number(BASE: unknown, EXPO: unknown): void {
+function
+    power_complex_number(BASE, EXPO) {
+    var n, X, Y;
+
     // prefixform(2 + 3 i) = (add 2 (multiply 3 (power -1 1/2)))
 
     // prefixform(1 + i) = (add 1 (power -1 1/2))
@@ -14497,21 +14519,16 @@ function power_complex_number(BASE: unknown, EXPO: unknown): void {
 
     // prefixform(i) = (power -1 1/2)
 
-    let X: unknown;
-    let Y: unknown;
-
     if (car(BASE) == symbol(ADD)) {
         X = cadr(BASE);
         if (caaddr(BASE) == symbol(MULTIPLY))
             Y = cadaddr(BASE);
         else
             Y = one;
-    }
-    else if (car(BASE) == symbol(MULTIPLY)) {
+    } else if (car(BASE) == symbol(MULTIPLY)) {
         X = zero;
         Y = cadr(BASE);
-    }
-    else {
+    } else {
         X = zero;
         Y = one;
     }
@@ -14535,7 +14552,7 @@ function power_complex_number(BASE: unknown, EXPO: unknown): void {
     }
 
     push(EXPO);
-    const n = pop_integer();
+    n = pop_integer();
 
     if (n > 0)
         power_complex_plus(X, Y, n);
@@ -14544,12 +14561,14 @@ function power_complex_number(BASE: unknown, EXPO: unknown): void {
     else
         push_integer(1);
 }
-function power_complex_plus(X: unknown, Y: unknown, n: number): void {
+function
+    power_complex_plus(X, Y, n) {
+    var i, PX, PY;
 
-    let PX = X;
-    let PY = Y;
+    PX = X;
+    PY = Y;
 
-    for (let i = 1; i < n; i++) {
+    for (i = 1; i < n; i++) {
 
         push(PX);
         push(X);
@@ -14579,7 +14598,8 @@ function power_complex_plus(X: unknown, Y: unknown, n: number): void {
     multiply();
     add();
 }
-function power_complex_rational(BASE: unknown, EXPO: unknown, X: unknown, Y: unknown) {
+function
+    power_complex_rational(BASE, EXPO, X, Y) {
     // calculate sqrt(X^2 + Y^2) ^ (1/2 * EXPO)
 
     push(X);
@@ -14610,7 +14630,8 @@ function power_complex_rational(BASE: unknown, EXPO: unknown, X: unknown, Y: unk
 
     multiply();
 }
-function power_minusone(EXPO: unknown): void {
+function
+    power_minusone(EXPO) {
     // optimization for i
 
     if (isequalq(EXPO, 1, 2)) {
@@ -14645,18 +14666,20 @@ function power_minusone(EXPO: unknown): void {
     list(3);
 }
 
-function normalize_clock_rational(EXPO: unknown): void {
+function
+    normalize_clock_rational(EXPO) {
+    var n, R;
 
     // R = EXPO mod 2
 
     push(EXPO);
     push_integer(2);
     modfunc();
-    let R = pop();
+    R = pop();
 
     // convert negative rotation to positive
 
-    if (isnum(R) && isnegativenumber(R)) {
+    if (isnegativenumber(R)) {
         push(R);
         push_integer(2);
         add();
@@ -14667,7 +14690,7 @@ function normalize_clock_rational(EXPO: unknown): void {
     push_integer(2);
     multiply();
     floorfunc();
-    const n = pop_integer(); // number of 90 degree turns
+    n = pop_integer(); // number of 90 degree turns
 
     push(R);
     push_integer(n);
@@ -14737,9 +14760,11 @@ function normalize_clock_rational(EXPO: unknown): void {
     }
 }
 
-function normalize_clock_double(EXPO: Flt): void {
+function
+    normalize_clock_double(EXPO) {
+    var expo, n, r;
 
-    let expo = EXPO.d;
+    expo = EXPO.d;
 
     // expo = expo mod 2
 
@@ -14750,9 +14775,9 @@ function normalize_clock_double(EXPO: Flt): void {
     if (expo < 0)
         expo += 2;
 
-    const n = Math.floor(2 * expo); // number of 90 degree turns
+    n = Math.floor(2 * expo); // number of 90 degree turns
 
-    const r = expo - n / 2; // remainder
+    r = expo - n / 2; // remainder
 
     switch (n) {
 
@@ -14810,11 +14835,11 @@ function normalize_clock_double(EXPO: Flt): void {
             break;
     }
 }
-function power_natural_number(EXPO: unknown): void {
+function
+    power_natural_number(EXPO) {
+    var x, y;
 
     // exp(x + i y) = exp(x) (cos(y) + i sin(y))
-    let x: number;
-    let y: number;
 
     if (isdoublez(EXPO)) {
         if (car(EXPO) == symbol(ADD)) {
@@ -14855,7 +14880,9 @@ function power_natural_number(EXPO: unknown): void {
 }
 // BASE and EXPO are numbers
 
-function power_numbers(BASE: unknown, EXPO: unknown): void {
+function
+    power_numbers(BASE, EXPO) {
+    var a, b, h, i, n, p1, p2;
 
     // n^0
 
@@ -14867,7 +14894,7 @@ function power_numbers(BASE: unknown, EXPO: unknown): void {
     // 0^n
 
     if (iszero(BASE)) {
-        if (isnum(EXPO) && isnegativenumber(EXPO))
+        if (isnegativenumber(EXPO))
             stopf("divide by zero");
         push_integer(0);
         return;
