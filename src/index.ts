@@ -2356,8 +2356,7 @@ function
     list(7);
 }
 
-function
-    emit_update_table(n, m) {
+function emit_update_table(n: number, m: number): void {
     var d, h, i, j, p1, p2, p3, p4, t, total_height, total_width, w;
 
     total_height = 0;
@@ -2439,27 +2438,24 @@ function
 }
 
 function emit_vector(p: Tensor): void {
-    var i, n, span;
-
     // compute element span
 
-    span = 1;
+    let span = 1;
 
-    n = p.dim.length;
+    let n = p.dim.length;
 
-    for (i = 1; i < n; i++)
+    for (let i = 1; i < n; i++)
         span *= p.dim[i];
 
     n = p.dim[0]; // number of rows
 
-    for (i = 0; i < n; i++)
+    for (let i = 0; i < n; i++)
         emit_matrix(p, 1, i * span);
 
     emit_update_table(n, 1); // n rows, 1 column
 }
 
-function
-    opcode(p) {
+function opcode(p) {
     return car(p).d;
 }
 
@@ -2492,8 +2488,7 @@ function
     reciprocate();
     multiply();
 }
-function
-    draw_formula(x, y, p) {
+function draw_formula(x, y, p) {
     var char_num, d, dx, dy, font_num, h, k, w;
 
     k = opcode(p);
@@ -2620,16 +2615,16 @@ const html_name_tab = [
     "&le;",		// 181
 ];
 
-function
-    draw_char(x, y, font_num, char_num) {
-    var s, t;
+function draw_char(x: number, y: number, font_num: number, char_num: number): void {
+    let s: string;
+    let t: string;
 
     if (char_num < 32 || char_num > 181)
         s = "?";
     else if (char_num == 34)
         s = "&quot;";
     else if (char_num == 38)
-        s = "&amp;"
+        s = "&amp;";
     else if (char_num == 60)
         s = "&lt;";
     else if (char_num == 62)
@@ -2656,10 +2651,10 @@ function
             break;
     }
 
-    x = "x='" + x + "'";
-    y = "y='" + y + "'";
+    const xeq = "x='" + x + "'";
+    const yeq = "y='" + y + "'";
 
-    t += "'" + x + y + ">" + s + "</text>\n";
+    t += "'" + xeq + yeq + ">" + s + "</text>\n";
 
     outbuf += t;
 }
@@ -2721,7 +2716,7 @@ function
     y1 = "y1='" + y1 + "'";
     y2 = "y2='" + y2 + "'";
 
-    s = "<line " + x1 + y1 + x2 + y2 + "style='stroke:black;stroke-width:" + stroke_width + "'/>\n"
+    s = "<line " + x1 + y1 + x2 + y2 + "style='stroke:black;stroke-width:" + stroke_width + "'/>\n";
 
     outbuf += s;
 }
@@ -2895,13 +2890,12 @@ function
     if (dy > 0 && dy < DRAW_HEIGHT)
         draw_line(0, dy, DRAW_WIDTH, dy, 0.5); // horizontal axis
 }
-function
-    emit_box() {
-    var x1 = 0;
-    var x2 = DRAW_WIDTH;
+function emit_box(): void {
+    const x1 = 0;
+    const x2 = DRAW_WIDTH;
 
-    var y1 = 0;
-    var y2 = DRAW_HEIGHT;
+    const y1 = 0;
+    const y2 = DRAW_HEIGHT;
 
     draw_line(x1, y1, x2, y1, 0.5); // top line
     draw_line(x1, y2, x2, y2, 0.5); // bottom line
@@ -2919,7 +2913,7 @@ function
     h = "height='" + h + "'";
     w = "width='" + w + "'";
 
-    outbuf = "<svg " + h + w + ">"
+    outbuf = "<svg " + h + w + ">";
 
     emit_axes();
     emit_box();
@@ -3085,9 +3079,8 @@ function
     push(p1);
     list(2);
 }
-function
-    eval_add(p1) {
-    var h = stack.length;
+function eval_add(p1: unknown): void {
+    const h = stack.length;
     expanding--; // undo expanding++ in evalf
     p1 = cdr(p1);
     while (iscons(p1)) {
@@ -12831,8 +12824,7 @@ const ITALIC_FONT = 2;
 const SMALL_ROMAN_FONT = 3;
 const SMALL_ITALIC_FONT = 4;
 
-function
-    get_cap_height(font_num) {
+function get_cap_height(font_num: number): number {
     switch (font_num) {
         case ROMAN_FONT:
         case ITALIC_FONT:
@@ -12840,11 +12832,11 @@ function
         case SMALL_ROMAN_FONT:
         case SMALL_ITALIC_FONT:
             return FONT_CAP_HEIGHT * SMALL_FONT_SIZE / 2048;
+        default: throw new Error();
     }
 }
 
-function
-    get_descent(font_num) {
+function get_descent(font_num: number): number {
     switch (font_num) {
         case ROMAN_FONT:
         case ITALIC_FONT:
@@ -12852,6 +12844,7 @@ function
         case SMALL_ROMAN_FONT:
         case SMALL_ITALIC_FONT:
             return FONT_DESCENT * SMALL_FONT_SIZE / 2048;
+        default: throw new Error();
     }
 }
 
@@ -12897,8 +12890,7 @@ const italic_descent_tab = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 ];
 
-function
-    get_char_depth(font_num, char_num) {
+function get_char_depth(font_num: number, char_num: number) {
     switch (font_num) {
         case ROMAN_FONT:
         case SMALL_ROMAN_FONT:
@@ -12906,6 +12898,7 @@ function
         case ITALIC_FONT:
         case SMALL_ITALIC_FONT:
             return get_descent(font_num) * italic_descent_tab[char_num];
+        default: throw new Error();
     }
 }
 
@@ -12991,8 +12984,7 @@ const italic_width_tab = [
     1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
 ];
 
-function
-    get_char_width(font_num, char_num) {
+function get_char_width(font_num: number, char_num: number): number {
     switch (font_num) {
         case ROMAN_FONT:
             return FONT_SIZE * roman_width_tab[char_num] / 2048;
@@ -13002,11 +12994,11 @@ function
             return SMALL_FONT_SIZE * roman_width_tab[char_num] / 2048;
         case SMALL_ITALIC_FONT:
             return SMALL_FONT_SIZE * italic_width_tab[char_num] / 2048;
+        default: throw new Error();
     }
 }
 
-function
-    get_xheight(font_num) {
+function get_xheight(font_num: number): number {
     switch (font_num) {
         case ROMAN_FONT:
         case ITALIC_FONT:
@@ -13014,6 +13006,7 @@ function
         case SMALL_ROMAN_FONT:
         case SMALL_ITALIC_FONT:
             return FONT_XHEIGHT * SMALL_FONT_SIZE / 2048;
+        default: throw new Error();
     }
 }
 
