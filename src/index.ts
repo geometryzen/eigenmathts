@@ -5157,7 +5157,7 @@ function derivative(): void {
 }
 
 function d_scalar_scalar(F: unknown, X: unknown): void {
-    if (!isusersymbol(X))
+    if (!(issymbol(X) && isusersymbol(X)))
         stopf("derivative: symbol expected");
 
     // d(x,x)?
@@ -5821,7 +5821,7 @@ function eval_draw(p1: unknown): void {
     const F = cadr(p1);
     let T = caddr(p1);
 
-    if (!isusersymbol(T))
+    if (!(issymbol(T) && isusersymbol(T)))
         T = symbol(X_LOWER);
 
     save_symbol(T);
@@ -5995,25 +5995,24 @@ function eval_erf(p1: unknown): void {
 }
 
 function erffunc(): void {
-    var d, i, n, p1;
 
-    p1 = pop();
+    const p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
+        const T = copy_tensor(p1);
+        const n = T.elem.length;
+        for (let i = 0; i < n; i++) {
+            push(T.elem[i]);
             erffunc();
-            p1.elem[i] = pop();
+            T.elem[i] = pop();
         }
-        push(p1);
+        push(T);
         return;
     }
 
     if (isdouble(p1)) {
         push(p1);
-        d = pop_double();
+        let d = pop_double();
         d = erf(d);
         push_double(d);
         return;
@@ -6037,34 +6036,31 @@ function erffunc(): void {
     push(p1);
     list(2);
 }
-function
-    eval_erfc(p1) {
+function eval_erfc(p1: unknown): void {
     push(cadr(p1));
     evalf();
     erfcfunc();
 }
 
-function
-    erfcfunc() {
-    var d, i, n, p1;
+function erfcfunc(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
+        const T = copy_tensor(p1);
+        const n = T.elem.length;
+        for (let i = 0; i < n; i++) {
+            push(T.elem[i]);
             erfcfunc();
-            p1.elem[i] = pop();
+            T.elem[i] = pop();
         }
-        push(p1);
+        push(T);
         return;
     }
 
     if (isdouble(p1)) {
         push(p1);
-        d = pop_double();
+        let d = pop_double();
         d = erfc(d);
         push_double(d);
         return;
@@ -6079,8 +6075,7 @@ function
     push(p1);
     list(2);
 }
-function
-    eval_eval(p1) {
+function eval_eval(p1: unknown): void {
     push(cadr(p1));
     evalf();
     p1 = cddr(p1);
@@ -6094,34 +6089,28 @@ function
     }
     evalf();
 }
-function
-    eval_exit() {
+function eval_exit(): void {
     push_symbol(NIL);
 }
-function
-    eval_exp(p1) {
+function eval_exp(p1: unknown): void {
     push(cadr(p1));
     evalf();
     expfunc();
 }
 
-function
-    expfunc() {
+function expfunc(): void {
     push_symbol(EXP1);
     swap();
     power();
 }
-function
-    eval_expcos(p1) {
+function eval_expcos(p1: unknown): void {
     push(cadr(p1));
     evalf();
     expcos();
 }
 
-function
-    expcos() {
-    var p1;
-    p1 = pop();
+function expcos(): void {
+    const p1 = pop();
 
     push(imaginaryunit);
     push(p1);
@@ -6140,17 +6129,14 @@ function
 
     add();
 }
-function
-    eval_expcosh(p1) {
+function eval_expcosh(p1: unknown): void {
     push(cadr(p1));
     evalf();
     expcosh();
 }
 
-function
-    expcosh() {
-    var p1;
-    p1 = pop();
+function expcosh(): void {
+    const p1 = pop();
     push(p1);
     expfunc();
     push(p1);
@@ -6160,17 +6146,14 @@ function
     push_rational(1, 2);
     multiply();
 }
-function
-    eval_expsin(p1) {
+function eval_expsin(p1: unknown): void {
     push(cadr(p1));
     evalf();
     expsin();
 }
 
-function
-    expsin() {
-    var p1;
-    p1 = pop();
+function expsin(): void {
+    const p1 = pop();
 
     push(imaginaryunit);
     push(p1);
@@ -6193,17 +6176,14 @@ function
 
     subtract();
 }
-function
-    eval_expsinh(p1) {
+function eval_expsinh(p1: unknown): void {
     push(cadr(p1));
     evalf();
     expsinh();
 }
 
-function
-    expsinh() {
-    var p1;
-    p1 = pop();
+function expsinh(): void {
+    const p1 = pop();
     push(p1);
     expfunc();
     push(p1);
@@ -6215,23 +6195,20 @@ function
 }
 // tan(z) = (i - i exp(2 i z)) / (exp(2 i z) + 1)
 
-function
-    eval_exptan(p1) {
+function eval_exptan(p1: unknown): void {
     push(cadr(p1));
     evalf();
     exptan();
 }
 
-function
-    exptan() {
-    var p1;
+function exptan(): void {
 
     push_integer(2);
     push(imaginaryunit);
     multiply_factors(3);
     expfunc();
 
-    p1 = pop();
+    const p1 = pop();
 
     push(imaginaryunit);
     push(imaginaryunit);
@@ -6245,20 +6222,17 @@ function
 
     divide();
 }
-function
-    eval_exptanh(p1) {
+function eval_exptanh(p1: unknown): void {
     push(cadr(p1));
     evalf();
     exptanh();
 }
 
-function
-    exptanh() {
-    var p1;
+function exptanh(): void {
     push_integer(2);
     multiply();
     expfunc();
-    p1 = pop();
+    const p1 = pop();
     push(p1);
     push_integer(1);
     subtract();
@@ -6267,24 +6241,21 @@ function
     add();
     divide();
 }
-function
-    eval_factorial(p1) {
+function eval_factorial(p1: unknown): void {
     push(cadr(p1));
     evalf();
     factorial();
 }
 
-function
-    factorial() {
-    var i, m, n, p1;
+function factorial(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (isposint(p1)) {
         push(p1);
-        n = pop_integer();
+        const n = pop_integer();
         push_integer(1);
-        for (i = 2; i <= n; i++) {
+        for (let i = 2; i <= n; i++) {
             push_integer(i);
             multiply();
         }
@@ -6293,9 +6264,9 @@ function
 
     if (isdouble(p1) && p1.d >= 0 && Math.floor(p1.d) == p1.d) {
         push(p1);
-        n = pop_integer();
-        m = 1.0;
-        for (i = 2; i <= n; i++)
+        const n = pop_integer();
+        let m = 1.0;
+        for (let i = 2; i <= n; i++)
             m *= i;
         push_double(m);
         return;
@@ -6305,35 +6276,31 @@ function
     push(p1);
     list(2);
 }
-function eval_float(p1: unknown) {
+function eval_float(p1: unknown): void {
     push(cadr(p1));
     evalf();
     floatfunc();
 }
 
-function
-    floatfunc() {
+function floatfunc(): void {
     floatfunc_subst();
     evalf();
     floatfunc_subst(); // in case pi popped up
     evalf();
 }
 
-function
-    floatfunc_subst() {
-    var a, b, h, i, n, p1;
-
-    p1 = pop();
+function floatfunc_subst(): void {
+    let p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
+        const T = copy_tensor(p1);
+        const n = T.elem.length;
+        for (let i = 0; i < n; i++) {
+            push(T.elem[i]);
             floatfunc_subst();
-            p1.elem[i] = pop();
+            T.elem[i] = pop();
         }
-        push(p1);
+        push(T);
         return;
     }
 
@@ -6348,8 +6315,8 @@ function
     }
 
     if (isrational(p1)) {
-        a = bignum_float(p1.a);
-        b = bignum_float(p1.b);
+        let a = bignum_float(p1.a);
+        const b = bignum_float(p1.b);
         if (isnegativenumber(p1))
             a = -a;
         push_double(a / b);
@@ -6382,7 +6349,7 @@ function
     }
 
     if (iscons(p1)) {
-        h = stack.length;
+        const h = stack.length;
         push(car(p1));
         p1 = cdr(p1);
         while (iscons(p1)) {
@@ -6402,21 +6369,19 @@ function eval_floor(p1: unknown) {
     floorfunc();
 }
 
-function
-    floorfunc() {
-    var a, b, d, i, n, p1;
+function floorfunc(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
+        const T = copy_tensor(p1);
+        const n = T.elem.length;
+        for (let i = 0; i < n; i++) {
+            push(T.elem[i]);
             floorfunc();
-            p1.elem[i] = pop();
+            T.elem[i] = pop();
         }
-        push(p1);
+        push(T);
         return;
     }
 
@@ -6426,20 +6391,21 @@ function
     }
 
     if (isrational(p1)) {
-        a = bignum_div(p1.a, p1.b);
-        b = bignum_int(1);
+        const a = bignum_div(p1.a, p1.b);
+        const b = bignum_int(1);
         if (isnegativenumber(p1)) {
             push_bignum(-1, a, b);
             push_integer(-1);
             add();
-        } else
+        }
+        else
             push_bignum(1, a, b);
         return;
     }
 
     if (isdouble(p1)) {
         push(p1);
-        d = pop_double();
+        let d = pop_double();
         d = Math.floor(d);
         push_double(d);
         return;
@@ -6449,20 +6415,19 @@ function
     push(p1);
     list(2);
 }
-function eval_for(p1: unknown) {
-    var j, k, p2, p3;
+function eval_for(p1: unknown): void {
 
-    p2 = cadr(p1);
-    if (!isusersymbol(p2))
+    const p2 = cadr(p1);
+    if (!(issymbol(p2) && isusersymbol(p2)))
         stopf("for: symbol error");
 
     push(caddr(p1));
     evalf();
-    j = pop_integer();
+    let j = pop_integer();
 
     push(cadddr(p1));
     evalf();
-    k = pop_integer();
+    const k = pop_integer();
 
     p1 = cddddr(p1);
 
@@ -6470,7 +6435,7 @@ function eval_for(p1: unknown) {
 
     for (; ;) {
         push_integer(j);
-        p3 = pop();
+        let p3 = pop();
         set_symbol(p2, p3, symbol(NIL));
         p3 = p1;
         while (iscons(p3)) {
@@ -13685,7 +13650,7 @@ function issymbol(p: unknown): p is Sym {
 function istensor(p: unknown): p is Tensor {
     return "elem" in (p as unknown as Tensor);
 }
-function isusersymbol(p) {
+function isusersymbol(p: Sym): boolean {
     return issymbol(p) && p.func == eval_user_symbol;
 }
 function
