@@ -16,7 +16,6 @@ export interface Str {
 }
 export interface Sym {
     printname: string;
-    func: unknown;
 }
 export interface Tensor {
     dim: number[];
@@ -1455,7 +1454,7 @@ function emit_denominators(p: unknown) {
         }
         else {
             emit_base(cadr(q));
-            emit_numeric_exponent(caddr(q) as Num); // sign is not emitted
+            emit_numeric_exponent(caddr(q)); // sign is not emitted
         }
     }
 
@@ -4617,7 +4616,7 @@ function contract() {
     const index: number[] = [];
 
     const p3 = pop();
-    const p2 = pop();
+    let p2 = pop();
     const p1 = pop();
 
     if (!istensor(p1)) {
@@ -4649,7 +4648,7 @@ function contract() {
 
     const nelem = p1.elem.length / ncol / nrow;
 
-    const T = alloc_tensor();
+    p2 = alloc_tensor();
 
     for (let i = 0; i < ndim; i++)
         index[i] = 0;
@@ -4667,7 +4666,7 @@ function contract() {
 
         add_terms(ncol);
 
-        T.elem[i] = pop();
+        p2.elem[i] = pop();
 
         // increment index
 
@@ -4681,7 +4680,7 @@ function contract() {
     }
 
     if (nelem == 1) {
-        push(T.elem[0]);
+        push(p2.elem[0]);
         return;
     }
 
@@ -4691,17 +4690,19 @@ function contract() {
 
     for (let i = 0; i < ndim; i++)
         if (i != n && i != m)
-            T.dim[k++] = p1.dim[i];
+            p2.dim[k++] = p1.dim[i];
 
-    push(T);
+    push(p2);
 }
-function eval_cos(p1: unknown): void {
+function
+    eval_cos(p1) {
     push(cadr(p1));
     evalf();
     cosfunc();
 }
 
-function cosfunc(): void {
+function
+    cosfunc() {
     var d, i, n, p1, p2, X, Y;
 
     p1 = pop();
@@ -5102,8 +5103,7 @@ function
         if (flag) {
             X = Y;
             flag = 0;
-        }
-        else {
+        } else {
             push(car(p1));
             evalf();
             X = pop();
@@ -5159,8 +5159,7 @@ function
             d_tensor_tensor(F, X);
         else
             d_tensor_scalar(F, X);
-    }
-    else {
+    } else {
         if (istensor(X))
             d_scalar_tensor(F, X);
         else
@@ -5412,8 +5411,7 @@ function
             push(caddr(p3));
             list(3);
             push(caddr(p1));
-        }
-        else {
+        } else {
             push(caddr(p1));
             list(3);
             push(caddr(p3));
@@ -5421,8 +5419,7 @@ function
 
         list(3);
 
-    }
-    else {
+    } else {
         push(p3);
         push(caddr(p1));
         derivative();
@@ -5442,8 +5439,7 @@ function
         push(p1);
         push(p2);
         list(3);
-    }
-    else
+    } else
         push_integer(0);
 }
 
@@ -6486,8 +6482,7 @@ function
             push_bignum(-1, a, b);
             push_integer(-1);
             add();
-        }
-        else
+        } else
             push_bignum(1, a, b);
         return;
     }
@@ -7805,8 +7800,7 @@ function
         if (flag) {
             X = Y;
             flag = 0;
-        }
-        else {
+        } else {
             push(car(p1));
             evalf();
             X = pop();
@@ -7933,8 +7927,7 @@ function
     if (car(F) == symbol(POWER)) {
         if (integral_search(h, F, integral_tab_power, integral_tab_power.length))
             return;
-    }
-    else {
+    } else {
         if (integral_search(h, F, integral_tab, integral_tab.length))
             return;
     }
@@ -8210,8 +8203,7 @@ function
                 push(cadr(p2)); // base
                 list(2);
                 multiply();
-            }
-            else {
+            } else {
                 push_symbol(LOG);
                 push(p2);
                 list(2);
@@ -8427,8 +8419,7 @@ function minormatrix(row: number, col: number): void {
                 push(p1.elem[3]);
             else
                 push(p1.elem[2]);
-        }
-        else {
+        } else {
             if (col == 1)
                 push(p1.elem[1]);
             else
@@ -8625,8 +8616,7 @@ function
     if (iscons(p1)) {
         push(car(p1));
         evalf();
-    }
-    else
+    } else
         push_symbol(X_LOWER);
 
     nroots();
@@ -9053,8 +9043,7 @@ function
         push_double(p2.d / Math.PI);
         push_symbol(PI);
         multiply_factors(3);
-    }
-    else {
+    } else {
         push(p2);
         multiply_factors(2);
     }
@@ -9086,8 +9075,7 @@ function
         expanding = 0;
         evalf();
         expanding = t;
-    }
-    else
+    } else
         evalf();
     swap();
 
@@ -9201,8 +9189,7 @@ function
                 push(EXPO);
                 multiply();
                 list(3);
-            }
-            else {
+            } else {
                 push_symbol(POWER);
                 push(p1);
                 push(EXPO);
@@ -9329,8 +9316,7 @@ function print_result() {
     if (p1 == symbol(TTY) || iszero(p1)) {
         push(p2);
         display();
-    }
-    else
+    } else
         print_infixform(p2);
 }
 
@@ -9605,8 +9591,7 @@ function
     if (iscons(p1)) {
         push(car(p1));
         evalf();
-    }
-    else
+    } else
         push_symbol(X_LOWER);
 
     roots();
@@ -10304,8 +10289,7 @@ function
         m = RVAL.elem.length;
         for (i = 0; i < m; i++)
             LVAL.elem[m * k + i] = RVAL.elem[i];
-    }
-    else {
+    } else {
         if (n != LVAL.dim.length)
             stopf("index error");
         LVAL.elem[k] = RVAL;
@@ -10555,8 +10539,7 @@ function
             push(p1); // no change
             return;
         }
-    }
-    else
+    } else
         T = p1;
 
     push(T);
@@ -11380,8 +11363,7 @@ function
     if (iscons(p1)) {
         push(car(p1));
         evalf();
-    }
-    else
+    } else
         push_integer(0); // default expansion point
 
     A = pop();
@@ -13091,8 +13073,7 @@ function
         if (isminusone(caddr(q))) {
             q = cadr(q);
             infixform_factor(q);
-        }
-        else {
+        } else {
             infixform_base(cadr(q));
             infixform_write("^");
             infixform_numeric_exponent(caddr(q)); // sign is not emitted
@@ -13261,8 +13242,7 @@ function
     if (isminusone(caddr(p))) {
         p = cadr(p);
         infixform_factor(p);
-    }
-    else {
+    } else {
         infixform_base(cadr(p));
         infixform_write("^");
         infixform_numeric_exponent(caddr(p)); // sign is not emitted
@@ -13373,8 +13353,7 @@ function
             k++;
         infixform_write(s.substring(k));
         infixform_write(")");
-    }
-    else {
+    } else {
         if (s.charAt(k) == "+")
             k++;
         while (s.charAt(k) == "0") // skip leading zeroes
@@ -13773,7 +13752,8 @@ function
 
     return 0;
 }
-function iszero(p: unknown): boolean {
+function
+    iszero(p) {
     var i, n;
 
     if (isrational(p))
@@ -13786,30 +13766,35 @@ function iszero(p: unknown): boolean {
         n = p.elem.length;
         for (i = 0; i < n; i++) {
             if (!iszero(p.elem[i]))
-                return false;
+                return 0;
         }
-        return true;
+        return 1;
     }
 
-    return false;
+    return 0;
 }
-function lengthf(p: unknown): number {
-    let n = 0;
+function
+    lengthf(p) {
+    var n = 0;
     while (iscons(p)) {
         n++;
         p = cdr(p);
     }
     return n;
 }
-function lessp(p1: unknown, p2: unknown): boolean {
+function
+    lessp(p1, p2) {
     return cmp(p1, p2) < 0;
 }
-function list(n: number): void {
+function
+    list(n) {
+    var i;
     push_symbol(NIL);
-    for (let i = 0; i < n; i++)
+    for (i = 0; i < n; i++)
         cons();
 }
-function lookup(s: string) {
+function
+    lookup(s) {
     var p = symtab[s];
     if (p == undefined) {
         p = { printname: s, func: eval_user_symbol };
@@ -13965,8 +13950,7 @@ function multiply_tensor_factors(h: number) {
             push(p1);
             hadamard();
             T = pop();
-        }
-        else
+        } else
             T = p1;
         stack.splice(i, 1); // remove factor
         i--; // use same index again
@@ -13998,8 +13982,7 @@ function
             p1 = cdr(p1);
         }
         multiply_factors(stack.length - h);
-    }
-    else
+    } else
         normalize_polar_term(EXPO);
 }
 
@@ -14114,8 +14097,7 @@ function
                 push_integer(-1);
                 push(imaginaryunit);
                 list(3);
-            }
-            else {
+            } else {
                 push_symbol(MULTIPLY);
                 push_integer(-1);
                 push(imaginaryunit);
@@ -14211,8 +14193,7 @@ function
                 push_integer(-1);
                 push(imaginaryunit);
                 list(3);
-            }
-            else {
+            } else {
                 push_symbol(MULTIPLY);
                 push_integer(-1);
                 push(imaginaryunit);
@@ -14248,8 +14229,7 @@ function
                     push(car(p1));
                     p1 = cdr(p1);
                 }
-            }
-            else
+            } else
                 stack[i] = p1;
         }
     }
@@ -14416,8 +14396,7 @@ function pop_integer(): number {
         n = bignum_smallnum(p.a);
         if (isnegativenumber(p))
             n = -n;
-    }
-    else
+    } else
         n = (p as Flt).d;
 
     return n;
@@ -14745,8 +14724,7 @@ function normalize_clock_rational(EXPO: unknown): void {
                 push_integer(-1);
                 push(imaginaryunit);
                 list(3);
-            }
-            else {
+            } else {
                 push_symbol(POWER);
                 push_integer(-1);
                 push(R);
@@ -14822,8 +14800,7 @@ function normalize_clock_double(EXPO: Flt): void {
                 push_integer(-1);
                 push(imaginaryunit);
                 list(3);
-            }
-            else {
+            } else {
                 push_symbol(POWER);
                 push_integer(-1);
                 push_double(r - 0.5);
@@ -14842,8 +14819,7 @@ function power_natural_number(EXPO: unknown): void {
         if (car(EXPO) == symbol(ADD)) {
             x = cadr(EXPO).d;
             y = cadaddr(EXPO).d;
-        }
-        else {
+        } else {
             x = 0.0;
             y = cadr(EXPO).d;
         }
@@ -15010,8 +14986,7 @@ function
                 push(car(p0));
                 p0 = cdr(p0);
             }
-        }
-        else
+        } else
             push(p0);
         return;
     }
@@ -15432,8 +15407,7 @@ function
                 stack[i] = pop();
                 k++;
             }
-        }
-        else {
+        } else {
             mod_integers(DENOM, BASE);
             p2 = pop();
             if (iszero(p2)) {
@@ -16286,7 +16260,7 @@ let nonstop: number;
 let trace1: number;
 let trace2: number;
 
-const symtab: { [key: string]: Sym } = {
+const symtab = {
     "abs": { printname: ABS, func: eval_abs },
     "adj": { printname: ADJ, func: eval_adj },
     "and": { printname: AND, func: eval_and },
