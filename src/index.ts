@@ -2671,70 +2671,63 @@ function draw_delims(x: number, y: number, h: number, d: number, w: number, stro
     if (h > ch || d > cd) {
         draw_left_delim(x, y, h, d, cw, stroke_width);
         draw_right_delim(x + w - cw, y, h, d, cw, stroke_width);
-    } else {
+    }
+    else {
         draw_char(x, y, font_num, LEFT_PAREN);
         draw_char(x + w - cw, y, font_num, RIGHT_PAREN);
     }
 }
 
-function
-    draw_left_delim(x, y, h, d, w, stroke_width) {
-    var x1, x2, y1, y2;
+function draw_left_delim(x: number, y: number, h: number, d: number, w: number, stroke_width: number): void {
 
-    x1 = Math.round(x + 0.5 * w);
-    x2 = x1 + Math.round(0.5 * w);
+    const x1 = Math.round(x + 0.5 * w);
+    const x2 = x1 + Math.round(0.5 * w);
 
-    y1 = Math.round(y - h);
-    y2 = Math.round(y + d);
+    const y1 = Math.round(y - h);
+    const y2 = Math.round(y + d);
 
     draw_stroke(x1, y1, x1, y2, stroke_width); // stem stroke
     draw_stroke(x1, y1, x2, y1, stroke_width); // top stroke
     draw_stroke(x1, y2, x2, y2, stroke_width); // bottom stroke
 }
 
-function
-    draw_right_delim(x, y, h, d, w, stroke_width) {
-    var x1, x2, y1, y2;
+function draw_right_delim(x: number, y: number, h: number, d: number, w: number, stroke_width: number): void {
 
-    x1 = Math.round(x + 0.5 * w);
-    x2 = x1 - Math.round(0.5 * w);
+    const x1 = Math.round(x + 0.5 * w);
+    const x2 = x1 - Math.round(0.5 * w);
 
-    y1 = Math.round(y - h);
-    y2 = Math.round(y + d);
+    const y1 = Math.round(y - h);
+    const y2 = Math.round(y + d);
 
     draw_stroke(x1, y1, x1, y2, stroke_width); // stem stroke
     draw_stroke(x1, y1, x2, y1, stroke_width); // top stroke
     draw_stroke(x1, y2, x2, y2, stroke_width); // bottom stroke
 }
 
-function
-    draw_stroke(x1, y1, x2, y2, stroke_width) {
-    var s;
+function draw_stroke(x1: number, y1: number, x2: number, y2: number, stroke_width: number): void {
 
-    x1 = "x1='" + x1 + "'";
-    x2 = "x2='" + x2 + "'";
+    const x1eq = "x1='" + x1 + "'";
+    const x2eq = "x2='" + x2 + "'";
 
-    y1 = "y1='" + y1 + "'";
-    y2 = "y2='" + y2 + "'";
+    const y1eq = "y1='" + y1 + "'";
+    const y2eq = "y2='" + y2 + "'";
 
-    s = "<line " + x1 + y1 + x2 + y2 + "style='stroke:black;stroke-width:" + stroke_width + "'/>\n";
+    const s = "<line " + x1eq + y1eq + x2eq + y2eq + "style='stroke:black;stroke-width:" + stroke_width + "'/>\n";
 
     outbuf += s;
 }
 
-function
-    draw_fraction(x, y, h, d, w, stroke_width, font_num, p) {
-    var dx, dy;
+function draw_fraction(x: number, y: number, h: number, d: number, w: number, stroke_width: number, font_num: number, p: unknown): void {
 
     // horizontal line
 
-    dy = get_operator_height(font_num);
+    let dy = get_operator_height(font_num);
 
     draw_stroke(x, y - dy, x + w, y - dy, stroke_width);
 
     // numerator
 
-    dx = (w - width(car(p))) / 2;
+    let dx = (w - width(car(p))) / 2;
     dy = h - height(car(p));
     draw_formula(x + dx, y - dy, car(p));
 
@@ -2746,36 +2739,33 @@ function
     draw_formula(x + dx, y + dy, car(p));
 }
 
-function
-    draw_table(x, y, p) {
-    var cx, d, dx, h, i, j, m, n, w;
-    var column_width, elem_width, row_depth, row_height, table;
+function draw_table(x: number, y: number, p: unknown): void {
 
-    n = val1(p);
-    m = val2(p);
+    const n = val1(p);
+    const m = val2(p);
 
     p = cddr(p);
 
-    table = car(p);
-    h = cadr(p);
-    d = caddr(p);
+    let table = car(p);
+    let h = cadr(p);
+    let d = caddr(p);
 
-    for (i = 0; i < n; i++) { // for each row
+    for (let i = 0; i < n; i++) { // for each row
 
-        row_height = val1(h);
-        row_depth = val1(d);
+        const row_height = val1(h);
+        const row_depth = val1(d);
 
         y += TABLE_VSPACE + row_height;
 
-        dx = 0;
+        let dx = 0;
 
-        w = cadddr(p);
+        let w = cadddr(p);
 
-        for (j = 0; j < m; j++) { // for each column
+        for (let j = 0; j < m; j++) { // for each column
 
-            column_width = val1(w);
-            elem_width = width(car(table));
-            cx = x + dx + TABLE_HSPACE + (column_width - elem_width) / 2; // center horizontal
+            const column_width = val1(w);
+            const elem_width = width(car(table));
+            const cx = x + dx + TABLE_HSPACE + (column_width - elem_width) / 2; // center horizontal
             draw_formula(cx, y, car(table));
             dx += column_width + 2 * TABLE_HSPACE;
             table = cdr(table);
@@ -2788,60 +2778,56 @@ function
         d = cdr(d);
     }
 }
-function
-    draw_line(x1, y1, x2, y2, t) {
+function draw_line(x1: number, y1: number, x2: number, y2: number, t: number): void {
     x1 += DRAW_LEFT_PAD;
     x2 += DRAW_LEFT_PAD;
 
     y1 += DRAW_TOP_PAD;
     y2 += DRAW_TOP_PAD;
 
-    x1 = "x1='" + x1 + "'";
-    x2 = "x2='" + x2 + "'";
+    const x1eq = "x1='" + x1 + "'";
+    const x2eq = "x2='" + x2 + "'";
 
-    y1 = "y1='" + y1 + "'";
-    y2 = "y2='" + y2 + "'";
+    const y1eq = "y1='" + y1 + "'";
+    const y2eq = "y2='" + y2 + "'";
 
-    outbuf += "<line " + x1 + y1 + x2 + y2 + "style='stroke:black;stroke-width:" + t + "'/>\n";
+    outbuf += "<line " + x1eq + y1eq + x2eq + y2eq + "style='stroke:black;stroke-width:" + t + "'/>\n";
 }
-function
-    draw_pass1(F, T) {
-    var i, t;
-    for (i = 0; i <= DRAW_WIDTH; i++) {
-        t = tmin + (tmax - tmin) * i / DRAW_WIDTH;
+function draw_pass1(F: unknown, T: unknown): void {
+    for (let i = 0; i <= DRAW_WIDTH; i++) {
+        const t = tmin + (tmax - tmin) * i / DRAW_WIDTH;
         sample(F, T, t);
     }
 }
-function
-    draw_pass2(F, T) {
-    var dt, dx, dy, i, j, m, n, t, t1, t2, x1, x2, y1, y2;
+function draw_pass2(F: unknown, T: unknown): void {
+    // var dt, dx, dy, i, j, m, n, t, t1, t2, x1, x2, y1, y2;
 
-    n = draw_array.length - 1;
+    const n = draw_array.length - 1;
 
-    for (i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
 
-        t1 = draw_array[i].t;
-        t2 = draw_array[i + 1].t;
+        const t1 = draw_array[i].t;
+        const t2 = draw_array[i + 1].t;
 
-        x1 = draw_array[i].x;
-        x2 = draw_array[i + 1].x;
+        const x1 = draw_array[i].x;
+        const x2 = draw_array[i + 1].x;
 
-        y1 = draw_array[i].y;
-        y2 = draw_array[i + 1].y;
+        const y1 = draw_array[i].y;
+        const y2 = draw_array[i + 1].y;
 
         if (!inrange(x1, y1) && !inrange(x2, y2))
             continue;
 
-        dt = t2 - t1;
-        dx = x2 - x1;
-        dy = y2 - y1;
+        const dt = t2 - t1;
+        const dx = x2 - x1;
+        const dy = y2 - y1;
 
-        m = Math.sqrt(dx * dx + dy * dy);
+        let m = Math.sqrt(dx * dx + dy * dy);
 
         m = Math.floor(m);
 
-        for (j = 1; j < m; j++) {
-            t = t1 + dt * j / m;
+        for (let j = 1; j < m; j++) {
+            const t = t1 + dt * j / m;
             sample(F, T, t);
         }
     }
@@ -2858,32 +2844,28 @@ const DRAW_BOTTOM_PAD = 40;
 const DRAW_XLABEL_BASELINE = 30;
 const DRAW_YLABEL_MARGIN = 15;
 
-var tmin;
-var tmax;
+let tmin: number;
+let tmax: number;
 
-var xmin;
-var xmax;
+let xmin: number;
+let xmax: number;
 
-var ymin;
-var ymax;
+let ymin: number;
+let ymax: number;
 
-var draw_array;
-function
-    dupl() {
-    var p1;
-    p1 = pop();
+let draw_array: { t: number; x: number; y: number }[];
+function dupl(): void {
+    const p1 = pop();
     push(p1);
     push(p1);
 }
-function
-    emit_axes() {
-    var dx, dy, x, y;
+function emit_axes(): void {
 
-    x = 0;
-    y = 0;
+    const x = 0;
+    const y = 0;
 
-    dx = DRAW_WIDTH * (x - xmin) / (xmax - xmin);
-    dy = DRAW_HEIGHT - DRAW_HEIGHT * (y - ymin) / (ymax - ymin);
+    const dx = DRAW_WIDTH * (x - xmin) / (xmax - xmin);
+    const dy = DRAW_HEIGHT - DRAW_HEIGHT * (y - ymin) / (ymax - ymin);
 
     if (dx > 0 && dx < DRAW_WIDTH)
         draw_line(dx, 0, dx, DRAW_HEIGHT, 0.5); // vertical axis
@@ -2904,17 +2886,15 @@ function emit_box(): void {
     draw_line(x1, y1, x1, y2, 0.5); // left line
     draw_line(x2, y1, x2, y2, 0.5); // right line
 }
-function
-    emit_graph() {
-    var h, w;
+function emit_graph(): void {
 
-    h = DRAW_TOP_PAD + DRAW_HEIGHT + DRAW_BOTTOM_PAD;
-    w = DRAW_LEFT_PAD + DRAW_WIDTH + DRAW_RIGHT_PAD;
+    const h = DRAW_TOP_PAD + DRAW_HEIGHT + DRAW_BOTTOM_PAD;
+    const w = DRAW_LEFT_PAD + DRAW_WIDTH + DRAW_RIGHT_PAD;
 
-    h = "height='" + h + "'";
-    w = "width='" + w + "'";
+    const heq = "height='" + h + "'";
+    const weq = "width='" + w + "'";
 
-    outbuf = "<svg " + h + w + ">";
+    outbuf = "<svg " + heq + weq + ">";
 
     emit_axes();
     emit_box();
@@ -2925,17 +2905,15 @@ function
 
     stdout.innerHTML += outbuf;
 }
-function
-    emit_labels() {
-    var p, x, y;
+function emit_labels(): void {
 
     push_double(ymax);
-    p = pop();
+    let p = pop();
     emit_level = 1; // small font
     emit_list(p);
     p = pop();
-    x = DRAW_LEFT_PAD - width(p) - DRAW_YLABEL_MARGIN;
-    y = DRAW_TOP_PAD + height(p);
+    let x = DRAW_LEFT_PAD - width(p) - DRAW_YLABEL_MARGIN;
+    let y = DRAW_TOP_PAD + height(p);
     draw_formula(x, y, p);
 
     push_double(ymin);
@@ -2965,16 +2943,14 @@ function
     y = DRAW_TOP_PAD + DRAW_HEIGHT + DRAW_XLABEL_BASELINE;
     draw_formula(x, y, p);
 }
-function
-    emit_points() {
-    var i, n, x, y;
+function emit_points(): void {
 
-    n = draw_array.length;
+    const n = draw_array.length;
 
-    for (i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
 
-        x = draw_array[i].x;
-        y = draw_array[i].y;
+        let x = draw_array[i].x;
+        let y = draw_array[i].y;
 
         if (!inrange(x, y))
             continue;
@@ -2982,28 +2958,24 @@ function
         x += DRAW_LEFT_PAD;
         y = DRAW_HEIGHT - y + DRAW_TOP_PAD;
 
-        x = "cx='" + x + "'";
-        y = "cy='" + y + "'";
+        const xeq = "cx='" + x + "'";
+        const yeq = "cy='" + y + "'";
 
-        outbuf += "<circle " + x + y + "r='1.5' style='stroke:black;fill:black'/>\n";
+        outbuf += "<circle " + xeq + yeq + "r='1.5' style='stroke:black;fill:black'/>\n";
     }
 }
-function
-    equal(p1, p2) {
+function equal(p1: unknown, p2: unknown): boolean {
     return cmp(p1, p2) == 0;
 }
-function
-    eval_abs(p1) {
+function eval_abs(p1: unknown): void {
     push(cadr(p1));
     evalf();
     absfunc();
 }
 
-function
-    absfunc() {
-    var h, p1, p2, p3;
+function absfunc(): void {
 
-    p1 = pop();
+    let p1 = pop();
 
     if (isnum(p1)) {
         push(p1);
@@ -3035,10 +3007,10 @@ function
     push_rational(1, 2);
     power();
 
-    p2 = pop();
+    const p2 = pop();
     push(p2);
     floatfunc();
-    p3 = pop();
+    const p3 = pop();
     if (isdouble(p3)) {
         push(p2);
         if (isnegativenumber(p3))
@@ -3059,7 +3031,7 @@ function
     // abs(a*b) evaluates to abs(a)*abs(b)
 
     if (car(p1) == symbol(MULTIPLY)) {
-        h = stack.length;
+        const h = stack.length;
         p1 = cdr(p1);
         while (iscons(p1)) {
             push(car(p1));
@@ -3093,23 +3065,20 @@ function eval_add(p1: unknown): void {
     expanding++;
 }
 
-function
-    add() {
+function add(): void {
     add_terms(2);
 }
 
-function
-    add_terms(n) {
-    var h, i, p1, T;
+function add_terms(n: number): void {
 
     if (n < 2)
         return;
 
-    h = stack.length - n;
+    const h = stack.length - n;
 
     flatten_terms(h);
 
-    T = combine_tensors(h);
+    let T = combine_tensors(h);
 
     combine_terms(h);
 
@@ -3136,13 +3105,13 @@ function
     if (!istensor(T))
         return;
 
-    p1 = pop();
+    const p1 = pop();
 
     T = copy_tensor(T);
 
     n = T.elem.length;
 
-    for (i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
         push(T.elem[i]);
         push(p1);
         add();
