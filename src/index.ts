@@ -8629,10 +8629,8 @@ function nroots() {
 }
 
 function nfindroot(cr: number[], ci: number[], n: number, par: number[], pai: number[]): void {
-    var i, j;
-    var d;
-    var ar, br, dfr, dxr, far, fbr, tr = [], xr, yr;
-    var ai, bi, dfi, dxi, fai, fbi, ti = [], xi, yi;
+    const tr: number[] = [];
+    const ti: number[] = [];
 
     // if const term is zero then root is zero
 
@@ -8648,26 +8646,26 @@ function nfindroot(cr: number[], ci: number[], n: number, par: number[], pai: nu
 
     // secant method
 
-    for (i = 0; i < 100; i++) {
+    for (let i = 0; i < 100; i++) {
 
-        ar = urandom();
-        ai = urandom();
+        let ar = urandom();
+        let ai = urandom();
 
         fata(cr, ci, n, ar, ai, tr, ti);
 
-        far = tr[0];
-        fai = ti[0];
+        let far = tr[0];
+        let fai = ti[0];
 
-        br = ar;
-        bi = ai;
+        let br = ar;
+        let bi = ai;
 
-        fbr = far;
-        fbi = fai;
+        let fbr = far;
+        let fbi = fai;
 
         ar = urandom();
         ai = urandom();
 
-        for (j = 0; j < 1000; j++) {
+        for (let j = 0; j < 1000; j++) {
 
             fata(cr, ci, n, ar, ai, tr, ti);
 
@@ -8682,8 +8680,8 @@ function nfindroot(cr: number[], ci: number[], n: number, par: number[], pai: nu
 
             if (zabs(far, fai) < zabs(fbr, fbi)) {
 
-                xr = ar;
-                xi = ai;
+                let xr = ar;
+                let xi = ai;
 
                 ar = br;
                 ai = bi;
@@ -8703,23 +8701,23 @@ function nfindroot(cr: number[], ci: number[], n: number, par: number[], pai: nu
 
             // dx = b - a
 
-            dxr = br - ar;
-            dxi = bi - ai;
+            const dxr = br - ar;
+            const dxi = bi - ai;
 
             // df = fb - fa
 
-            dfr = fbr - far;
-            dfi = fbi - fai;
+            const dfr = fbr - far;
+            const dfi = fbi - fai;
 
             // y = dx / df
 
-            d = dfr * dfr + dfi * dfi;
+            const d = dfr * dfr + dfi * dfi;
 
             if (d == 0.0)
                 break;
 
-            yr = (dxr * dfr + dxi * dfi) / d;
-            yi = (dxi * dfr - dxr * dfi) / d;
+            const yr = (dxr * dfr + dxi * dfi) / d;
+            const yi = (dxi * dfr - dxr * dfi) / d;
 
             // a = b - y * fb
 
@@ -8817,14 +8815,12 @@ function numerator(): void {
 
     push(p1);
 }
-function
-    eval_or(p1) {
-    var p2;
+function eval_or(p1: unknown): void {
     p1 = cdr(p1);
     while (iscons(p1)) {
         push(car(p1));
         evalp();
-        p2 = pop();
+        const p2 = pop();
         if (!iszero(p2)) {
             push_integer(1);
             return;
@@ -8833,8 +8829,7 @@ function
     }
     push_integer(0);
 }
-function
-    eval_outer(p1) {
+function eval_outer(p1: unknown): void {
     push(cadr(p1));
     evalf();
     p1 = cddr(p1);
@@ -8846,12 +8841,10 @@ function
     }
 }
 
-function
-    outer() {
-    var i, j, k, n, ncol, nrow, p1, p2, p3;
+function outer() {
 
-    p2 = pop();
-    p1 = pop();
+    const p2 = pop();
+    const p1 = pop();
 
     if (!istensor(p1) || !istensor(p2)) {
         push(p1);
@@ -8862,13 +8855,13 @@ function
 
     // sync diffs
 
-    nrow = p1.elem.length;
-    ncol = p2.elem.length;
+    const nrow = p1.elem.length;
+    const ncol = p2.elem.length;
 
-    p3 = alloc_tensor();
+    const p3 = alloc_tensor();
 
-    for (i = 0; i < nrow; i++)
-        for (j = 0; j < ncol; j++) {
+    for (let i = 0; i < nrow; i++)
+        for (let j = 0; j < ncol; j++) {
             push(p1.elem[i]);
             push(p2.elem[j]);
             multiply();
@@ -8877,22 +8870,21 @@ function
 
     // dim info
 
-    k = 0;
+    let k = 0;
 
-    n = p1.dim.length;
+    let n = p1.dim.length;
 
-    for (i = 0; i < n; i++)
+    for (let i = 0; i < n; i++)
         p3.dim[k++] = p1.dim[i];
 
-    n = p2.dim.length
+    n = p2.dim.length;
 
-    for (i = 0; i < n; i++)
+    for (let i = 0; i < n; i++)
         p3.dim[k++] = p2.dim[i];
 
     push(p3);
 }
-function
-    eval_polar(p1) {
+function eval_polar(p1: unknown): void {
     push(cadr(p1));
     evalf();
     polar();
