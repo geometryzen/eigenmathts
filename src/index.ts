@@ -1,3 +1,14 @@
+export interface Cons {
+    car: unknown;
+    cdr: unknown;
+}
+export interface Rat {
+    a: number[];
+    b: number[];
+}
+export interface Str {
+    string: string;
+}
 export interface Sym {
     printname: string;
 }
@@ -70,12 +81,11 @@ function bignum_odd(u: number[]) {
     return u[0] % 2 == 1;
 }
 
-function bignum_float(u: number[]) {
-    var d, i;
+function bignum_float(u: number[]): number {
 
-    d = 0;
+    let d = 0;
 
-    for (i = u.length - 1; i >= 0; i--)
+    for (let i = u.length - 1; i >= 0; i--)
         d = BIGM * d + u[i];
 
     if (!isFinite(d))
@@ -111,32 +121,33 @@ function push_bignum(sign: number, a: number[], b: number[]) {
 
     push({ sign: sign, a: a, b: b });
 }
-function bignum_add(u: number[], v: number[]) {
-    var i, nu, nv, nw, t, w = [];
+function bignum_add(u: number[], v: number[]): number[] {
+    let nw: number;
+    const w: number[] = [];
 
-    nu = u.length;
-    nv = v.length;
+    const nu = u.length;
+    const nv = v.length;
 
     if (nu > nv)
         nw = nu + 1;
     else
         nw = nv + 1;
 
-    for (i = 0; i < nu; i++)
+    for (let i = 0; i < nu; i++)
         w[i] = u[i];
 
-    for (i = nu; i < nw; i++)
+    for (let i = nu; i < nw; i++)
         w[i] = 0;
 
-    t = 0;
+    let t = 0;
 
-    for (i = 0; i < nv; i++) {
+    for (let i = 0; i < nv; i++) {
         t += w[i] + v[i];
         w[i] = t % BIGM;
         t = Math.floor(t / BIGM);
     }
 
-    for (i = nv; i < nw; i++) {
+    for (let i = nv; i < nw; i++) {
         t += w[i];
         w[i] = t % BIGM;
         t = Math.floor(t / BIGM);
@@ -187,10 +198,9 @@ function bignum_cmp(u: number[], v: number[]): 0 | 1 | -1 {
 // floor(u / v)
 
 function bignum_div(u: number[], v: number[]) {
-    var a, b, i, k, nu, nv, q, qhat, t, w;
 
-    nu = u.length;
-    nv = v.length;
+    let nu = u.length;
+    const nv = v.length;
 
     if (nv == 1 && v[0] == 0)
         stopf("divide by zero");
@@ -198,17 +208,17 @@ function bignum_div(u: number[], v: number[]) {
     if (nu == 1 && nv == 1)
         return bignum_int(Math.floor(u[0] / v[0]));
 
-    k = nu - nv;
+    let k = nu - nv;
 
     if (k < 0)
         return bignum_int(0); // u < v
 
     u = bignum_copy(u);
 
-    b = v[nv - 1];
+    const b = v[nv - 1];
 
-    q = [];
-    w = [];
+    const q: number[] = [];
+    const w: number[] = [];
 
     do {
         q[k] = 0;
@@ -217,7 +227,7 @@ function bignum_div(u: number[], v: number[]) {
 
             // estimate partial quotient
 
-            a = u[nu - 1];
+            let a = u[nu - 1];
 
             if (nu > nv + k)
                 a = BIGM * a + u[nu - 2];
@@ -225,16 +235,16 @@ function bignum_div(u: number[], v: number[]) {
             if (a < b)
                 break;
 
-            qhat = Math.floor(a / (b + 1)) % BIGM;
+            let qhat = Math.floor(a / (b + 1)) % BIGM;
 
             if (qhat == 0)
                 qhat = 1;
 
             // w = qhat * v
 
-            t = 0;
+            let t = 0;
 
-            for (i = 0; i < nv; i++) {
+            for (let i = 0; i < nv; i++) {
                 t += qhat * v[i];
                 w[i] = t % BIGM;
                 t = Math.floor(t / BIGM);
@@ -246,7 +256,7 @@ function bignum_div(u: number[], v: number[]) {
 
             t = 0;
 
-            for (i = k; i < nu; i++) {
+            for (let i = k; i < nu; i++) {
                 t += u[i] - w[i - k];
                 u[i] = t % BIGM;
                 if (u[i] < 0)
@@ -257,7 +267,7 @@ function bignum_div(u: number[], v: number[]) {
             if (t) {
                 // u is negative, restore u and break
                 t = 0;
-                for (i = k; i < nu; i++) {
+                for (let i = k; i < nu; i++) {
                     t += u[i] + w[i - k];
                     u[i] = t % BIGM;
                     t = Math.floor(t / BIGM);
@@ -277,42 +287,39 @@ function bignum_div(u: number[], v: number[]) {
 
     return q;
 }
-function bignum_gcd(u: number[], v: number[]) {
-    var r;
+function bignum_gcd(u: number[], v: number[]): number[] {
 
     if (u.length == 1 && v.length == 1) {
-        u = u[0];
-        v = v[0];
+        let p = u[0];
+        let q = v[0];
         while (v) {
-            r = u % v;
-            u = v;
-            v = r;
+            const r = p % q;
+            p = q;
+            q = r;
         }
-        return bignum_int(u);
+        return bignum_int(p);
     }
 
     while (!bignum_iszero(v)) {
-        r = bignum_mod(u, v);
+        const r = bignum_mod(u, v);
         u = v;
         v = r;
     }
 
     return bignum_copy(u);
 }
-function
-    bignum_itoa(u) {
-    var d, r, s;
+function bignum_itoa(u: number[]): string {
 
     if (u.length == 1)
         return String(u[0]);
 
-    d = bignum_int(10000000); // d = 10^7
+    const d = bignum_int(10000000); // d = 10^7
 
-    s = "";
+    let s = "";
 
     while (u.length > 1 || u[0] >= 10000000) {
 
-        r = bignum_mod(u, d);
+        const r = bignum_mod(u, d);
         u = bignum_div(u, d);
 
         s = String(r[0]).concat(s);
@@ -328,10 +335,9 @@ function
 // u mod v
 
 function bignum_mod(u: number[], v: number[]): number[] {
-    var a, b, i, k, nu, nv, qhat, t, w;
 
-    nu = u.length;
-    nv = v.length;
+    let nu = u.length;
+    const nv = v.length;
 
     if (nv == 1 && v[0] == 0)
         stopf("divide by zero");
@@ -341,21 +347,21 @@ function bignum_mod(u: number[], v: number[]): number[] {
 
     u = bignum_copy(u);
 
-    k = nu - nv;
+    let k = nu - nv;
 
     if (k < 0)
         return u; // u < v
 
-    b = v[nv - 1];
+    const b = v[nv - 1];
 
-    w = [];
+    const w: number[] = [];
 
     do {
         while (nu >= nv + k) {
 
             // estimate partial quotient
 
-            a = u[nu - 1];
+            let a = u[nu - 1];
 
             if (nu > nv + k)
                 a = BIGM * a + u[nu - 2];
@@ -363,16 +369,16 @@ function bignum_mod(u: number[], v: number[]): number[] {
             if (a < b)
                 break;
 
-            qhat = Math.floor(a / (b + 1)) % BIGM;
+            let qhat = Math.floor(a / (b + 1)) % BIGM;
 
             if (qhat == 0)
                 qhat = 1;
 
             // w = qhat * v
 
-            t = 0;
+            let t = 0;
 
-            for (i = 0; i < nv; i++) {
+            for (let i = 0; i < nv; i++) {
                 t += qhat * v[i];
                 w[i] = t % BIGM;
                 t = Math.floor(t / BIGM);
@@ -384,7 +390,7 @@ function bignum_mod(u: number[], v: number[]): number[] {
 
             t = 0;
 
-            for (i = k; i < nu; i++) {
+            for (let i = k; i < nu; i++) {
                 t += u[i] - w[i - k];
                 u[i] = t % BIGM;
                 if (u[i] < 0)
@@ -395,7 +401,7 @@ function bignum_mod(u: number[], v: number[]): number[] {
             if (t) {
                 // u is negative, restore u and break
                 t = 0;
-                for (i = k; i < nu; i++) {
+                for (let i = k; i < nu; i++) {
                     t += u[i] + w[i - k];
                     u[i] = t % BIGM;
                     t = Math.floor(t / BIGM);
@@ -412,18 +418,20 @@ function bignum_mod(u: number[], v: number[]): number[] {
     return u;
 }
 function bignum_mul(u: number[], v: number[]): number[] {
-    var i, j, nu, nv, nw, t, w = [];
 
-    nu = u.length;
-    nv = v.length;
+    const nu = u.length;
+    const nv = v.length;
 
-    nw = nu + nv;
+    const nw = nu + nv;
 
-    for (i = 0; i < nw; i++)
+    const w: number[] = [];
+
+    for (let i = 0; i < nw; i++)
         w[i] = 0;
 
-    for (i = 0; i < nu; i++) {
-        t = 0;
+    for (let i = 0; i < nu; i++) {
+        let t = 0;
+        let j: number;
         for (j = 0; j < nv; j++) {
             t += u[i] * v[j] + w[i + j];
             w[i + j] = t % BIGM;
@@ -438,9 +446,7 @@ function bignum_mul(u: number[], v: number[]): number[] {
 }
 // u ^ v
 
-function
-    bignum_pow(u, v) {
-    var w;
+function bignum_pow(u: number[], v: number[]): number[] {
 
     if (v.length == 1 && v[0] == 0)
         return bignum_int(1); // v = 0
@@ -456,7 +462,7 @@ function
 
     v = bignum_copy(v);
 
-    w = bignum_int(1);
+    let w = bignum_int(1);
 
     for (; ;) {
 
@@ -476,9 +482,8 @@ function
 
 // shift right
 
-function
-    bignum_shr(u) {
-    var i;
+function bignum_shr(u: number[]): void {
+    let i: number;
     for (i = 0; i < u.length - 1; i++) {
         u[i] = Math.floor(u[i] / 2);
         if (u[i + 1] % 2)
@@ -489,9 +494,7 @@ function
 }
 // returns null if not perfect root, otherwise returns u^(1/v)
 
-function
-    bignum_root(u, v) {
-    var i, j, k, m, r, t;
+function bignum_root(u: number[], v: number[]): number[] {
 
     if (v.length > 1)
         return null; // v must be 24 bits or less
@@ -501,9 +504,9 @@ function
 
     // k is bit length of u
 
-    k = 24 * (u.length - 1);
+    let k = 24 * (u.length - 1);
 
-    m = u[u.length - 1];
+    let m = u[u.length - 1];
 
     while (m) {
         m = Math.floor(m / 2);
@@ -517,23 +520,23 @@ function
 
     k = Math.floor((k - 1) / v[0]);
 
-    j = Math.floor(k / 24) + 1; // k is bit index, not number of bits
+    const j = Math.floor(k / 24) + 1; // k is bit index, not number of bits
 
-    r = [];
+    const r: number[] = [];
 
-    for (i = 0; i < j; i++)
+    for (let i = 0; i < j; i++)
         r[i] = 0;
 
     while (k >= 0) {
 
-        i = Math.floor(k / 24);
+        const i = Math.floor(k / 24);
         m = Math.pow(2, k % 24);
 
         r[i] += m; // set bit
 
         bignum_norm(r);
 
-        t = bignum_pow(r, v);
+        const t = bignum_pow(r, v);
 
         switch (bignum_cmp(t, u)) {
             case -1:
@@ -552,27 +555,29 @@ function
 }
 // u is greater than or equal to v
 
-function
-    bignum_sub(u, v) {
-    var i, nu, nv, nw, t, w = [];
+function bignum_sub(u: number[], v: number[]) {
 
-    nu = u.length;
-    nv = v.length;
+    const nu = u.length;
+    const nv = v.length;
+
+    let nw: number;
 
     if (nu > nv)
         nw = nu;
     else
         nw = nv;
 
-    for (i = 0; i < nu; i++)
+    const w: number[] = [];
+
+    for (let i = 0; i < nu; i++)
         w[i] = u[i];
 
-    for (i = nu; i < nw; i++)
+    for (let i = nu; i < nw; i++)
         w[i] = 0;
 
-    t = 0;
+    let t = 0;
 
-    for (i = 0; i < nv; i++) {
+    for (let i = 0; i < nv; i++) {
         t += w[i] - v[i];
         w[i] = t % BIGM;
         if (w[i] < 0)
@@ -580,7 +585,7 @@ function
         t = Math.floor(t / BIGM);
     }
 
-    for (i = nv; i < nw; i++) {
+    for (let i = nv; i < nw; i++) {
         t += w[i];
         w[i] = t % BIGM;
         if (w[i] < 0)
@@ -599,37 +604,35 @@ function caadr(p: unknown) {
     return car(car(cdr(p)));
 }
 function
-    cadaddr(p) {
+    cadaddr(p: unknown) {
     return car(cdr(car(cdr(cdr(p)))));
 }
 function
-    cadadr(p) {
+    cadadr(p: unknown) {
     return car(cdr(car(cdr(p))));
 }
 function
-    caddddr(p) {
+    caddddr(p: unknown) {
     return car(cdr(cdr(cdr(cdr(p)))));
 }
 function
-    cadddr(p) {
+    cadddr(p: unknown) {
     return car(cdr(cdr(cdr(p))));
 }
 function
-    caddr(p) {
+    caddr(p: unknown) {
     return car(cdr(cdr(p)));
 }
 function cadr(p: unknown) {
     return car(cdr(p));
 }
-function
-    cancel_factor() {
-    var h, p1, p2;
+function cancel_factor() {
 
-    p2 = pop();
-    p1 = pop();
+    let p2 = pop();
+    const p1 = pop();
 
     if (car(p2) == symbol(ADD)) {
-        h = stack.length;
+        const h = stack.length;
         p2 = cdr(p2);
         while (iscons(p2)) {
             push(p1);
@@ -645,36 +648,32 @@ function
     push(p2);
     multiply();
 }
-function
-    car(p) {
-    if ("car" in p)
-        return p.car;
-    else
+function car(p: unknown) {
+    if ("car" in (p as Cons)) {
+        return (p as Cons).car;
+    }
+    else {
         return symbol(NIL);
+    }
 }
-function
-    cdadr(p) {
+function cdadr(p: unknown) {
     return cdr(car(cdr(p)));
 }
-function
-    cddadr(p) {
+function cddadr(p: unknown) {
     return cdr(cdr(car(cdr(p))));
 }
-function
-    cddddr(p) {
+function cddddr(p: unknown) {
     return cdr(cdr(cdr(cdr(p))));
 }
-function
-    cdddr(p) {
+function cdddr(p: unknown) {
     return cdr(cdr(cdr(p)));
 }
-function
-    cddr(p) {
+function cddr(p: unknown) {
     return cdr(cdr(p));
 }
-function cdr(p) {
-    if ("cdr" in p)
-        return p.cdr;
+function cdr(p: unknown) {
+    if ("cdr" in (p as Cons))
+        return (p as Cons).cdr;
     else
         return symbol(NIL);
 }
@@ -742,7 +741,6 @@ function cmp(p1: unknown, p2: unknown): 1 | 0 | -1 {
     return 0;
 }
 function cmp_factors(p1: unknown, p2: unknown): 0 | 1 | -1 {
-    var base1, base2, expo1, expo2;
 
     const a = order_factor(p1);
     const b = order_factor(p2);
@@ -753,10 +751,16 @@ function cmp_factors(p1: unknown, p2: unknown): 0 | 1 | -1 {
     if (a > b)
         return 1;
 
+    let base1: unknown;
+    let base2: unknown;
+    let expo1: unknown;
+    let expo2: unknown;
+
     if (car(p1) == symbol(POWER)) {
         base1 = cadr(p1);
         expo1 = caddr(p1);
-    } else {
+    }
+    else {
         base1 = p1;
         expo1 = one;
     }
@@ -764,7 +768,8 @@ function cmp_factors(p1: unknown, p2: unknown): 0 | 1 | -1 {
     if (car(p2) == symbol(POWER)) {
         base2 = cadr(p2);
         expo2 = caddr(p2);
-    } else {
+    }
+    else {
         base2 = p2;
         expo2 = one;
     }
@@ -786,16 +791,15 @@ function cmp_factors_provisional(p1: unknown, p2: unknown) {
     return cmp(p1, p2);
 }
 function cmp_numbers(p1: unknown, p2: unknown): 1 | 0 | -1 {
-    var d1, d2;
 
     if (isrational(p1) && isrational(p2))
         return cmp_rationals(p1, p2);
 
     push(p1);
-    d1 = pop_double();
+    const d1 = pop_double();
 
     push(p2);
-    d2 = pop_double();
+    const d2 = pop_double();
 
     if (d1 < d2)
         return -1;
@@ -806,9 +810,7 @@ function cmp_numbers(p1: unknown, p2: unknown): 1 | 0 | -1 {
     return 0;
 }
 
-function
-    cmp_rationals(p1, p2) {
-    var a, b;
+function cmp_rationals(p1: Rat, p2: Rat): 0 | 1 | -1 {
 
     if (isnegativenumber(p1) && !isnegativenumber(p2))
         return -1;
@@ -822,8 +824,8 @@ function
         else
             return bignum_cmp(p1.a, p2.a);
 
-    a = bignum_mul(p1.a, p2.b);
-    b = bignum_mul(p1.b, p2.a);
+    const a = bignum_mul(p1.a, p2.b);
+    const b = bignum_mul(p1.b, p2.a);
 
     if (isnegativenumber(p1))
         return bignum_cmp(b, a);
@@ -832,7 +834,7 @@ function
 }
 // this way matches strcmp (localeCompare differs from strcmp)
 
-function cmp_strings(s1, s2) {
+function cmp_strings(s1: string, s2: string): 0 | 1 | -1 {
     if (s1 < s2)
         return -1;
     if (s1 > s2)
@@ -843,12 +845,12 @@ function cmp_tensors(p1: Tensor, p2: Tensor): 1 | 0 | -1 {
     const t = p1.dim.length - p2.dim.length;
 
     if (t)
-        return t;
+        return t > 0 ? 1 : t < 0 ? -1 : 0;
 
     for (let i = 0; i < p1.dim.length; i++) {
         const t = p1.dim[i] - p2.dim[i];
         if (t)
-            return t;
+            return t > 0 ? 1 : t < 0 ? -1 : 0;
     }
 
     for (let i = 0; i < p1.elem.length; i++) {
@@ -861,9 +863,7 @@ function cmp_tensors(p1: Tensor, p2: Tensor): 1 | 0 | -1 {
 }
 // push coefficients of polynomial P(X) on stack
 
-function
-    coeffs(P, X) {
-    var C;
+function coeffs(P: unknown, X: unknown) {
 
     for (; ;) {
 
@@ -872,7 +872,7 @@ function
         push_integer(0);
         subst();
         evalf();
-        C = pop();
+        const C = pop();
 
         push(C);
 
@@ -901,17 +901,20 @@ function combine_factors(h: number): void {
         }
     }
 }
-function
-    combine_factors_nib(i, j) {
-    var p1, p2, BASE1, EXPO1, BASE2, EXPO2;
+function combine_factors_nib(i: number, j: number): 0 | 1 {
+    let BASE1: unknown;
+    let EXPO1: unknown;
+    let BASE2: unknown;
+    let EXPO2: unknown;
 
-    p1 = stack[i];
-    p2 = stack[j];
+    const p1 = stack[i];
+    const p2 = stack[j];
 
     if (car(p1) == symbol(POWER)) {
         BASE1 = cadr(p1);
         EXPO1 = caddr(p1);
-    } else {
+    }
+    else {
         BASE1 = p1;
         EXPO1 = one;
     }
@@ -919,7 +922,8 @@ function
     if (car(p2) == symbol(POWER)) {
         BASE2 = cadr(p2);
         EXPO2 = caddr(p2);
-    } else {
+    }
+    else {
         BASE2 = p2;
         EXPO2 = one;
     }
@@ -941,15 +945,13 @@ function
 
     return 1;
 }
-function
-    combine_numerical_factors(h, COEFF) {
-    var i, n, p1;
+function combine_numerical_factors(h: number, COEFF: unknown) {
 
-    n = stack.length;
+    let n = stack.length;
 
-    for (i = h; i < n; i++) {
+    for (let i = h; i < n; i++) {
 
-        p1 = stack[i];
+        const p1 = stack[i];
 
         if (isnum(p1)) {
             multiply_numbers(COEFF, p1);
@@ -962,9 +964,7 @@ function
 
     return COEFF;
 }
-function
-    compatible_dimensions(p1, p2) {
-    var i, n;
+function compatible_dimensions(p1: unknown, p2: unknown): 0 | 1 {
 
     if (!istensor(p1) && !istensor(p2))
         return 1; // both are scalars
@@ -972,12 +972,12 @@ function
     if (!istensor(p1) || !istensor(p2))
         return 0; // scalar and tensor
 
-    n = p1.dim.length;
+    const n = p1.dim.length;
 
     if (n != p2.dim.length)
         return 0;
 
-    for (i = 0; i < n; i++)
+    for (let i = 0; i < n; i++)
         if (p1.dim[i] != p2.dim[i])
             return 0;
 
@@ -1144,9 +1144,8 @@ function copy_tensor(p1: Tensor) {
 
     return p2;
 }
-function
-    count_denominators(p) {
-    var n = 0;
+function count_denominators(p: unknown): number {
+    let n = 0;
     p = cdr(p);
     while (iscons(p)) {
         if (isdenominator(car(p)))
@@ -1155,9 +1154,8 @@ function
     }
     return n;
 }
-function
-    count_numerators(p) {
-    var n = 0;
+function count_numerators(p: unknown): number {
+    let n = 0;
     p = cdr(p);
     while (iscons(p)) {
         if (isnumerator(car(p)))
@@ -1168,12 +1166,10 @@ function
 }
 // push const coeffs
 
-function
-    decomp() {
-    var p1, F, X;
+function decomp() {
 
-    X = pop();
-    F = pop();
+    const X = pop();
+    const F = pop();
 
     // is the entire expression constant?
 
@@ -1198,7 +1194,7 @@ function
 
     // naive decomp
 
-    p1 = cdr(F);
+    let p1 = cdr(F);
     while (iscons(p1)) {
         push(car(p1));
         push(X);
@@ -1207,8 +1203,7 @@ function
     }
 }
 
-function
-    decomp_sum(F, X) {
+function decomp_sum(F: unknown, X: unknown) {
     var h, i, j, k, n;
     var p1, p2;
 
@@ -1225,7 +1220,8 @@ function
                 push(p2);
                 push(X);
                 partition_term();	// push const part then push var part
-            } else {
+            }
+            else {
                 push_integer(1);	// const part
                 push(p2);		// var part
             }
@@ -13861,8 +13857,7 @@ function
     isradical(p) {
     return car(p) == symbol(POWER) && isposint(cadr(p)) && isfraction(caddr(p));
 }
-function
-    isrational(p) {
+function isrational(p: unknwown): p is Rat {
     return "a" in p;
 }
 function
@@ -13879,8 +13874,7 @@ function
     issquarematrix(p) {
     return istensor(p) && p.dim.length == 2 && p.dim[0] == p.dim[1];
 }
-function
-    isstring(p) {
+function isstring(p: unknown): p is Str {
     return "string" in p;
 }
 function
@@ -13960,14 +13954,11 @@ function
     }
     return p;
 }
-function
-    multiply() {
+function multiply(): void {
     multiply_factors(2);
 }
-function
-    multiply_expand() {
-    var t;
-    t = expanding;
+function multiply_expand(): void {
+    const t = expanding;
     expanding = 1;
     multiply();
     expanding = t;
@@ -13994,17 +13985,13 @@ function multiply_factors(n: number): void {
         inner();
     }
 }
-function
-    multiply_noexpand() {
-    var t;
-    t = expanding;
+function multiply_noexpand(): void {
+    const t = expanding;
     expanding = 0;
     multiply();
     expanding = t;
 }
-function
-    multiply_numbers(p1, p2) {
-    var a, b;
+function multiply_numbers(p1, p2): void {
 
     if (isrational(p1) && isrational(p2)) {
         multiply_rationals(p1, p2);
@@ -14012,10 +13999,10 @@ function
     }
 
     push(p1);
-    a = pop_double();
+    const a = pop_double();
 
     push(p2);
-    b = pop_double();
+    const b = pop_double();
 
     push_double(a * b);
 }
@@ -15269,8 +15256,7 @@ function
 }
 // BASE is a sum of terms
 
-function
-    power_sum(BASE, EXPO) {
+function power_sum(BASE: unknown, EXPO: unknown): void {
     var h, i, n, p1, p2;
 
     if (iscomplexnumber(BASE) && isnum(EXPO)) {
@@ -15315,9 +15301,7 @@ function
         multiply();
     }
 }
-function
-    prefixform(p) {
-    var s;
+function prefixform(p) {
     if (iscons(p)) {
         outbuf += "(";
         prefixform(car(p));
@@ -15328,14 +15312,16 @@ function
             p = cdr(p);
         }
         outbuf += ")";
-    } else if (isrational(p)) {
+    }
+    else if (isrational(p)) {
         if (isnegativenumber(p))
             outbuf += '-';
         outbuf += bignum_itoa(p.a);
         if (isfraction(p))
             outbuf += "/" + bignum_itoa(p.b);
-    } else if (isdouble(p)) {
-        s = p.d.toPrecision(6);
+    }
+    else if (isdouble(p)) {
+        let s = p.d.toPrecision(6);
         if (s.indexOf("E") < 0 && s.indexOf("e") < 0 && s.indexOf(".") >= 0) {
             // remove trailing zeroes
             while (s.charAt(s.length - 1) == "0")
@@ -15344,7 +15330,8 @@ function
                 s += "0";
         }
         outbuf += s;
-    } else if (issymbol(p))
+    }
+    else if (issymbol(p))
         outbuf += p.printname;
     else if (isstring(p))
         outbuf += "'" + p.string + "'";
@@ -15364,8 +15351,7 @@ const BLACK = 1;
 const BLUE = 2;
 const RED = 3;
 
-function
-    printbuf(s, color) {
+function printbuf(s: string, color: 1 | 2 | 3): void {
     s = s.replace(/&/g, "&amp;");
     s = s.replace(/</g, "&lt;");
     s = s.replace(/>/g, "&gt;");
@@ -15618,22 +15604,20 @@ function
 
     return COEFF;
 }
-function
-    restore_symbol() {
-    var p1, p2, p3;
-    p3 = frame.pop();
-    p2 = frame.pop();
-    p1 = frame.pop();
+function restore_symbol(): void {
+    const p3 = frame.pop();
+    const p2 = frame.pop();
+    const p1 = frame.pop() as Sym;
     set_symbol(p1, p2, p3);
 }
 /* exported run */
 
-export function run() {
+export function run(): void {
     try {
         run_nib();
     }
     catch (errmsg) {
-        if (errmsg.length > 0) {
+        if ((errmsg as string).length > 0) {
             if (trace1 < trace2 && inbuf[trace2 - 1] == '\n')
                 trace2--;
             printbuf(inbuf.substring(trace1, trace2) + "\nStop: " + errmsg, RED);
@@ -15641,7 +15625,7 @@ export function run() {
     }
 }
 
-function run_nib() {
+function run_nib(): void {
 
     inbuf = (document.getElementById("stdin") as HTMLTextAreaElement).value;
     stdout = document.getElementById("stdout");
@@ -15928,12 +15912,12 @@ function scan_factor(): void {
 
         scan_expression();
 
-        while (token == ",") {
+        while (token as string == ",") {
             get_token(); // get token after ,
             scan_expression();
         }
 
-        if (token != "]")
+        if (token as string != "]")
             scan_error("expected ]");
 
         scan_level--;
