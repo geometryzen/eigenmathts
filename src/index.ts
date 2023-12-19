@@ -8,6 +8,7 @@ export interface Flt {
 export interface Rat {
     a: number[];
     b: number[];
+    sign: 1 | -1;
 }
 export type Num = Flt | Rat;
 export interface Str {
@@ -3121,12 +3122,10 @@ function add_terms(n: number): void {
     push(T);
 }
 
-function
-    flatten_terms(h) {
-    var i, n, p1;
-    n = stack.length;
-    for (i = h; i < n; i++) {
-        p1 = stack[i];
+function flatten_terms(h: number): void {
+    const n = stack.length;
+    for (let i = h; i < n; i++) {
+        let p1 = stack[i];
         if (car(p1) == symbol(ADD)) {
             stack[i] = cadr(p1);
             p1 = cddr(p1);
@@ -3138,19 +3137,18 @@ function
     }
 }
 
-function
-    combine_tensors(h) {
-    var i, p1, T;
-    T = symbol(NIL);
-    for (i = h; i < stack.length; i++) {
-        p1 = stack[i];
+function combine_tensors(h: number): Tensor {
+    let T = symbol(NIL);
+    for (let i = h; i < stack.length; i++) {
+        const p1 = stack[i];
         if (istensor(p1)) {
             if (istensor(T)) {
                 push(T);
                 push(p1);
                 add_tensors();
                 T = pop();
-            } else
+            }
+            else
                 T = p1;
             stack.splice(i, 1);
             i--; // use same index again
@@ -3159,21 +3157,19 @@ function
     return T;
 }
 
-function
-    add_tensors() {
-    var i, n, p1, p2;
+function add_tensors(): void {
 
-    p2 = pop();
-    p1 = pop();
+    const p2 = pop() as Tensor;
+    let p1 = pop() as Tensor;
 
     if (!compatible_dimensions(p1, p2))
         stopf("incompatible tensor arithmetic");
 
     p1 = copy_tensor(p1);
 
-    n = p1.elem.length;
+    const n = p1.elem.length;
 
-    for (i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
         push(p1.elem[i]);
         push(p2.elem[i]);
         add();
@@ -3183,11 +3179,9 @@ function
     push(p1);
 }
 
-function
-    combine_terms(h) {
-    var i;
+function combine_terms(h: number): void {
     sort_terms(h);
-    for (i = h; i < stack.length - 1; i++) {
+    for (let i = h; i < stack.length - 1; i++) {
         if (combine_terms_nib(i, i + 1)) {
             if (iszero(stack[i]))
                 stack.splice(i, 2); // remove 2 terms
@@ -3200,12 +3194,10 @@ function
         stack.pop();
 }
 
-function
-    combine_terms_nib(i, j) {
-    var coeff1, coeff2, denorm, p1, p2;
+function combine_terms_nib(i: number, j: number): 1 | 0 {
 
-    p1 = stack[i];
-    p2 = stack[j];
+    let p1 = stack[i];
+    let p2 = stack[j];
 
     if (iszero(p2))
         return 1;
@@ -3224,10 +3216,10 @@ function
     if (isnum(p1) || isnum(p2))
         return 0; // cannot add number and something else
 
-    coeff1 = one;
-    coeff2 = one;
+    let coeff1 = one;
+    let coeff2 = one;
 
-    denorm = 0;
+    let denorm = 0;
 
     if (car(p1) == symbol(MULTIPLY)) {
         p1 = cdr(p1);
@@ -3269,16 +3261,19 @@ function
             push_symbol(MULTIPLY);
             push(p1); // p1 is a list, not an atom
             cons(); // prepend MULTIPLY
-        } else
+        }
+        else
             push(p1);
-    } else {
+    }
+    else {
         if (denorm) {
             push_symbol(MULTIPLY);
             push(coeff1);
             push(p1); // p1 is a list, not an atom
             cons(); // prepend coeff1
             cons(); // prepend MULTIPLY
-        } else {
+        }
+        else {
             push_symbol(MULTIPLY);
             push(coeff1);
             push(p1);
@@ -3291,20 +3286,17 @@ function
     return 1;
 }
 
-function
-    sort_terms(h) {
-    var t = stack.splice(h).sort(cmp_terms);
+function sort_terms(h: number): void {
+    const t = stack.splice(h).sort(cmp_terms);
     stack = stack.concat(t);
 }
 
-function
-    cmp_terms(p1, p2) {
-    var a, b, c;
+function cmp_terms(p1: unknown, p2: unknown): 0 | 1 | -1 {
 
     // 1st level: imaginary terms on the right
 
-    a = isimaginaryterm(p1);
-    b = isimaginaryterm(p2);
+    let a = isimaginaryterm(p1);
+    let b = isimaginaryterm(p2);
 
     if (a == 0 && b == 1)
         return -1; // ok
@@ -3358,21 +3350,21 @@ function
         return cmp_factors(p1, p2);
 
     if (a == 0 && b == 1) {
-        c = cmp_factors(p1, car(p2));
+        let c = cmp_factors(p1, car(p2));
         if (c == 0)
             c = -1; // lengthf(p1) < lengthf(p2)
         return c;
     }
 
     if (a == 1 && b == 0) {
-        c = cmp_factors(car(p1), p2);
+        let c = cmp_factors(car(p1), p2);
         if (c == 0)
             c = 1; // lengthf(p1) > lengthf(p2)
         return c;
     }
 
     while (iscons(p1) && iscons(p2)) {
-        c = cmp_factors(car(p1), car(p2));
+        const c = cmp_factors(car(p1), car(p2));
         if (c)
             return c;
         p1 = cdr(p1);
@@ -3388,15 +3380,14 @@ function
     return 0;
 }
 
-function
-    simplify_terms(h) {
-    var i, n = 0, p1, p2;
-    for (i = h; i < stack.length; i++) {
-        p1 = stack[i];
+function simplify_terms(h: number): number {
+    let n = 0;
+    for (let i = h; i < stack.length; i++) {
+        const p1 = stack[i];
         if (isradicalterm(p1)) {
             push(p1);
             evalf();
-            p2 = pop();
+            const p2 = pop();
             if (!equal(p1, p2)) {
                 stack[i] = p2;
                 n++;
@@ -3406,13 +3397,11 @@ function
     return n;
 }
 
-function
-    isradicalterm(p) {
+function isradicalterm(p: unknown): boolean {
     return car(p) == symbol(MULTIPLY) && isnum(cadr(p)) && isradical(caddr(p));
 }
 
-function
-    isimaginaryterm(p) {
+function isimaginaryterm(p: unknown): 0 | 1 {
     if (isimaginaryfactor(p))
         return 1;
     if (car(p) == symbol(MULTIPLY)) {
@@ -3426,14 +3415,12 @@ function
     return 0;
 }
 
-function
-    isimaginaryfactor(p) {
+// DGH
+function isimaginaryfactor(p: unknown): boolean | 0 {
     return car(p) == symbol(POWER) && isminusone(cadr(p));
 }
 
-function
-    add_numbers(p1, p2) {
-    var a, b;
+function add_numbers(p1: unknown, p2: unknown): void {
 
     if (isrational(p1) && isrational(p2)) {
         add_rationals(p1, p2);
@@ -3441,30 +3428,32 @@ function
     }
 
     push(p1);
-    a = pop_double();
+    const a = pop_double();
 
     push(p2);
-    b = pop_double();
+    const b = pop_double();
 
     push_double(a + b);
 }
 
-function
-    add_rationals(p1, p2) {
-    var a, ab, b, ba, d, sign;
+function add_rationals(p1: Rat, p2: Rat): void {
 
     if (isinteger(p1) && isinteger(p2)) {
         add_integers(p1, p2);
         return;
     }
 
-    ab = bignum_mul(p1.a, p2.b);
-    ba = bignum_mul(p1.b, p2.a);
+    const ab = bignum_mul(p1.a, p2.b);
+    const ba = bignum_mul(p1.b, p2.a);
+
+    let a: number[];
+    let sign: 1 | -1;
 
     if (p1.sign == p2.sign) {
         a = bignum_add(ab, ba);
         sign = p1.sign;
-    } else {
+    }
+    else {
         switch (bignum_cmp(ab, ba)) {
             case 1:
                 a = bignum_sub(ab, ba);
@@ -3480,9 +3469,9 @@ function
         }
     }
 
-    b = bignum_mul(p1.b, p2.b);
+    let b = bignum_mul(p1.b, p2.b);
 
-    d = bignum_gcd(a, b);
+    const d = bignum_gcd(a, b);
 
     a = bignum_div(a, d);
     b = bignum_div(b, d);
@@ -3490,14 +3479,15 @@ function
     push_bignum(sign, a, b);
 }
 
-function
-    add_integers(p1, p2) {
-    var a, b, sign;
+function add_integers(p1: Rat, p2: Rat): void {
+    let a: number[];
+    let sign: 1 | -1;
 
     if (p1.sign == p2.sign) {
         a = bignum_add(p1.a, p2.a);
         sign = p1.sign;
-    } else {
+    }
+    else {
         switch (bignum_cmp(p1.a, p2.a)) {
             case 1:
                 a = bignum_sub(p1.a, p2.a);
@@ -3513,22 +3503,19 @@ function
         }
     }
 
-    b = bignum_int(1);
+    const b = bignum_int(1);
 
     push_bignum(sign, a, b);
 }
-function
-    eval_adj(p1) {
+function eval_adj(p1: unknown): void {
     push(cadr(p1));
     evalf();
     adj();
 }
 
-function
-    adj() {
-    var col, i, j, k, n, row, p1, p2, p3;
+function adj(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (!istensor(p1)) {
         push_integer(1); // adj of scalar is 1 because adj = det inv
@@ -3538,11 +3525,11 @@ function
     if (!issquarematrix(p1))
         stopf("adj: square matrix expected");
 
-    n = p1.dim[0];
+    const n = p1.dim[0];
 
     // p2 is the adjunct matrix
 
-    p2 = alloc_matrix(n, n);
+    const p2 = alloc_matrix(n, n);
 
     if (n == 2) {
         p2.elem[0] = p1.elem[3];
@@ -3559,13 +3546,13 @@ function
 
     // p3 is for computing cofactors
 
-    p3 = alloc_matrix(n - 1, n - 1);
+    const p3 = alloc_matrix(n - 1, n - 1);
 
-    for (row = 0; row < n; row++) {
-        for (col = 0; col < n; col++) {
-            k = 0;
-            for (i = 0; i < n; i++)
-                for (j = 0; j < n; j++)
+    for (let row = 0; row < n; row++) {
+        for (let col = 0; col < n; col++) {
+            let k = 0;
+            for (let i = 0; i < n; i++)
+                for (let j = 0; j < n; j++)
                     if (i != row && j != col)
                         p3.elem[k++] = p1.elem[n * i + j];
             push(p3);
@@ -3578,14 +3565,12 @@ function
 
     push(p2);
 }
-function
-    eval_and(p1) {
-    var p2;
+function eval_and(p1: unknown): void {
     p1 = cdr(p1);
     while (iscons(p1)) {
         push(car(p1));
         evalp();
-        p2 = pop();
+        const p2 = pop();
         if (iszero(p2)) {
             push_integer(0);
             return;
@@ -3594,13 +3579,11 @@ function
     }
     push_integer(1);
 }
-function eval_and_print_result() {
-    var p1, p2;
-
-    p1 = pop();
+function eval_and_print_result(): void {
+    const p1 = pop();
     push(p1);
     evalf();
-    p2 = pop();
+    const p2 = pop();
 
     push(p1);
     push(p2);
@@ -3609,34 +3592,31 @@ function eval_and_print_result() {
     if (p2 != symbol(NIL))
         set_symbol(symbol(LAST), p2, symbol(NIL));
 }
-function
-    eval_arccos(p1) {
+function eval_arccos(p1: unknown) {
     push(cadr(p1));
     evalf();
     arccos();
 }
 
-function
-    arccos() {
-    var d, i, n, p1;
+function arccos(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
+        const T = copy_tensor(p1);
+        const n = T.elem.length;
+        for (let i = 0; i < n; i++) {
+            push(T.elem[i]);
             arccos();
-            p1.elem[i] = pop();
+            T.elem[i] = pop();
         }
-        push(p1);
+        push(T);
         return;
     }
 
     if (isdouble(p1)) {
         push(p1);
-        d = pop_double();
+        let d = pop_double();
         if (-1.0 <= d && d <= 1.0) {
             d = Math.acos(d);
             push_double(d);
@@ -3727,34 +3707,31 @@ function
     push(p1);
     list(2);
 }
-function
-    eval_arccosh(p1) {
+function eval_arccosh(p1: unknown): void {
     push(cadr(p1));
     evalf();
     arccosh();
 }
 
-function
-    arccosh() {
-    var d, i, n, p1;
+function arccosh(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
+        const T = copy_tensor(p1);
+        const n = T.elem.length;
+        for (let i = 0; i < n; i++) {
+            push(T.elem[i]);
             arccosh();
-            p1.elem[i] = pop();
+            T.elem[i] = pop();
         }
-        push(p1);
+        push(T);
         return;
     }
 
     if (isdouble(p1)) {
         push(p1);
-        d = pop_double();
+        let d = pop_double();
         if (d >= 1.0) {
             d = Math.acosh(d);
             push_double(d);
@@ -13717,8 +13694,7 @@ function
     isimaginaryunit(p) {
     return car(p) == symbol(POWER) && isminusone(cadr(p)) && isequalq(caddr(p), 1, 2);
 }
-function
-    isinteger(p) {
+function isinteger(p: unknown): boolean {
     return isrational(p) && bignum_equal(p.b, 1);
 }
 function
