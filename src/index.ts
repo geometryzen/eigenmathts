@@ -4701,27 +4701,25 @@ function eval_cos(p1: unknown): void {
     cosfunc();
 }
 
-function
-    cosfunc() {
-    var d, i, n, p1, p2, X, Y;
+function cosfunc(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
+        const T = copy_tensor(p1);
+        const n = T.elem.length;
+        for (let i = 0; i < n; i++) {
+            push(T.elem[i]);
             cosfunc();
-            p1.elem[i] = pop();
+            T.elem[i] = pop();
         }
-        push(p1);
+        push(T);
         return;
     }
 
     if (isdouble(p1)) {
         push(p1);
-        d = pop_double();
+        let d = pop_double();
         d = Math.cos(d);
         push_double(d);
         return;
@@ -4762,8 +4760,8 @@ function
     // cos(arctan(y,x)) = x (x^2 + y^2)^(-1/2)
 
     if (car(p1) == symbol(ARCTAN)) {
-        X = caddr(p1);
-        Y = cadr(p1);
+        const X = caddr(p1);
+        const Y = cadr(p1);
         push(X);
         push(X);
         push(X);
@@ -4796,7 +4794,7 @@ function
     push(p1);
     push_symbol(PI);
     divide();
-    p2 = pop();
+    let p2 = pop();
 
     if (!isnum(p2)) {
         push_symbol(COS);
@@ -4807,7 +4805,7 @@ function
 
     if (isdouble(p2)) {
         push(p2);
-        d = pop_double();
+        let d = pop_double();
         d = Math.cos(d * Math.PI);
         push_double(d);
         return;
@@ -4828,7 +4826,7 @@ function
     push(p2);
     push_integer(360);
     modfunc();
-    n = pop_integer();
+    const n = pop_integer();
 
     switch (n) {
         case 90:
@@ -4891,17 +4889,15 @@ function
 
 // cos(x + n/2 pi) = cos(x) cos(n/2 pi) - sin(x) sin(n/2 pi)
 
-function
-    cosfunc_sum(p1) {
-    var p2, p3;
-    p2 = cdr(p1);
+function cosfunc_sum(p1: unknown): void {
+    let p2 = cdr(p1);
     while (iscons(p2)) {
         push_integer(2);
         push(car(p2));
         multiply();
         push_symbol(PI);
         divide();
-        p3 = pop();
+        let p3 = pop();
         if (isinteger(p3)) {
             push(p1);
             push(car(p2));
@@ -4926,34 +4922,31 @@ function
     push(p1);
     list(2);
 }
-function
-    eval_cosh(p1) {
+function eval_cosh(p1: unknown): void {
     push(cadr(p1));
     evalf();
     coshfunc();
 }
 
-function
-    coshfunc() {
-    var d, i, n, p1;
+function coshfunc(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
+        const T = copy_tensor(p1);
+        const n = T.elem.length;
+        for (let i = 0; i < n; i++) {
+            push(T.elem[i]);
             coshfunc();
-            p1.elem[i] = pop();
+            T.elem[i] = pop();
         }
-        push(p1);
+        push(T);
         return;
     }
 
     if (isdouble(p1)) {
         push(p1);
-        d = pop_double();
+        let d = pop_double();
         d = Math.cosh(d);
         push_double(d);
         return;
@@ -4996,13 +4989,11 @@ function
     push(p1);
     list(2);
 }
-function
-    eval_defint(p1) {
-    var A, B, F, X;
+function eval_defint(p1: unknown): void {
 
     push(cadr(p1));
     evalf();
-    F = pop();
+    let F = pop();
 
     p1 = cddr(p1);
 
@@ -5010,15 +5001,15 @@ function
 
         push(car(p1));
         evalf();
-        X = pop();
+        const X = pop();
 
         push(cadr(p1));
         evalf();
-        A = pop();
+        const A = pop();
 
         push(caddr(p1));
         evalf();
-        B = pop();
+        const B = pop();
 
         push(F);
         push(X);
@@ -5045,29 +5036,26 @@ function
 
     push(F);
 }
-function
-    eval_denominator(p1) {
+function eval_denominator(p1: unknown): void {
     push(cadr(p1));
     evalf();
     denominator();
 }
 
-function
-    denominator() {
-    var p0, p1, p2;
+function denominator(): void {
 
-    p1 = pop();
+    let p1 = pop();
 
     if (isrational(p1)) {
         push_bignum(1, bignum_copy(p1.b), bignum_int(1));
         return;
     }
 
-    p2 = one; // denominator
+    let p2 = one; // denominator
 
     while (find_divisor(p1)) {
 
-        p0 = pop(); // p0 is a denominator
+        const p0 = pop(); // p0 is a denominator
 
         push(p0); // cancel in orig expr
         push(p1);
@@ -5082,9 +5070,7 @@ function
 
     push(p2);
 }
-function
-    eval_derivative(p1) {
-    var flag, i, n, X, Y;
+function eval_derivative(p1: unknown): void {
 
     push(cadr(p1));
     evalf();
@@ -5096,14 +5082,17 @@ function
         return;
     }
 
-    flag = 0;
+    let flag = 0;
+    let X: unknown;
+    let Y: unknown;
 
     while (iscons(p1) || flag) {
 
         if (flag) {
             X = Y;
             flag = 0;
-        } else {
+        }
+        else {
             push(car(p1));
             evalf();
             X = pop();
@@ -5112,10 +5101,10 @@ function
 
         if (isnum(X)) {
             push(X);
-            n = pop_integer();
+            const n = pop_integer();
             push_symbol(X_LOWER);
             X = pop();
-            for (i = 0; i < n; i++) {
+            for (let i = 0; i < n; i++) {
                 push(X);
                 derivative();
             }
@@ -5131,8 +5120,8 @@ function
 
             if (isnum(Y)) {
                 push(Y);
-                n = pop_integer();
-                for (i = 0; i < n; i++) {
+                const n = pop_integer();
+                for (let i = 0; i < n; i++) {
                     push(X);
                     derivative();
                 }
@@ -5147,19 +5136,18 @@ function
     }
 }
 
-function
-    derivative() {
-    var F, X;
+function derivative(): void {
 
-    X = pop();
-    F = pop();
+    const X = pop();
+    const F = pop();
 
     if (istensor(F)) {
         if (istensor(X))
             d_tensor_tensor(F, X);
         else
             d_tensor_scalar(F, X);
-    } else {
+    }
+    else {
         if (istensor(X))
             d_scalar_tensor(F, X);
         else
@@ -5167,8 +5155,7 @@ function
     }
 }
 
-function
-    d_scalar_scalar(F, X) {
+function d_scalar_scalar(F: unknown, X: unknown): void {
     if (!isusersymbol(X))
         stopf("derivative: symbol expected");
 
@@ -5289,9 +5276,8 @@ function
     dfunction(F, X);
 }
 
-function
-    dsum(p1, p2) {
-    var h = stack.length;
+function dsum(p1: unknown, p2: unknown): void {
+    const h = stack.length;
     p1 = cdr(p1);
     while (iscons(p1)) {
         push(car(p1));
@@ -5302,13 +5288,11 @@ function
     add_terms(stack.length - h);
 }
 
-function
-    dproduct(p1, p2) {
-    var i, j, n, p3;
-    n = lengthf(p1) - 1;
-    for (i = 0; i < n; i++) {
-        p3 = cdr(p1);
-        for (j = 0; j < n; j++) {
+function dproduct(p1: unknown, p2: unknown): void {
+    const n = lengthf(p1) - 1;
+    for (let i = 0; i < n; i++) {
+        let p3 = cdr(p1);
+        for (let j = 0; j < n; j++) {
             push(car(p3));
             if (i == j) {
                 push(p2);
@@ -5334,8 +5318,7 @@ function
 //	-- = u  (- -- + (log u) --)
 //	dx       u dx           dx
 
-function
-    dpower(F, X) {
+function dpower(F: unknown, X: unknown): void {
     if (isnum(cadr(F)) && isnum(caddr(F))) {
         push_integer(0); // irr or imag
         return;
@@ -5367,7 +5350,7 @@ function
     multiply();
 }
 
-function dlog(p1, p2) {
+function dlog(p1: unknown, p2: unknown): void {
     push(cadr(p1));
     push(p2);
     derivative();
@@ -5387,17 +5370,14 @@ function dlog(p1, p2) {
 //
 //	caddr(p1) = y
 
-function
-    dd(p1, p2) {
-    var p3;
-
+function dd(p1: unknown, p2: unknown): void {
     // d(f(x,y),x)
 
     push(cadr(p1));
     push(p2);
     derivative();
 
-    p3 = pop();
+    const p3 = pop();
 
     if (car(p3) == symbol(DERIVATIVE)) {
 
@@ -5411,7 +5391,8 @@ function
             push(caddr(p3));
             list(3);
             push(caddr(p1));
-        } else {
+        }
+        else {
             push(caddr(p1));
             list(3);
             push(caddr(p3));
@@ -5419,7 +5400,8 @@ function
 
         list(3);
 
-    } else {
+    }
+    else {
         push(p3);
         push(caddr(p1));
         derivative();
@@ -5428,23 +5410,21 @@ function
 
 // derivative of a generic function
 
-function
-    dfunction(p1, p2) {
-    var p3;
+function dfunction(p1: unknown, p2: unknown): void {
 
-    p3 = cdr(p1); // p3 is the argument list for the function
+    const p3 = cdr(p1); // p3 is the argument list for the function
 
     if (p3 == symbol(NIL) || findf(p3, p2)) {
         push_symbol(DERIVATIVE);
         push(p1);
         push(p2);
         list(3);
-    } else
+    }
+    else
         push_integer(0);
 }
 
-function
-    dsin(p1, p2) {
+function dsin(p1: unknown, p2: unknown): void {
     push(cadr(p1));
     push(p2);
     derivative();
