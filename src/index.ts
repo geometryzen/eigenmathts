@@ -2164,15 +2164,17 @@ function emit_thin_space(): void {
     list(4);
 }
 
-function emit_update_fraction() {
-    var d, font_num, h, m, opcode, p1, p2, v, w;
+function emit_update_fraction(): void {
 
-    p2 = pop(); // denominator
-    p1 = pop(); // numerator
+    const p2 = pop(); // denominator
+    const p1 = pop(); // numerator
 
-    h = height(p1) + depth(p1);
-    d = height(p2) + depth(p2);
-    w = Math.max(width(p1), width(p2));
+    let h = height(p1) + depth(p1);
+    let d = height(p2) + depth(p2);
+    let w = Math.max(width(p1), width(p2));
+
+    let opcode: number;
+    let font_num: number;
 
     if (emit_level == 0) {
         opcode = EMIT_FRACTION;
@@ -2183,9 +2185,9 @@ function emit_update_fraction() {
         font_num = SMALL_ROMAN_FONT;
     }
 
-    m = get_operator_height(font_num);
+    const m = get_operator_height(font_num);
 
-    v = 0.75 * m; // extra vertical space
+    const v = 0.75 * m; // extra vertical space
 
     h += v + m;
     d += v - m;
@@ -2203,16 +2205,17 @@ function emit_update_fraction() {
 }
 
 function emit_update_list(t: number): void {
-    var d, h, i, p1, w;
 
     if (stack.length - t == 1)
         return;
 
-    h = 0;
-    d = 0;
-    w = 0;
+    let h = 0;
+    let d = 0;
+    let w = 0;
 
-    for (i = t; i < stack.length; i++) {
+    let p1: unknown;
+
+    for (let i = t; i < stack.length; i++) {
         p1 = stack[i];
         h = Math.max(h, height(p1));
         d = Math.max(d, depth(p1));
@@ -2231,20 +2234,22 @@ function emit_update_list(t: number): void {
     list(5);
 }
 
-function
-    emit_update_subexpr() {
-    var d, font_num, h, m, opcode, p1, w;
+function emit_update_subexpr(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
-    h = height(p1);
-    d = depth(p1);
-    w = width(p1);
+    let h = height(p1);
+    let d = depth(p1);
+    let w = width(p1);
+
+    let opcode: number;
+    let font_num: number;
 
     if (emit_level == 0) {
         opcode = EMIT_SUBEXPR;
         font_num = ROMAN_FONT;
-    } else {
+    }
+    else {
         opcode = EMIT_SMALL_SUBEXPR;
         font_num = SMALL_ROMAN_FONT;
     }
@@ -2255,7 +2260,7 @@ function
     // delimiters have vertical symmetry (h - m == d + m)
 
     if (h > get_cap_height(font_num) || d > get_descent(font_num)) {
-        m = get_operator_height(font_num);
+        const m = get_operator_height(font_num);
         h = Math.max(h, d + 2 * m) + 0.5 * m; // plus a little extra
         d = h - 2 * m; // by symmetry
     }
@@ -2271,25 +2276,25 @@ function
     list(5);
 }
 
-function
-    emit_update_subscript() {
-    var d, dx, dy, font_num, h, p1, t, w;
+function emit_update_subscript(): void {
 
-    p1 = pop();
+    const p1 = pop();
+
+    let font_num: number;
 
     if (emit_level == 0)
         font_num = ROMAN_FONT;
     else
         font_num = SMALL_ROMAN_FONT;
 
-    t = get_char_width(font_num, LOWER_N) / 6;
+    const t = get_char_width(font_num, LOWER_N) / 6;
 
-    h = get_cap_height(font_num);
-    d = depth(p1);
-    w = t + width(p1);
+    const h = get_cap_height(font_num);
+    let d = depth(p1);
+    const w = t + width(p1);
 
-    dx = t;
-    dy = h / 2;
+    const dx = t;
+    const dy = h / 2;
 
     d += dy;
 
@@ -2304,27 +2309,27 @@ function
     list(7);
 }
 
-function
-    emit_update_superscript() {
-    var d, dx, dy, font_num, h, p1, p2, t, w, y;
+function emit_update_superscript(): void {
 
-    p2 = pop(); // exponent
-    p1 = pop(); // base
+    const p2 = pop(); // exponent
+    const p1 = pop(); // base
+
+    let font_num: number;
 
     if (emit_level == 0)
         font_num = ROMAN_FONT;
     else
         font_num = SMALL_ROMAN_FONT;
 
-    t = get_char_width(font_num, LOWER_N) / 6;
+    const t = get_char_width(font_num, LOWER_N) / 6;
 
-    h = height(p2);
-    d = depth(p2);
-    w = t + width(p2);
+    let h = height(p2);
+    let d = depth(p2);
+    let w = t + width(p2);
 
     // y is height of base
 
-    y = height(p1);
+    let y = height(p1);
 
     // adjust
 
@@ -2332,8 +2337,8 @@ function
 
     y = Math.max(y, get_xheight(font_num));
 
-    dx = t;
-    dy = -(y + d);
+    let dx = t;
+    const dy = -(y + d);
 
     h = y + h + d;
     d = 0;
@@ -2357,19 +2362,18 @@ function
 }
 
 function emit_update_table(n: number, m: number): void {
-    var d, h, i, j, p1, p2, p3, p4, t, total_height, total_width, w;
 
-    total_height = 0;
-    total_width = 0;
+    let total_height = 0;
+    let total_width = 0;
 
-    t = stack.length - n * m;
+    const t = stack.length - n * m;
 
     // max height for each row
 
-    for (i = 0; i < n; i++) { // for each row
-        h = 0;
-        for (j = 0; j < m; j++) { // for each column
-            p1 = stack[t + i * m + j];
+    for (let i = 0; i < n; i++) { // for each row
+        let h = 0;
+        for (let j = 0; j < m; j++) { // for each column
+            const p1 = stack[t + i * m + j];
             h = Math.max(h, height(p1));
         }
         push_double(h);
@@ -2377,14 +2381,14 @@ function emit_update_table(n: number, m: number): void {
     }
 
     list(n);
-    p2 = pop();
+    const p2 = pop();
 
     // max depth for each row
 
-    for (i = 0; i < n; i++) { // for each row
-        d = 0;
-        for (j = 0; j < m; j++) { // for each column
-            p1 = stack[t + i * m + j];
+    for (let i = 0; i < n; i++) { // for each row
+        let d = 0;
+        for (let j = 0; j < m; j++) { // for each column
+            const p1 = stack[t + i * m + j];
             d = Math.max(d, depth(p1));
         }
         push_double(d);
@@ -2392,14 +2396,14 @@ function emit_update_table(n: number, m: number): void {
     }
 
     list(n);
-    p3 = pop();
+    const p3 = pop();
 
     // max width for each column
 
-    for (j = 0; j < m; j++) { // for each column
-        w = 0;
-        for (i = 0; i < n; i++) { // for each row
-            p1 = stack[t + i * m + j];
+    for (let j = 0; j < m; j++) { // for each column
+        let w = 0;
+        for (let i = 0; i < n; i++) { // for each row
+            const p1 = stack[t + i * m + j];
             w = Math.max(w, width(p1));
         }
         push_double(w);
@@ -2407,7 +2411,7 @@ function emit_update_table(n: number, m: number): void {
     }
 
     list(m);
-    p4 = pop();
+    const p4 = pop();
 
     // padding
 
@@ -2416,12 +2420,12 @@ function emit_update_table(n: number, m: number): void {
 
     // h, d, w for entire table
 
-    h = total_height / 2 + get_operator_height(ROMAN_FONT);
-    d = total_height - h;
-    w = total_width + 2 * get_char_width(ROMAN_FONT, LEFT_PAREN);
+    const h = total_height / 2 + get_operator_height(ROMAN_FONT);
+    const d = total_height - h;
+    const w = total_width + 2 * get_char_width(ROMAN_FONT, LEFT_PAREN);
 
     list(n * m);
-    p1 = pop();
+    const p1 = pop();
 
     push_double(EMIT_TABLE);
     push_double(h);
@@ -2455,32 +2459,27 @@ function emit_vector(p: Tensor): void {
     emit_update_table(n, 1); // n rows, 1 column
 }
 
-function opcode(p) {
+function opcode(p: unknown) {
     return car(p).d;
 }
 
-function
-    height(p) {
+function height(p: unknown) {
     return cadr(p).d;
 }
 
-function
-    depth(p) {
+function depth(p: unknown) {
     return caddr(p).d;
 }
 
-function
-    width(p) {
+function width(p: unknown) {
     return cadddr(p).d;
 }
 
-function
-    val1(p) {
+function val1(p: unknown) {
     return car(p).d;
 }
 
-function
-    val2(p) {
+function val2(p: unknown) {
     return cadr(p).d;
 }
 function
@@ -2488,15 +2487,18 @@ function
     reciprocate();
     multiply();
 }
-function draw_formula(x, y, p) {
-    var char_num, d, dx, dy, font_num, h, k, w;
+function draw_formula(x: number, y: number, p: unknown): void {
+    // var char_num, d, dx, dy, font_num, h, k, w;
 
-    k = opcode(p);
-    h = height(p);
-    d = depth(p);
-    w = width(p);
+    const k = opcode(p);
+    const h = height(p);
+    const d = depth(p);
+    const w = width(p);
 
     p = cddddr(p);
+
+    let font_num: number;
+    let char_num: number;
 
     switch (k) {
 
@@ -2519,25 +2521,25 @@ function draw_formula(x, y, p) {
             break;
 
         case EMIT_SUPERSCRIPT:
-        case EMIT_SUBSCRIPT:
-            dx = val1(p);
-            dy = val2(p);
+        case EMIT_SUBSCRIPT: {
+            const dx = val1(p);
+            const dy = val2(p);
             p = caddr(p);
             draw_formula(x + dx, y + dy, p);
             break;
-
-        case EMIT_SUBEXPR:
+        }
+        case EMIT_SUBEXPR: {
             draw_delims(x, y, h, d, w, FONT_SIZE * DELIM_STROKE, ROMAN_FONT);
-            dx = get_char_width(ROMAN_FONT, LEFT_PAREN);
+            const dx = get_char_width(ROMAN_FONT, LEFT_PAREN);
             draw_formula(x + dx, y, car(p));
             break;
-
-        case EMIT_SMALL_SUBEXPR:
+        }
+        case EMIT_SMALL_SUBEXPR: {
             draw_delims(x, y, h, d, w, SMALL_FONT_SIZE * DELIM_STROKE, SMALL_ROMAN_FONT);
-            dx = get_char_width(SMALL_ROMAN_FONT, LEFT_PAREN);
+            const dx = get_char_width(SMALL_ROMAN_FONT, LEFT_PAREN);
             draw_formula(x + dx, y, car(p));
             break;
-
+        }
         case EMIT_FRACTION:
             draw_fraction(x, y, h, d, w, FONT_SIZE * FRAC_STROKE, ROMAN_FONT, p);
             break;
@@ -2546,11 +2548,12 @@ function draw_formula(x, y, p) {
             draw_fraction(x, y, h, d, w, SMALL_FONT_SIZE * FRAC_STROKE, SMALL_ROMAN_FONT, p);
             break;
 
-        case EMIT_TABLE:
+        case EMIT_TABLE: {
             draw_delims(x, y, h, d, w, 1.2 * FONT_SIZE * DELIM_STROKE, ROMAN_FONT);
-            dx = get_char_width(ROMAN_FONT, LEFT_PAREN);
+            const dx = get_char_width(ROMAN_FONT, LEFT_PAREN);
             draw_table(x + dx, y - h, p);
             break;
+        }
     }
 }
 
@@ -2659,13 +2662,11 @@ function draw_char(x: number, y: number, font_num: number, char_num: number): vo
     outbuf += t;
 }
 
-function
-    draw_delims(x, y, h, d, w, stroke_width, font_num) {
-    var cd, ch, cw;
+function draw_delims(x: number, y: number, h: number, d: number, w: number, stroke_width: number, font_num: number): void {
 
-    ch = get_cap_height(font_num);
-    cd = get_char_depth(font_num, LEFT_PAREN);
-    cw = get_char_width(font_num, LEFT_PAREN);
+    const ch = get_cap_height(font_num);
+    const cd = get_char_depth(font_num, LEFT_PAREN);
+    const cw = get_char_width(font_num, LEFT_PAREN);
 
     if (h > ch || d > cd) {
         draw_left_delim(x, y, h, d, cw, stroke_width);
