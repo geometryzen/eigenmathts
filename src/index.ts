@@ -16,6 +16,7 @@ export interface Str {
 }
 export interface Sym {
     printname: string;
+    func: unknown;
 }
 export interface Tensor {
     dim: number[];
@@ -4507,21 +4508,19 @@ function clockfunc(): void {
 
     multiply();
 }
-function
-    eval_cofactor(p1) {
-    var i, j, p2;
+function eval_cofactor(p1: unknown): void {
 
     push(cadr(p1));
     evalf();
-    p2 = pop();
+    const p2 = pop() as Tensor;
 
     push(caddr(p1));
     evalf();
-    i = pop_integer();
+    const i = pop_integer();
 
     push(cadddr(p1));
     evalf();
-    j = pop_integer();
+    const j = pop_integer();
 
     if (!issquarematrix(p2))
         stopf("cofactor: square matrix expected");
@@ -4538,21 +4537,18 @@ function
     if ((i + j) % 2)
         negate();
 }
-function
-    eval_conj(p1) {
+function eval_conj(p1: unknown): void {
     push(cadr(p1));
     evalf();
     conjfunc();
 }
 
-function
-    conjfunc() {
+function conjfunc(): void {
     conjfunc_subst();
     evalf();
 }
 
-function
-    conjfunc_subst() {
+function conjfunc_subst() {
     var h, i, n, p1;
 
     p1 = pop();
@@ -13732,22 +13728,19 @@ function
 
     return 0;
 }
-function
-    issquarematrix(p) {
+function issquarematrix(p: Tensor): boolean {
     return istensor(p) && p.dim.length == 2 && p.dim[0] == p.dim[1];
 }
 function isstring(p: unknown): p is Str {
-    return "string" in p;
+    return "string" in (p as unknown as Str);
 }
-function
-    issymbol(p) {
-    return "func" in p;
+function issymbol(p: unknown): p is Sym {
+    return "func" in (p as unknown as Sym);
 }
 function istensor(p: unknown): p is Tensor {
-    return "elem" in p;
+    return "elem" in (p as unknown as Tensor);
 }
-function
-    isusersymbol(p) {
+function isusersymbol(p) {
     return issymbol(p) && p.func == eval_user_symbol;
 }
 function
