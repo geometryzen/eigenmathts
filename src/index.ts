@@ -1376,10 +1376,10 @@ function display() {
     h = Math.round(h);
     w = Math.round(w);
 
-    h = "height='" + h + "'";
-    w = "width='" + w + "'";
+    const heq = "height='" + h + "'";
+    const weq = "width='" + w + "'";
 
-    outbuf = "<svg " + h + w + ">";
+    outbuf = "<svg " + heq + weq + ">";
 
     draw_formula(x, y, p1);
 
@@ -1455,7 +1455,7 @@ function emit_denominators(p: unknown) {
         }
         else {
             emit_base(cadr(q));
-            emit_numeric_exponent(caddr(q)); // sign is not emitted
+            emit_numeric_exponent(caddr(q) as Num); // sign is not emitted
         }
     }
 
@@ -1876,7 +1876,8 @@ function emit_power(p: unknown): void {
         }
     }
 
-    if (isnegativenumber(caddr(p))) {
+    const X = caddr(p);
+    if (isnum(X) && isnegativenumber(X)) {
         emit_reciprocal(p);
         return;
     }
@@ -1922,7 +1923,7 @@ function emit_reciprocal(p: unknown): void {
         emit_expr(cadr(p));
     else {
         emit_base(cadr(p));
-        emit_numeric_exponent(caddr(p)); // sign is not emitted
+        emit_numeric_exponent(caddr(p) as Num); // sign is not emitted
     }
 
     emit_update_list(t);
@@ -2462,27 +2463,27 @@ function emit_vector(p: Tensor): void {
 }
 
 function opcode(p: unknown) {
-    return car(p).d;
+    return (car(p) as Flt).d;
 }
 
 function height(p: unknown) {
-    return cadr(p).d;
+    return (cadr(p) as Flt).d;
 }
 
 function depth(p: unknown) {
-    return caddr(p).d;
+    return (caddr(p) as Flt).d;
 }
 
 function width(p: unknown) {
-    return cadddr(p).d;
+    return (cadddr(p) as Flt).d;
 }
 
 function val1(p: unknown) {
-    return car(p).d;
+    return (car(p) as Flt).d;
 }
 
 function val2(p: unknown) {
-    return cadr(p).d;
+    return (cadr(p) as Flt).d;
 }
 function
     divide() {
@@ -3139,7 +3140,7 @@ function flatten_terms(h: number): void {
 }
 
 function combine_tensors(h: number): Tensor {
-    let T = symbol(NIL);
+    let T: unknown = symbol(NIL);
     for (let i = h; i < stack.length; i++) {
         const p1 = stack[i];
         if (istensor(p1)) {
@@ -3155,7 +3156,7 @@ function combine_tensors(h: number): Tensor {
             i--; // use same index again
         }
     }
-    return T;
+    return T as Tensor;
 }
 
 function add_tensors(): void {
@@ -5586,8 +5587,7 @@ function derf(p1: unknown, p2: unknown): void {
 }
 
 
-function
-    derfc(p1, p2) {
+function derfc(p1: unknown, p2: unknown): void {
     push(cadr(p1));
     push_integer(2);
     power();
@@ -5608,17 +5608,15 @@ function
 
 // gradient of tensor p1 wrt tensor p2
 
-function
-    d_tensor_tensor(p1, p2) {
-    var i, j, k, m, n, p3;
+function d_tensor_tensor(p1: Tensor, p2: Tensor): void {
 
-    n = p1.elem.length;
-    m = p2.elem.length;
+    let n = p1.elem.length;
+    const m = p2.elem.length;
 
-    p3 = alloc_tensor();
+    const p3 = alloc_tensor();
 
-    for (i = 0; i < n; i++) {
-        for (j = 0; j < m; j++) {
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < m; j++) {
             push(p1.elem[i]);
             push(p2.elem[j]);
             derivative();
@@ -5628,16 +5626,16 @@ function
 
     // dim info
 
-    k = 0;
+    let k = 0;
 
     n = p1.dim.length;
 
-    for (i = 0; i < n; i++)
+    for (let i = 0; i < n; i++)
         p3.dim[k++] = p1.dim[i];
 
     n = p2.dim.length;
 
-    for (i = 0; i < n; i++)
+    for (let i = 0; i < n; i++)
         p3.dim[k++] = p2.dim[i];
 
     push(p3);
@@ -5645,15 +5643,13 @@ function
 
 // gradient of scalar p1 wrt tensor p2
 
-function
-    d_scalar_tensor(p1, p2) {
-    var i, n, p3;
+function d_scalar_tensor(p1: unknown, p2: Tensor): void {
 
-    p3 = copy_tensor(p2);
+    const p3 = copy_tensor(p2);
 
-    n = p2.elem.length;
+    const n = p2.elem.length;
 
-    for (i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
         push(p1);
         push(p2.elem[i]);
         derivative();
@@ -5665,15 +5661,13 @@ function
 
 // derivative of tensor p1 wrt scalar p2
 
-function
-    d_tensor_scalar(p1, p2) {
-    var i, n, p3;
+function d_tensor_scalar(p1: Tensor, p2: unknown): void {
 
-    p3 = copy_tensor(p1);
+    const p3 = copy_tensor(p1);
 
-    n = p1.elem.length;
+    const n = p1.elem.length;
 
-    for (i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
         push(p1.elem[i]);
         push(p2);
         derivative();
@@ -5682,18 +5676,15 @@ function
 
     push(p3);
 }
-function
-    eval_det(p1) {
+function eval_det(p1: unknown): void {
     push(cadr(p1));
     evalf();
     det();
 }
 
-function
-    det() {
-    var h, i, j, k, m, n, p1, p2;
+function det(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (!istensor(p1)) {
         push(p1);
@@ -5703,7 +5694,7 @@ function
     if (!issquarematrix(p1))
         stopf("det: square matrix expected");
 
-    n = p1.dim[0];
+    const n = p1.dim[0];
 
     switch (n) {
         case 1:
@@ -5752,16 +5743,16 @@ function
             break;
     }
 
-    p2 = alloc_matrix(n - 1, n - 1);
+    const p2 = alloc_matrix(n - 1, n - 1);
 
-    h = stack.length;
+    const h = stack.length;
 
-    for (m = 0; m < n; m++) {
+    for (let m = 0; m < n; m++) {
         if (iszero(p1.elem[m]))
             continue;
-        k = 0;
-        for (i = 1; i < n; i++)
-            for (j = 0; j < n; j++)
+        let k = 0;
+        for (let i = 1; i < n; i++)
+            for (let j = 0; j < n; j++)
                 if (j != m)
                     p2.elem[k++] = p1.elem[n * i + j];
         push(p2);
@@ -5772,25 +5763,25 @@ function
             negate();
     }
 
-    n = stack.length - h;
+    const s = stack.length - h;
 
-    if (n == 0)
+    if (s == 0)
         push_integer(0);
     else
-        add_terms(n);
+        add_terms(s);
 }
-function
-    eval_dim(p1) {
-    var k, p2;
+function eval_dim(p1: unknown): void {
 
     push(cadr(p1));
     evalf();
-    p2 = pop();
+    const p2 = pop();
 
     if (!istensor(p2)) {
         push_integer(1);
         return;
     }
+
+    let k: number;
 
     if (lengthf(p1) == 2)
         k = 1;
@@ -5805,8 +5796,7 @@ function
 
     push_integer(p2.dim[k - 1]);
 }
-function
-    eval_do(p1) {
+function eval_do(p1: unknown): void {
     push_symbol(NIL);
     p1 = cdr(p1);
     while (iscons(p1)) {
@@ -5816,13 +5806,10 @@ function
         p1 = cdr(p1);
     }
 }
-function
-    eval_dot(p1) {
+function eval_dot(p1: unknown): void {
     eval_inner(p1);
 }
-function
-    eval_draw(p1) {
-    var F, T;
+function eval_draw(p1: unknown): void {
 
     if (drawing) {
         push_symbol(NIL); // return value
@@ -5831,8 +5818,8 @@ function
 
     drawing = 1;
 
-    F = cadr(p1);
-    T = caddr(p1);
+    const F = cadr(p1);
+    let T = caddr(p1);
 
     if (!isusersymbol(T))
         T = symbol(X_LOWER);
@@ -5858,45 +5845,50 @@ function
 
     drawing = 0;
 }
-function
-    eval_eigenvec(p1) {
-    var i, j, n, D = [], Q = [];
+function eval_eigenvec(punk: unknown): void {
+    const D: number[] = [];
+    const Q: number[] = [];
 
-    push(cadr(p1));
+    push(cadr(punk));
     evalf();
     floatfunc();
-    p1 = pop();
+    let T = pop() as Tensor;
 
-    if (!issquarematrix(p1))
+    if (!issquarematrix(T))
         stopf("eigenvec: square matrix expected");
 
-    n = p1.dim[0];
+    const n = T.dim[0];
 
-    for (i = 0; i < n; i++)
-        for (j = 0; j < n; j++)
-            if (!isdouble(p1.elem[n * i + j]))
+    for (let i = 0; i < n; i++)
+        for (let j = 0; j < n; j++)
+            if (!isdouble(T.elem[n * i + j]))
                 stopf("eigenvec: numerical matrix expected");
 
-    for (i = 0; i < n - 1; i++)
-        for (j = i + 1; j < n; j++)
-            if (Math.abs(p1.elem[n * i + j] - p1.elem[n * j + i]) > 1e-10)
+    for (let i = 0; i < n - 1; i++) {
+        for (let j = i + 1; j < n; j++) {
+            const Tij: number = (T.elem[n * i + j] as Flt).d;
+            const Tji: number = (T.elem[n * j + i] as Flt).d;
+            if (Math.abs(Tij - Tji) > 1e-10) {
                 stopf("eigenvec: symmetrical matrix expected");
+            }
+        }
+    }
 
     // initialize D
 
-    for (i = 0; i < n; i++) {
-        D[n * i + i] = p1.elem[n * i + i].d;
-        for (j = i + 1; j < n; j++) {
-            D[n * i + j] = p1.elem[n * i + j].d;
-            D[n * j + i] = p1.elem[n * i + j].d;
+    for (let i = 0; i < n; i++) {
+        D[n * i + i] = (T.elem[n * i + i] as Flt).d;
+        for (let j = i + 1; j < n; j++) {
+            D[n * i + j] = (T.elem[n * i + j] as Flt).d;
+            D[n * j + i] = (T.elem[n * i + j] as Flt).d;
         }
     }
 
     // initialize Q
 
-    for (i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
         Q[n * i + i] = 1.0;
-        for (j = i + 1; j < n; j++) {
+        for (let j = i + 1; j < n; j++) {
             Q[n * i + j] = 0.0;
             Q[n * j + i] = 0.0;
         }
@@ -5904,39 +5896,35 @@ function
 
     eigenvec(D, Q, n);
 
-    p1 = alloc_matrix(n, n);
+    T = alloc_matrix(n, n);
 
     for (i = 0; i < n; i++) {
         for (j = 0; j < n; j++) {
             push_double(Q[n * j + i]); // transpose
-            p1.elem[n * i + j] = pop();
+            T.elem[n * i + j] = pop();
         }
     }
 
-    push(p1);
+    push(T);
 }
 
-function
-    eigenvec(D, Q, n) {
-    var i;
+function eigenvec(D: number[], Q: number[], n: number): void {
 
-    for (i = 0; i < 100; i++)
+    for (let i = 0; i < 100; i++)
         if (eigenvec_step(D, Q, n) == 0)
             return;
 
     stopf("eigenvec: convergence error");
 }
 
-function
-    eigenvec_step(D, Q, n) {
-    var count, i, j;
+function eigenvec_step(D: number[], Q: number[], n: number) {
 
-    count = 0;
+    let count = 0;
 
     // for each upper triangle "off-diagonal" component do step_nib
 
-    for (i = 0; i < n - 1; i++) {
-        for (j = i + 1; j < n; j++) {
+    for (let i = 0; i < n - 1; i++) {
+        for (let j = i + 1; j < n; j++) {
             if (D[n * i + j] != 0.0) {
                 eigenvec_step_nib(D, Q, n, i, j);
                 count++;
@@ -5947,34 +5935,30 @@ function
     return count;
 }
 
-function
-    eigenvec_step_nib(D, Q, n, p, q) {
-    var k;
-    var t, theta;
-    var c, cc, s, ss;
+function eigenvec_step_nib(D: number[], Q: number[], n: number, p: number, q: number): void {
 
     // compute c and s
 
     // from Numerical Recipes (except they have a_qq - a_pp)
 
-    theta = 0.5 * (D[n * p + p] - D[n * q + q]) / D[n * p + q];
+    const theta = 0.5 * (D[n * p + p] - D[n * q + q]) / D[n * p + q];
 
-    t = 1.0 / (Math.abs(theta) + Math.sqrt(theta * theta + 1.0));
+    let t = 1.0 / (Math.abs(theta) + Math.sqrt(theta * theta + 1.0));
 
     if (theta < 0.0)
         t = -t;
 
-    c = 1.0 / Math.sqrt(t * t + 1.0);
+    const c = 1.0 / Math.sqrt(t * t + 1.0);
 
-    s = t * c;
+    const s = t * c;
 
     // D = GD
 
     // which means "add rows"
 
-    for (k = 0; k < n; k++) {
-        cc = D[n * p + k];
-        ss = D[n * q + k];
+    for (let k = 0; k < n; k++) {
+        const cc = D[n * p + k];
+        const ss = D[n * q + k];
         D[n * p + k] = c * cc + s * ss;
         D[n * q + k] = c * ss - s * cc;
     }
@@ -5983,9 +5967,9 @@ function
 
     // which means "add columns"
 
-    for (k = 0; k < n; k++) {
-        cc = D[n * k + p];
-        ss = D[n * k + q];
+    for (let k = 0; k < n; k++) {
+        const cc = D[n * k + p];
+        const ss = D[n * k + q];
         D[n * k + p] = c * cc + s * ss;
         D[n * k + q] = c * ss - s * cc;
     }
@@ -5994,9 +5978,9 @@ function
 
     // which means "add rows"
 
-    for (k = 0; k < n; k++) {
-        cc = Q[n * p + k];
-        ss = Q[n * q + k];
+    for (let k = 0; k < n; k++) {
+        const cc = Q[n * p + k];
+        const ss = Q[n * q + k];
         Q[n * p + k] = c * cc + s * ss;
         Q[n * q + k] = c * ss - s * cc;
     }
@@ -6004,8 +5988,7 @@ function
     D[n * p + q] = 0.0;
     D[n * q + p] = 0.0;
 }
-function
-    eval_erf(p1) {
+function eval_erf(p1: unknown): void {
     push(cadr(p1));
     evalf();
     erffunc();
@@ -13539,7 +13522,7 @@ function isdigit(s: string): boolean {
     return c >= 48 && c <= 57;
 }
 function isdouble(p: unknown): p is Flt {
-    return "d" in p;
+    return "d" in (p as unknown as Flt);
 }
 function
     isdoublesomewhere(p) {
