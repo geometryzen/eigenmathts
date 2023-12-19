@@ -6456,7 +6456,7 @@ function eval_for(p1: unknown): void {
 
     push_symbol(NIL); // return value
 }
-function eval_hadamard(p1: unknown) {
+function eval_hadamard(p1: unknown): void {
     push(cadr(p1));
     evalf();
     p1 = cddr(p1);
@@ -6468,12 +6468,10 @@ function eval_hadamard(p1: unknown) {
     }
 }
 
-function
-    hadamard() {
-    var i, n, p1, p2;
+function hadamard(): void {
 
-    p2 = pop();
-    p1 = pop();
+    const p2 = pop();
+    const p1 = pop();
 
     if (!istensor(p1) || !istensor(p2)) {
         push(p1);
@@ -6485,47 +6483,43 @@ function
     if (p1.dim.length != p2.dim.length)
         stopf("hadamard");
 
-    n = p1.dim.length;
+    let n = p1.dim.length;
 
-    for (i = 0; i < n; i++)
+    for (let i = 0; i < n; i++)
         if (p1.dim[i] != p2.dim[i])
             stopf("hadamard");
 
-    p1 = copy_tensor(p1);
+    const T = copy_tensor(p1);
 
-    n = p1.elem.length;
+    n = T.elem.length;
 
-    for (i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
         push(p1.elem[i]);
         push(p2.elem[i]);
         multiply();
-        p1.elem[i] = pop();
+        T.elem[i] = pop();
     }
 
     push(p1);
 }
-function
-    eval_imag(p1) {
+function eval_imag(p1: unknown): void {
     push(cadr(p1));
     evalf();
     imag();
 }
 
-function
-    imag() {
-    var i, n, p1;
-
-    p1 = pop();
+function imag(): void {
+    let p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
+        const T = copy_tensor(p1);
+        const n = T.elem.length;
+        for (let i = 0; i < n; i++) {
+            push(T.elem[i]);
             imag();
-            p1.elem[i] = pop();
+            T.elem[i] = pop();
         }
-        push(p1);
+        push(T);
         return;
     }
 
@@ -6540,15 +6534,13 @@ function
     subtract();
     multiply_factors(3);
 }
-function
-    eval_index(p1) {
-    var h, n, T;
+function eval_index(p1: unknown): void {
 
-    T = cadr(p1);
+    let T = cadr(p1);
 
     p1 = cddr(p1);
 
-    h = stack.length;
+    const h = stack.length;
 
     while (iscons(p1)) {
         push(car(p1));
@@ -6558,12 +6550,12 @@ function
 
     // try to optimize by indexing before eval
 
-    if (isusersymbol(T)) {
+    if (issymbol(T) && isusersymbol(T)) {
         p1 = get_binding(T);
-        n = stack.length - h;
+        const n = stack.length - h;
         if (istensor(p1) && n <= p1.dim.length) {
             T = p1;
-            indexfunc(T, h);
+            indexfunc(T as Tensor, h);
             evalf();
             return;
         }
@@ -6582,24 +6574,22 @@ function
     indexfunc(T, h);
 }
 
-function
-    indexfunc(T, h) {
-    var i, k, m, n, p1, r, t, w;
+function indexfunc(T: Tensor, h: number): void {
 
-    m = T.dim.length;
+    const m = T.dim.length;
 
-    n = stack.length - h;
+    const n = stack.length - h;
 
-    r = m - n; // rank of result
+    const r = m - n; // rank of result
 
     if (r < 0)
         stopf("index error");
 
-    k = 0;
+    let k = 0;
 
-    for (i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
         push(stack[h + i]);
-        t = pop_integer();
+        const t = pop_integer();
         if (t < 1 || t > T.dim[i])
             stopf("index error");
         k = k * T.dim[i] + t - 1;
@@ -6612,25 +6602,24 @@ function
         return;
     }
 
-    w = 1;
+    let w = 1;
 
-    for (i = n; i < m; i++)
+    for (let i = n; i < m; i++)
         w *= T.dim[i];
 
     k *= w;
 
-    p1 = alloc_tensor();
+    const p1 = alloc_tensor();
 
-    for (i = 0; i < w; i++)
+    for (let i = 0; i < w; i++)
         p1.elem[i] = T.elem[k + i];
 
-    for (i = 0; i < r; i++)
+    for (let i = 0; i < r; i++)
         p1.dim[i] = T.dim[n + i];
 
     push(p1);
 }
-function
-    eval_infixform(p1) {
+function eval_infixform(p1: unknown): void {
     push(cadr(p1));
     evalf();
     p1 = pop();
@@ -6640,9 +6629,8 @@ function
 
     push_string(outbuf);
 }
-function
-    eval_inner(p1) {
-    var h = stack.length;
+function eval_inner(p1: unknown): void {
+    const h = stack.length;
 
     // evaluate from right to left
 
@@ -6666,12 +6654,11 @@ function
     }
 }
 
-function
-    inner() {
-    var i, j, k, n, mcol, mrow, ncol, ndim, nrow, p1, p2, p3;
+function inner(): void {
 
-    p2 = pop();
-    p1 = pop();
+    let p2 = pop();
+    let p1 = pop();
+    let p3: Tensor;
 
     if (!istensor(p1) && !istensor(p2)) {
         push(p1);
@@ -6687,27 +6674,34 @@ function
     }
 
     if (!istensor(p1) && istensor(p2)) {
-        p2 = copy_tensor(p2);
-        n = p2.elem.length;
-        for (i = 0; i < n; i++) {
+        const T = copy_tensor(p2);
+        const n = T.elem.length;
+        for (let i = 0; i < n; i++) {
             push(p1);
-            push(p2.elem[i]);
+            push(T.elem[i]);
             multiply();
-            p2.elem[i] = pop();
+            T.elem[i] = pop();
         }
-        push(p2);
+        push(T);
         return;
     }
 
-    k = p1.dim.length - 1;
+    if (istensor(p1) && istensor(p2)) {
+        // Do nothing
+    }
+    else {
+        throw new Error();
+    }
 
-    ncol = p1.dim[k];
-    mrow = p2.dim[0];
+    let k = p1.dim.length - 1;
+
+    const ncol = p1.dim[k];
+    const mrow = p2.dim[0];
 
     if (ncol != mrow)
         stopf("inner: dimension err");
 
-    ndim = p1.dim.length + p2.dim.length - 2;
+    const ndim = p1.dim.length + p2.dim.length - 2;
 
     //	nrow is the number of rows in p1
     //
@@ -6721,14 +6715,14 @@ function
     //
     //	                4  3		mcol = 4 * 3 = 12
 
-    nrow = p1.elem.length / ncol;
-    mcol = p2.elem.length / mrow;
+    const nrow = p1.elem.length / ncol;
+    const mcol = p2.elem.length / mrow;
 
     p3 = alloc_tensor();
 
-    for (i = 0; i < nrow; i++) {
-        for (j = 0; j < mcol; j++) {
-            for (k = 0; k < ncol; k++) {
+    for (let i = 0; i < nrow; i++) {
+        for (let j = 0; j < mcol; j++) {
+            for (let k = 0; k < ncol; k++) {
                 push(p1.elem[i * ncol + k]);
                 push(p2.elem[k * mcol + j]);
                 multiply();
@@ -6747,19 +6741,19 @@ function
 
     k = 0;
 
-    n = p1.dim.length - 1;
+    let n = p1.dim.length - 1;
 
-    for (i = 0; i < n; i++)
+    for (let i = 0; i < n; i++)
         p3.dim[k++] = p1.dim[i];
 
     n = p2.dim.length;
 
-    for (i = 1; i < n; i++)
+    for (let i = 1; i < n; i++)
         p3.dim[k++] = p2.dim[i];
 
     push(p3);
 }
-var integral_tab_exp = [
+const integral_tab_exp: string[] = [
 
     // x^n exp(a x + b)
 
@@ -7002,7 +6996,7 @@ var integral_tab_exp = [
 
 // log(a x) is transformed to log(a) + log(x)
 
-var integral_tab_log = [
+const integral_tab_log: string[] = [
 
     "log(x)",
     "x log(x) - x",
@@ -7049,7 +7043,7 @@ var integral_tab_log = [
     "1",
 ];
 
-var integral_tab_trig = [
+const integral_tab_trig: string[] = [
 
     "sin(a x)",
     "-cos(a x) / a",
@@ -7308,7 +7302,7 @@ var integral_tab_trig = [
     "1",
 ];
 
-var integral_tab_power = [
+const integral_tab_power: string[] = [
 
     "a", // for forms c^d where both c and d are constant expressions
     "a x",
@@ -7429,7 +7423,7 @@ var integral_tab_power = [
     "1",
 ];
 
-var integral_tab = [
+const integral_tab: string[] = [
 
     "a",
     "a x",
@@ -7693,9 +7687,7 @@ var integral_tab = [
     "1",
 ];
 
-function
-    eval_integral(p1) {
-    var flag, i, n, X, Y;
+function eval_integral(p1: unknown): void {
 
     push(cadr(p1));
     evalf();
@@ -7708,14 +7700,17 @@ function
         return;
     }
 
-    flag = 0;
+    let flag = 0;
+    let X: unknown;
+    let Y: unknown;
 
     while (iscons(p1) || flag) {
 
         if (flag) {
             X = Y;
             flag = 0;
-        } else {
+        }
+        else {
             push(car(p1));
             evalf();
             X = pop();
@@ -7724,17 +7719,17 @@ function
 
         if (isnum(X)) {
             push(X);
-            n = pop_integer();
+            const n = pop_integer();
             push_symbol(X_LOWER);
             X = pop();
-            for (i = 0; i < n; i++) {
+            for (let i = 0; i < n; i++) {
                 push(X);
                 integral();
             }
             continue;
         }
 
-        if (!isusersymbol(X))
+        if (!(issymbol(X) && isusersymbol(X)))
             stopf("integral");
 
         if (iscons(p1)) {
@@ -7746,8 +7741,8 @@ function
 
             if (isnum(Y)) {
                 push(Y);
-                n = pop_integer();
-                for (i = 0; i < n; i++) {
+                const n = pop_integer();
+                for (let i = 0; i < n; i++) {
                     push(X);
                     integral();
                 }
@@ -7762,19 +7757,17 @@ function
     }
 }
 
-function
-    integral() {
-    var h, p1, F, X;
+function integral(): void {
 
-    X = pop();
-    F = pop();
+    const X = pop();
+    let F = pop();
 
-    if (!isusersymbol(X))
+    if (!(issymbol(X) && isusersymbol(X)))
         stopf("integral: symbol expected");
 
     if (car(F) == symbol(ADD)) {
-        h = stack.length;
-        p1 = cdr(F);
+        const h = stack.length;
+        let p1 = cdr(F);
         while (iscons(p1)) {
             push(car(p1));
             push(X);
@@ -7798,8 +7791,7 @@ function
     integral_nib(F, X);
 }
 
-function integral_nib(F, X) {
-    var h;
+function integral_nib(F: unknown, X: unknown): void {
 
     save_symbol(symbol(SA));
     save_symbol(symbol(SB));
@@ -7809,7 +7801,7 @@ function integral_nib(F, X) {
 
     // put constants in F(X) on the stack
 
-    h = stack.length;
+    const h = stack.length;
 
     push_integer(1); // 1 is a candidate for a or b
 
