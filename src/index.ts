@@ -2,10 +2,14 @@ export interface Cons {
     car: unknown;
     cdr: unknown;
 }
+export interface Flt {
+    d: number;
+}
 export interface Rat {
     a: number[];
     b: number[];
 }
+export type Num = Flt | Rat;
 export interface Str {
     string: string;
 }
@@ -983,20 +987,17 @@ function compatible_dimensions(p1: unknown, p2: unknown): 0 | 1 {
 
     return 1;
 }
-function
-    complexity(p) {
-    var n = 1;
+function complexity(p: unknown): number {
+    let n = 1;
     while (iscons(p)) {
         n += complexity(car(p));
         p = cdr(p);
     }
     return n;
 }
-function
-    cons() {
-    var p1, p2;
-    p2 = pop();
-    p1 = pop();
+function cons(): void {
+    const p2 = pop();
+    const p1 = pop();
     push({ car: p1, cdr: p2 });
 }
 const ABS = "abs";
@@ -1204,14 +1205,14 @@ function decomp() {
 }
 
 function decomp_sum(F: unknown, X: unknown) {
-    var h, i, j, k, n;
-    var p1, p2;
 
-    h = stack.length;
+    let p2: unknown;
+
+    let h = stack.length;
 
     // partition terms
 
-    p1 = cdr(F);
+    let p1 = cdr(F);
 
     while (iscons(p1)) {
         p2 = car(p1);
@@ -1231,17 +1232,17 @@ function decomp_sum(F: unknown, X: unknown) {
 
     // combine const parts of matching var parts
 
-    n = stack.length - h;
+    let n = stack.length - h;
 
-    for (i = 0; i < n - 2; i += 2)
-        for (j = i + 2; j < n; j += 2) {
+    for (let i = 0; i < n - 2; i += 2)
+        for (let j = i + 2; j < n; j += 2) {
             if (!equal(stack[h + i + 1], stack[h + j + 1]))
                 continue;
             push(stack[h + i]); // add const parts
             push(stack[h + j]);
             add();
             stack[h + i] = pop();
-            for (k = j; k < n - 2; k++)
+            for (let k = j; k < n - 2; k++)
                 stack[h + k] = stack[h + k + 2];
             j -= 2; // use same j again
             n -= 2;
@@ -1281,14 +1282,11 @@ function decomp_sum(F: unknown, X: unknown) {
     }
 }
 
-function
-    decomp_product(F, X) {
-    var h, n;
-    var p1;
+function decomp_product(F: unknown, X: unknown) {
 
     // decomp factors involving x
 
-    p1 = cdr(F);
+    let p1 = cdr(F);
     while (iscons(p1)) {
         if (findf(car(p1), X)) {
             push(car(p1));
@@ -1300,7 +1298,7 @@ function
 
     // combine constant factors
 
-    h = stack.length;
+    const h = stack.length;
     p1 = cdr(F);
     while (iscons(p1)) {
         if (!findf(car(p1), X))
@@ -1308,7 +1306,7 @@ function
         p1 = cdr(p1);
     }
 
-    n = stack.length - h;
+    const n = stack.length - h;
 
     if (n > 1) {
         list(n);
@@ -1354,22 +1352,21 @@ const EMIT_TABLE = 10;
 let emit_level: number;
 
 function display() {
-    var d, h, p1, w, x, y;
 
     emit_level = 0;
 
-    p1 = pop();
+    let p1 = pop();
 
     emit_list(p1);
 
     p1 = pop();
 
-    h = height(p1);
-    d = depth(p1);
-    w = width(p1);
+    let h = height(p1);
+    const d = depth(p1);
+    let w = width(p1);
 
-    x = HPAD;
-    y = Math.round(h + VPAD);
+    const x = HPAD;
+    const y = Math.round(h + VPAD);
 
     h += d + 2 * VPAD;
     w += 2 * HPAD;
@@ -1389,9 +1386,7 @@ function display() {
     stdout.innerHTML += outbuf;
 }
 
-function
-    emit_args(p) {
-    var t;
+function emit_args(p: unknown): void {
 
     p = cdr(p);
 
@@ -1401,7 +1396,7 @@ function
         return;
     }
 
-    t = stack.length;
+    const t = stack.length;
 
     emit_expr(car(p));
 
@@ -1419,25 +1414,22 @@ function
     emit_update_subexpr();
 }
 
-function
-    emit_base(p) {
+function emit_base(p: unknown): void {
     if (isnegativenumber(p) || isfraction(p) || isdouble(p) || car(p) == symbol(ADD) || car(p) == symbol(MULTIPLY) || car(p) == symbol(POWER))
         emit_subexpr(p);
     else
         emit_expr(p);
 }
 
-function
-    emit_denominators(p) {
-    var n, q, s, t;
+function emit_denominators(p: unknown) {
 
-    t = stack.length;
-    n = count_denominators(p);
+    const t = stack.length;
+    const n = count_denominators(p);
     p = cdr(p);
 
     while (iscons(p)) {
 
-        q = car(p);
+        let q = car(p);
         p = cdr(p);
 
         if (!isdenominator(q))
@@ -1447,7 +1439,7 @@ function
             emit_medium_space();
 
         if (isrational(q)) {
-            s = bignum_itoa(q.b);
+            const s = bignum_itoa(q.b);
             emit_roman_string(s);
             continue;
         }
@@ -1458,7 +1450,8 @@ function
                 emit_expr(q); // parens not needed
             else
                 emit_factor(q);
-        } else {
+        }
+        else {
             emit_base(cadr(q));
             emit_numeric_exponent(caddr(q)); // sign is not emitted
         }
@@ -1467,13 +1460,13 @@ function
     emit_update_list(t);
 }
 
-function
-    emit_double(p) {
-    var i, j, k, s, t;
+function emit_double(p: Flt): void {
+    let i: number;
+    let j: number;
 
-    s = fmtnum(p.d);
+    const s = fmtnum(p.d);
 
-    k = 0;
+    let k = 0;
 
     while (k < s.length && s.charAt(k) != "." && s.charAt(k) != "E" && s.charAt(k) != "e")
         k++;
@@ -1511,7 +1504,7 @@ function
 
     emit_level++;
 
-    t = stack.length;
+    const t = stack.length;
 
     // sign of exponent
 
@@ -1537,8 +1530,7 @@ function
     emit_update_superscript();
 }
 
-function
-    emit_exponent(p) {
+function emit_exponent(p: unknown): void {
     if (isnum(p) && !isnegativenumber(p)) {
         emit_numeric_exponent(p); // sign is not emitted
         return;
@@ -1551,8 +1543,7 @@ function
     emit_update_superscript();
 }
 
-function
-    emit_expr(p) {
+function emit_expr(p: unknown): void {
     if (isnegativeterm(p) || (car(p) == symbol(ADD) && isnegativeterm(cadr(p)))) {
         emit_roman_char(MINUS_SIGN);
         emit_thin_space();
@@ -1564,8 +1555,7 @@ function
         emit_term(p);
 }
 
-function
-    emit_expr_nib(p) {
+function emit_expr_nib(p: unknown): void {
     p = cdr(p);
     emit_term(car(p));
     p = cdr(p);
@@ -1579,8 +1569,7 @@ function
     }
 }
 
-function
-    emit_factor(p) {
+function emit_factor(p: unknown) {
     if (isrational(p)) {
         emit_rational(p);
         return;
@@ -1617,15 +1606,13 @@ function
     }
 }
 
-function
-    emit_fraction(p) {
+function emit_fraction(p: unknown): void {
     emit_numerators(p);
     emit_denominators(p);
     emit_update_fraction();
 }
 
-function
-    emit_function(p) {
+function emit_function(p: unknown): void {
     // d(f(x),x)
 
     if (car(p) == symbol(DERIVATIVE)) {
@@ -1703,8 +1690,7 @@ function
     emit_args(p);
 }
 
-function
-    emit_indices(p) {
+function emit_indices(p: unknown): void {
     emit_roman_string("[");
 
     p = cdr(p);
@@ -1723,25 +1709,23 @@ function
     emit_roman_string("]");
 }
 
-function
-    emit_infix_operator(char_num) {
+function emit_infix_operator(char_num: number): void {
     emit_thick_space();
     emit_roman_char(char_num);
     emit_thick_space();
 }
 
-function
-    emit_italic_char(char_num) {
-    var d, font_num, h, w;
+function emit_italic_char(char_num: number): void {
+    let font_num: number;
 
     if (emit_level == 0)
         font_num = ITALIC_FONT;
     else
         font_num = SMALL_ITALIC_FONT;
 
-    h = get_cap_height(font_num);
-    d = get_char_depth(font_num, char_num);
-    w = get_char_width(font_num, char_num);
+    const h = get_cap_height(font_num);
+    const d = get_char_depth(font_num, char_num);
+    const w = get_char_width(font_num, char_num);
 
     push_double(EMIT_CHAR);
     push_double(h);
@@ -1756,23 +1740,18 @@ function
         emit_thin_space();
 }
 
-function
-    emit_italic_string(s) {
-    var i;
-    for (i = 0; i < s.length; i++)
+function emit_italic_string(s: string): void {
+    for (let i = 0; i < s.length; i++)
         emit_italic_char(s.charCodeAt(i));
 }
 
-function
-    emit_list(p) {
-    var t = stack.length;
+function emit_list(p: unknown): void {
+    const t = stack.length;
     emit_expr(p);
     emit_update_list(t);
 }
 
-function
-    emit_matrix(p, d, k) {
-    var i, j, m, n, span;
+function emit_matrix(p: Tensor, d: number, k: number): void {
 
     if (d == p.dim.length) {
         emit_list(p.elem[k]);
@@ -1781,26 +1760,25 @@ function
 
     // compute element span
 
-    span = 1;
+    let span = 1;
 
-    n = p.dim.length;
+    let n = p.dim.length;
 
-    for (i = d + 2; i < n; i++)
+    for (let i = d + 2; i < n; i++)
         span *= p.dim[i];
 
     n = p.dim[d];		// number of rows
-    m = p.dim[d + 1];	// number of columns
+    const m = p.dim[d + 1];	// number of columns
 
-    for (i = 0; i < n; i++)
-        for (j = 0; j < m; j++)
+    for (let i = 0; i < n; i++)
+        for (let j = 0; j < m; j++)
             emit_matrix(p, d + 2, k + (i * m + j) * span);
 
     emit_update_table(n, m);
 }
 
-function
-    emit_medium_space() {
-    var w;
+function emit_medium_space(): void {
+    let w: number;
 
     if (emit_level == 0)
         w = 0.5 * get_char_width(ROMAN_FONT, LOWER_N);
@@ -1815,17 +1793,15 @@ function
     list(4);
 }
 
-function
-    emit_numerators(p) {
-    var n, q, s, t;
+function emit_numerators(p: unknown): void {
 
-    t = stack.length;
-    n = count_numerators(p);
+    const t = stack.length;
+    const n = count_numerators(p);
     p = cdr(p);
 
     while (iscons(p)) {
 
-        q = car(p);
+        const q = car(p);
         p = cdr(p);
 
         if (!isnumerator(q))
@@ -1835,7 +1811,7 @@ function
             emit_medium_space();
 
         if (isrational(q)) {
-            s = bignum_itoa(q.a);
+            const s = bignum_itoa(q.a);
             emit_roman_string(s);
             continue;
         }
@@ -1854,24 +1830,24 @@ function
 
 // p is rational or double, sign is not emitted
 
-function
-    emit_numeric_exponent(p) {
-    var s, t;
+function emit_numeric_exponent(p: Num) {
 
     emit_level++;
 
-    t = stack.length;
+    const t = stack.length;
 
     if (isrational(p)) {
-        s = bignum_itoa(p.a);
+        let s = bignum_itoa(p.a);
         emit_roman_string(s);
         if (isfraction(p)) {
             emit_roman_string("/");
             s = bignum_itoa(p.b);
             emit_roman_string(s);
         }
-    } else
+    }
+    else {
         emit_double(p);
+    }
 
     emit_update_list(t);
 
@@ -1880,8 +1856,7 @@ function
     emit_update_superscript();
 }
 
-function
-    emit_power(p) {
+function emit_power(p: unknown): void {
     if (cadr(p) == symbol(EXP1)) {
         emit_roman_string("exp");
         emit_args(cdr(p));
@@ -1908,20 +1883,18 @@ function
     emit_exponent(caddr(p));
 }
 
-function
-    emit_rational(p) {
-    var s, t;
+function emit_rational(p: Rat): void {
 
     if (isinteger(p)) {
-        s = bignum_itoa(p.a);
+        const s = bignum_itoa(p.a);
         emit_roman_string(s);
         return;
     }
 
     emit_level++;
 
-    t = stack.length;
-    s = bignum_itoa(p.a);
+    let t = stack.length;
+    let s = bignum_itoa(p.a);
     emit_roman_string(s);
     emit_update_list(t);
 
@@ -1937,13 +1910,11 @@ function
 
 // p = y^x where x is a negative number
 
-function
-    emit_reciprocal(p) {
-    var t;
+function emit_reciprocal(p: unknown): void {
 
     emit_roman_string("1"); // numerator
 
-    t = stack.length;
+    const t = stack.length;
 
     if (isminusone(caddr(p)))
         emit_expr(cadr(p));
@@ -1957,18 +1928,17 @@ function
     emit_update_fraction();
 }
 
-function
-    emit_roman_char(char_num) {
-    var d, font_num, h, w;
+function emit_roman_char(char_num: number): void {
+    let font_num: number;
 
     if (emit_level == 0)
         font_num = ROMAN_FONT;
     else
         font_num = SMALL_ROMAN_FONT;
 
-    h = get_cap_height(font_num);
-    d = get_char_depth(font_num, char_num);
-    w = get_char_width(font_num, char_num);
+    const h = get_cap_height(font_num);
+    const d = get_char_depth(font_num, char_num);
+    const w = get_char_width(font_num, char_num);
 
     push_double(EMIT_CHAR);
     push_double(h);
@@ -1980,41 +1950,35 @@ function
     list(6);
 }
 
-function
-    emit_roman_string(s) {
-    var i;
-    for (i = 0; i < s.length; i++)
+function emit_roman_string(s: string): void {
+    for (let i = 0; i < s.length; i++)
         emit_roman_char(s.charCodeAt(i));
 }
 
-function
-    emit_string(p) {
+function emit_string(p: Str): void {
     emit_roman_string(p.string);
 }
 
-function
-    emit_subexpr(p) {
+function emit_subexpr(p: unknown): void {
     emit_list(p);
     emit_update_subexpr();
 }
 
-function
-    emit_symbol(p) {
-    var k, s, t;
+function emit_symbol(p: unknown): void {
 
     if (p == symbol(EXP1)) {
         emit_roman_string("exp(1)");
         return;
     }
 
-    s = printname(p);
+    const s = printname(p);
 
     if (iskeyword(p) || p == symbol(LAST) || p == symbol(TRACE) || p == symbol(TTY)) {
         emit_roman_string(s);
         return;
     }
 
-    k = emit_symbol_fragment(s, 0);
+    let k = emit_symbol_fragment(s, 0);
 
     if (k == s.length)
         return;
@@ -2023,7 +1987,7 @@ function
 
     emit_level++;
 
-    t = stack.length;
+    const t = stack.length;
 
     while (k < s.length)
         k = emit_symbol_fragment(s, k);
@@ -2100,11 +2064,11 @@ const symbol_italic_tab = [
     0,
 ];
 
-function
-    emit_symbol_fragment(s, k) {
-    var char_num, i, n, t;
+function emit_symbol_fragment(s: string, k: number): number {
+    let i: number;
+    let t: string;
 
-    n = symbol_name_tab.length;
+    const n = symbol_name_tab.length;
 
     for (i = 0; i < n; i++) {
         t = symbol_name_tab[i];
@@ -2120,7 +2084,7 @@ function
         return k + 1;
     }
 
-    char_num = i + 128;
+    const char_num = i + 128;
 
     if (symbol_italic_tab[i])
         emit_italic_char(char_num);
@@ -2130,24 +2094,21 @@ function
     return k + t.length;
 }
 
-function
-    emit_tensor(p) {
+function emit_tensor(p: Tensor): void {
     if (p.dim.length % 2 == 1)
         emit_vector(p); // odd rank
     else
         emit_matrix(p, 0, 0); // even rank
 }
 
-function
-    emit_term(p) {
+function emit_term(p: unknown): void {
     if (car(p) == symbol(MULTIPLY))
         emit_term_nib(p);
     else
         emit_factor(p);
 }
 
-function
-    emit_term_nib(p) {
+function emit_term_nib(p: unknown): void {
     if (find_denominator(p)) {
         emit_fraction(p);
         return;
@@ -2171,9 +2132,8 @@ function
     }
 }
 
-function
-    emit_thick_space() {
-    var w;
+function emit_thick_space(): void {
+    let w: number;
 
     if (emit_level == 0)
         w = get_char_width(ROMAN_FONT, LOWER_N);
@@ -2188,9 +2148,8 @@ function
     list(4);
 }
 
-function
-    emit_thin_space() {
-    var w;
+function emit_thin_space(): void {
+    let w: number;
 
     if (emit_level == 0)
         w = 0.25 * get_char_width(ROMAN_FONT, LOWER_N);
@@ -2205,8 +2164,7 @@ function
     list(4);
 }
 
-function
-    emit_update_fraction() {
+function emit_update_fraction() {
     var d, font_num, h, m, opcode, p1, p2, v, w;
 
     p2 = pop(); // denominator
@@ -2219,7 +2177,8 @@ function
     if (emit_level == 0) {
         opcode = EMIT_FRACTION;
         font_num = ROMAN_FONT;
-    } else {
+    }
+    else {
         opcode = EMIT_SMALL_FRACTION;
         font_num = SMALL_ROMAN_FONT;
     }
@@ -2243,8 +2202,7 @@ function
     list(6);
 }
 
-function
-    emit_update_list(t) {
+function emit_update_list(t: number): void {
     var d, h, i, p1, w;
 
     if (stack.length - t == 1)
@@ -2480,8 +2438,7 @@ function
     list(10);
 }
 
-function
-    emit_vector(p) {
+function emit_vector(p: Tensor): void {
     var i, n, span;
 
     // compute element span
@@ -13707,13 +13664,11 @@ function
 
     return 0;
 }
-function
-    isdigit(s) {
-    var c = s.charCodeAt(0);
+function isdigit(s: string): boolean {
+    const c = s.charCodeAt(0);
     return c >= 48 && c <= 57;
 }
-function
-    isdouble(p) {
+function isdouble(p: unknown): p is Flt {
     return "d" in p;
 }
 function
@@ -13827,8 +13782,7 @@ function
     isnegativeterm(p) {
     return isnegativenumber(p) || (car(p) == symbol(MULTIPLY) && isnegativenumber(cadr(p)));
 }
-function
-    isnum(p) {
+function isnum(p: unknown): p is Num {
     return isrational(p) || isdouble(p);
 }
 function
