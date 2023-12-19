@@ -4330,7 +4330,7 @@ function ceilingfunc(): void {
         return;
     }
 
-    if (isinteger(p1)) {
+    if (isrational(p1) && isinteger(p1)) {
         push(p1);
         return;
     }
@@ -4817,7 +4817,7 @@ function cosfunc(): void {
     multiply();
     p2 = pop();
 
-    if (!isinteger(p2)) {
+    if (!(isrational(p2) && isinteger(p2))) {
         push_symbol(COS);
         push(p1);
         list(2);
@@ -4899,7 +4899,7 @@ function cosfunc_sum(p1: unknown): void {
         push_symbol(PI);
         divide();
         let p3 = pop();
-        if (isinteger(p3)) {
+        if (isrational(p3) && isinteger(p3)) {
             push(p1);
             push(car(p2));
             subtract();
@@ -6385,7 +6385,7 @@ function floorfunc(): void {
         return;
     }
 
-    if (isinteger(p1)) {
+    if (isrational(p1) && isinteger(p1)) {
         push(p1);
         return;
     }
@@ -7816,11 +7816,9 @@ function integral_nib(F: unknown, X: unknown): void {
     restore_symbol();
 }
 
-function
-    integral_lookup(h, F) {
-    var t;
+function integral_lookup(h: number, F: unknown): void {
 
-    t = integral_classify(F);
+    const t = integral_classify(F);
 
     if ((t & 1) && integral_search(h, F, integral_tab_exp, integral_tab_exp.length))
         return;
@@ -7834,7 +7832,8 @@ function
     if (car(F) == symbol(POWER)) {
         if (integral_search(h, F, integral_tab_power, integral_tab_power.length))
             return;
-    } else {
+    }
+    else {
         if (integral_search(h, F, integral_tab, integral_tab.length))
             return;
     }
@@ -7842,11 +7841,10 @@ function
     stopf("integral: no solution found");
 }
 
-function
-    integral_classify(p) {
-    var t = 0;
+function integral_classify(p: unknown): number {
 
     if (iscons(p)) {
+        let t = 0;
         while (iscons(p)) {
             t |= integral_classify(car(p));
             p = cdr(p);
@@ -7866,9 +7864,10 @@ function
     return 0;
 }
 
-function
-    integral_search(h, F, table, n) {
-    var i, C, I;
+function integral_search(h: number, F: unknown, table: string[], n: number): 0 | 1 {
+    let i: number;
+    let C: unknown;
+    let I: unknown;
 
     for (i = 0; i < n; i += 3) {
 
@@ -7893,21 +7892,19 @@ function
     return 1;
 }
 
-function
-    integral_search_nib(h, F, I, C) {
-    var i, j, p1;
+function integral_search_nib(h: number, F: unknown, I: unknown, C: unknown): 0 | 1 {
 
-    for (i = h; i < stack.length; i++) {
+    for (let i = h; i < stack.length; i++) {
 
         set_symbol(symbol(SA), stack[i], symbol(NIL));
 
-        for (j = h; j < stack.length; j++) {
+        for (let j = h; j < stack.length; j++) {
 
             set_symbol(symbol(SB), stack[j], symbol(NIL));
 
             push(C);			// condition ok?
             evalf();
-            p1 = pop();
+            let p1 = pop();
             if (iszero(p1))
                 continue;		// no, go to next j
 
@@ -7923,18 +7920,15 @@ function
 
     return 0;					// no
 }
-function
-    eval_inv(p1) {
+function eval_inv(p1: unknown): void {
     push(cadr(p1));
     evalf();
     inv();
 }
 
-function
-    inv() {
-    var p1;
+function inv(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (!istensor(p1)) {
         push(p1);
@@ -7953,8 +7947,7 @@ function
 
     divide();
 }
-function
-    eval_kronecker(p1) {
+function eval_kronecker(p1: unknown): void {
     push(cadr(p1));
     evalf();
     p1 = cddr(p1);
@@ -7966,12 +7959,10 @@ function
     }
 }
 
-function
-    kronecker() {
-    var h, i, j, k, l, m, n, p, q, p1, p2, p3;
+function kronecker(): void {
 
-    p2 = pop();
-    p1 = pop();
+    const p2 = pop();
+    const p1 = pop();
 
     if (!istensor(p1) || !istensor(p2)) {
         push(p1);
@@ -7983,22 +7974,22 @@ function
     if (p1.dim.length > 2 || p2.dim.length > 2)
         stopf("kronecker");
 
-    m = p1.dim[0];
-    n = p1.dim.length == 1 ? 1 : p1.dim[1];
+    const m = p1.dim[0];
+    const n = p1.dim.length == 1 ? 1 : p1.dim[1];
 
-    p = p2.dim[0];
-    q = p2.dim.length == 1 ? 1 : p2.dim[1];
+    const p = p2.dim[0];
+    const q = p2.dim.length == 1 ? 1 : p2.dim[1];
 
-    p3 = alloc_tensor();
+    const p3 = alloc_tensor();
 
     // result matrix has (m * p) rows and (n * q) columns
 
-    h = 0;
+    let h = 0;
 
-    for (i = 0; i < m; i++)
-        for (j = 0; j < p; j++)
-            for (k = 0; k < n; k++)
-                for (l = 0; l < q; l++) {
+    for (let i = 0; i < m; i++)
+        for (let j = 0; j < p; j++)
+            for (let k = 0; k < n; k++)
+                for (let l = 0; l < q; l++) {
                     push(p1.elem[n * i + k]);
                     push(p2.elem[q * j + l]);
                     multiply();
@@ -8014,28 +8005,25 @@ function
 
     push(p3);
 }
-function
-    eval_log(p1) {
+function eval_log(p1: unknown): void {
     push(cadr(p1));
     evalf();
     logfunc();
 }
 
-function
-    logfunc() {
-    var d, h, i, n, p1, p2;
+function logfunc(): void {
 
-    p1 = pop();
+    let p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
+        const T = copy_tensor(p1);
+        const n = T.elem.length;
+        for (let i = 0; i < n; i++) {
+            push(T.elem[i]);
             logfunc();
-            p1.elem[i] = pop();
+            T.elem[i] = pop();
         }
-        push(p1);
+        push(T);
         return;
     }
 
@@ -8050,7 +8038,7 @@ function
 
     if (isdouble(p1)) {
         push(p1);
-        d = pop_double();
+        const d = pop_double();
         if (d > 0.0) {
             push_double(Math.log(d));
             return;
@@ -8085,7 +8073,7 @@ function
         return;
     }
 
-    if (isnegativenumber(p1)) {
+    if (isnum(p1) && isnegativenumber(p1)) {
         push(p1);
         negate();
         logfunc();
@@ -8099,18 +8087,19 @@ function
     // log(10) -> log(2) + log(5)
 
     if (isrational(p1)) {
-        h = stack.length;
+        const h = stack.length;
         push(p1);
         factor_factor();
-        for (i = h; i < stack.length; i++) {
-            p2 = stack[i];
+        for (let i = h; i < stack.length; i++) {
+            const p2 = stack[i];
             if (car(p2) == symbol(POWER)) {
                 push(caddr(p2)); // exponent
                 push_symbol(LOG);
                 push(cadr(p2)); // base
                 list(2);
                 multiply();
-            } else {
+            }
+            else {
                 push_symbol(LOG);
                 push(p2);
                 list(2);
@@ -8134,7 +8123,7 @@ function
     // log(a * b) -> log(a) + log(b)
 
     if (car(p1) == symbol(MULTIPLY)) {
-        h = stack.length;
+        const h = stack.length;
         p1 = cdr(p1);
         while (iscons(p1)) {
             push(car(p1));
@@ -8149,28 +8138,34 @@ function
     push(p1);
     list(2);
 }
-function
-    eval_mag(p1) {
+function eval_mag(p1: unknown): void {
     push(cadr(p1));
     evalf();
     mag();
 }
 
-function
-    mag() {
-    var i, n, p1;
+/**
+ * Returns a copy of the source Tensor with foo applied to each element.
+ * @param source 
+ * @param foo A function that is expected to pop a single value from the stack and push the result.
+ */
+function elementwise(source: Tensor, foo: () => void): Tensor {
+    const T = copy_tensor(source);
+    const n = T.elem.length;
+    for (let i = 0; i < n; i++) {
+        push(T.elem[i]);
+        foo();
+        T.elem[i] = pop();
+    }
+    return T;
+}
 
-    p1 = pop();
+function mag(): void {
+
+    const p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
-            mag();
-            p1.elem[i] = pop();
-        }
-        push(p1);
+        push(elementwise(p1, mag));
         return;
     }
 
@@ -8187,11 +8182,9 @@ function
     divide();
 }
 
-function
-    mag_nib() {
-    var h, p1, RE, IM;
+function mag_nib(): void {
 
-    p1 = pop();
+    let p1 = pop();
 
     if (isnum(p1)) {
         push(p1);
@@ -8219,7 +8212,7 @@ function
 
     if (car(p1) == symbol(MULTIPLY)) {
         p1 = cdr(p1);
-        h = stack.length;
+        const h = stack.length;
         while (iscons(p1)) {
             push(car(p1));
             mag();
@@ -8237,10 +8230,10 @@ function
         p1 = pop();
         push(p1);
         real();
-        RE = pop();
+        const RE = pop();
         push(p1);
         imag();
-        IM = pop();
+        const IM = pop();
         push(RE);
         push(RE);
         multiply();
@@ -8257,21 +8250,19 @@ function
 
     push(p1);
 }
-function
-    eval_minor(p1) {
-    var i, j, p2;
+function eval_minor(p1: unknown): void {
 
     push(cadr(p1));
     evalf();
-    p2 = pop();
+    const p2 = pop();
 
     push(caddr(p1));
     evalf();
-    i = pop_integer();
+    const i = pop_integer();
 
     push(cadddr(p1));
     evalf();
-    j = pop_integer();
+    const j = pop_integer();
 
     if (!istensor(p2) || p2.dim.length != 2 || p2.dim[0] != p2.dim[1])
         stopf("minor");
@@ -8285,21 +8276,19 @@ function
 
     det();
 }
-function
-    eval_minormatrix(p1) {
-    var i, j, p2;
+function eval_minormatrix(p1: unknown): void {
 
     push(cadr(p1));
     evalf();
-    p2 = pop();
+    const p2 = pop();
 
     push(caddr(p1));
     evalf();
-    i = pop_integer();
+    const i = pop_integer();
 
     push(cadddr(p1));
     evalf();
-    j = pop_integer();
+    const j = pop_integer();
 
     if (!istensor(p2) || p2.dim.length != 2)
         stopf("minormatrix: matrix expected");
@@ -8313,12 +8302,11 @@ function
 }
 
 function minormatrix(row: number, col: number): void {
-    var i, j, k, m, n, p1, p2;
 
-    p1 = pop() as unknown as Tensor;
+    const p1 = pop() as unknown as Tensor;
 
-    n = p1.dim[0];
-    m = p1.dim[1];
+    const n = p1.dim[0];
+    const m = p1.dim[1];
 
     if (n == 2 && m == 2) {
         if (row == 1) {
@@ -8326,7 +8314,8 @@ function minormatrix(row: number, col: number): void {
                 push(p1.elem[3]);
             else
                 push(p1.elem[2]);
-        } else {
+        }
+        else {
             if (col == 1)
                 push(p1.elem[1]);
             else
@@ -8334,6 +8323,8 @@ function minormatrix(row: number, col: number): void {
         }
         return;
     }
+
+    let p2: Tensor;
 
     if (n == 2)
         p2 = alloc_vector(m - 1);
@@ -8347,14 +8338,14 @@ function minormatrix(row: number, col: number): void {
     row--;
     col--;
 
-    k = 0;
+    let k = 0;
 
-    for (i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
 
         if (i == row)
             continue;
 
-        for (j = 0; j < m; j++) {
+        for (let j = 0; j < m; j++) {
 
             if (j == col)
                 continue;
@@ -8365,7 +8356,7 @@ function minormatrix(row: number, col: number): void {
 
     push(p2);
 }
-function eval_mod(p1) {
+function eval_mod(p1: unknown): void {
     push(cadr(p1));
     evalf();
     push(caddr(p1));
@@ -8373,18 +8364,16 @@ function eval_mod(p1) {
     modfunc();
 }
 
-function
-    modfunc() {
-    var d1, d2, i, n, p1, p2;
+function modfunc(): void {
 
-    p2 = pop();
-    p1 = pop();
+    const p2 = pop();
+    const p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
+        const T = copy_tensor(p1);
+        const n = T.elem.length;
+        for (let i = 0; i < n; i++) {
+            push(T.elem[i]);
             push(p2);
             modfunc();
             p1.elem[i] = pop();
@@ -8407,15 +8396,15 @@ function
     }
 
     push(p1);
-    d1 = pop_double();
+    const d1 = pop_double();
 
     push(p2);
-    d2 = pop_double();
+    const d2 = pop_double();
 
     push_double(d1 % d2);
 }
 
-function mod_rationals(p1: unknown, p2: unknown) {
+function mod_rationals(p1: Rat, p2: Rat): void {
     if (isinteger(p1) && isinteger(p2)) {
         mod_integers(p1, p2);
         return;
@@ -8433,7 +8422,7 @@ function mod_rationals(p1: unknown, p2: unknown) {
     add();
 }
 
-function mod_integers(p1, p2) {
+function mod_integers(p1: Rat, p2: Rat): void {
     const a = bignum_mod(p1.a, p2.a);
     const b = bignum_int(1);
     push_bignum(p1.sign, a, b);
@@ -8454,7 +8443,7 @@ function
     eval_nil() {
     push_symbol(NIL);
 }
-function eval_noexpand(p1) {
+function eval_noexpand(p1: unknown): void {
     const t = expanding;
     expanding = 0;
 
@@ -8463,8 +8452,7 @@ function eval_noexpand(p1) {
 
     expanding = t;
 }
-function
-    eval_nonstop() {
+function eval_nonstop(): void {
     if (nonstop) {
         pop();
         push_symbol(NIL);
@@ -8476,9 +8464,11 @@ function
     nonstop = 0;
 }
 
-function
-    eval_nonstop_nib() {
-    var save_tos, save_tof, save_eval_level, save_expanding;
+function eval_nonstop_nib() {
+    let save_tos: number;
+    let save_tof: number;
+    let save_eval_level: number;
+    let save_expanding: number;
 
     try {
         save_tos = stack.length - 1;
@@ -8489,7 +8479,8 @@ function
 
         evalf();
 
-    } catch (errmsg) {
+    }
+    catch (errmsg) {
 
         stack.splice(save_tos);
         frame.splice(save_tof);
@@ -8500,8 +8491,7 @@ function
         push_symbol(NIL); // return value
     }
 }
-function
-    eval_not(p1) {
+function eval_not(p1: unknown): void {
     push(cadr(p1));
     evalp();
     p1 = pop();
@@ -8513,8 +8503,7 @@ function
 const DELTA = 1e-6;
 const EPSILON = 1e-9;
 
-function
-    eval_nroots(p1) {
+function eval_nroots(p1: unknown): void {
     push(cadr(p1));
     evalf();
 
@@ -8523,42 +8512,41 @@ function
     if (iscons(p1)) {
         push(car(p1));
         evalf();
-    } else
+    }
+    else
         push_symbol(X_LOWER);
 
     nroots();
 }
 
-function
-    nroots() {
-    var h, i, n;
-    var A, P, X, RE, IM;
-    var ar, ai, d, xr, xi, yr, yi;
-    var cr = [], ci = [];
-    var tr = [], ti = [];
+function nroots() {
+    const cr: number[] = [];
+    const ci: number[] = [];
+    const tr: number[] = [];
+    const ti: number[] = [];
 
-    X = pop();
-    P = pop();
+    const X = pop();
+    const P = pop();
 
-    h = stack.length;
+    const h = stack.length;
 
     coeffs(P, X); // put coeffs on stack
 
-    n = stack.length - h; // number of coeffs on stack
+    let n = stack.length - h; // number of coeffs on stack
 
     // convert coeffs to floating point
 
-    for (i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
 
         push(stack[h + i]);
         real();
         floatfunc();
-        RE = pop();
+        const RE = pop();
 
         push(stack[h + i]);
         imag();
         floatfunc();
-        IM = pop();
+        const IM = pop();
 
         if (!isdouble(RE) || !isdouble(IM))
             stopf("nroots: coeffs");
@@ -8571,14 +8559,14 @@ function
 
     // divide p(x) by leading coeff
 
-    xr = cr[n - 1];
-    xi = ci[n - 1];
+    const xr = cr[n - 1];
+    const xi = ci[n - 1];
 
-    d = xr * xr + xi * xi;
+    const d = xr * xr + xi * xi;
 
-    for (i = 0; i < n - 1; i++) {
-        yr = (cr[i] * xr + ci[i] * xi) / d;
-        yi = (ci[i] * xr - cr[i] * xi) / d;
+    for (let i = 0; i < n - 1; i++) {
+        const yr = (cr[i] * xr + ci[i] * xi) / d;
+        const yi = (ci[i] * xr - cr[i] * xi) / d;
         cr[i] = yr;
         ci[i] = yi;
     }
@@ -8592,8 +8580,8 @@ function
 
         nfindroot(cr, ci, n, tr, ti);
 
-        ar = tr[0];
-        ai = ti[0];
+        let ar = tr[0];
+        let ai = ti[0];
 
         if (Math.abs(ar) < DELTA * Math.abs(ai))
             ar = 0;
@@ -8630,9 +8618,9 @@ function
 
     sort(n);
 
-    A = alloc_vector(n);
+    const A = alloc_vector(n);
 
-    for (i = 0; i < n; i++)
+    for (let i = 0; i < n; i++)
         A.elem[i] = stack[h + i];
 
     stack.splice(h); // pop all
@@ -8640,8 +8628,7 @@ function
     push(A);
 }
 
-function
-    nfindroot(cr, ci, n, par, pai) {
+function nfindroot(cr: number[], ci: number[], n: number, par: number[], pai: number[]): void {
     var i, j;
     var d;
     var ar, br, dfr, dxr, far, fbr, tr = [], xr, yr;
@@ -8746,20 +8733,17 @@ function
 
 // compute f at a
 
-function
-    fata(cr, ci, n, ar, ai, far, fai) {
-    var k;
-    var xr, xi, yr, yi;
+function fata(cr: number[], ci: number[], n: number, ar: number, ai: number, far: number[], fai: number[]): void {
 
-    yr = cr[n - 1];
-    yi = ci[n - 1];
+    let yr = cr[n - 1];
+    let yi = ci[n - 1];
 
-    for (k = n - 2; k >= 0; k--) {
+    for (let k = n - 2; k >= 0; k--) {
 
         // x = a * y
 
-        xr = ar * yr - ai * yi;
-        xi = ar * yi + ai * yr;
+        const xr = ar * yr - ai * yi;
+        const xi = ar * yi + ai * yr;
 
         // y = x + c
 
@@ -8773,13 +8757,11 @@ function
 
 // divide by x - a
 
-function
-    nreduce(cr, ci, n, ar, ai) {
-    var k;
+function nreduce(cr: number[], ci: number[], n: number, ar: number, ai: number): void {
 
     // divide
 
-    for (k = n - 1; k > 0; k--) {
+    for (let k = n - 1; k > 0; k--) {
         cr[k - 1] += cr[k] * ar - ci[k] * ai;
         ci[k - 1] += ci[k] * ar + cr[k] * ai;
     }
@@ -8789,23 +8771,20 @@ function
 
     // shift
 
-    for (k = 0; k < n - 1; k++) {
+    for (let k = 0; k < n - 1; k++) {
         cr[k] = cr[k + 1];
         ci[k] = ci[k + 1];
     }
 }
 
-function
-    zabs(r, i) {
+function zabs(r: number, i: number): number {
     return Math.sqrt(r * r + i * i);
 }
 
-function
-    urandom() {
+function urandom(): number {
     return 4.0 * Math.random() - 2.0;
 }
-function
-    eval_number(p1) {
+function eval_number(p1: unknown): void {
     push(cadr(p1));
     evalf();
     p1 = pop();
@@ -8815,18 +8794,15 @@ function
     else
         push_integer(0);
 }
-function
-    eval_numerator(p1) {
+function eval_numerator(p1: unknown): void {
     push(cadr(p1));
     evalf();
     numerator();
 }
 
-function
-    numerator() {
-    var p1;
+function numerator(): void {
 
-    p1 = pop();
+    let p1 = pop();
 
     if (isrational(p1)) {
         push_bignum(p1.sign, bignum_copy(p1.a), bignum_int(1));
@@ -13563,7 +13539,7 @@ function
     isimaginaryunit(p) {
     return car(p) == symbol(POWER) && isminusone(cadr(p)) && isequalq(caddr(p), 1, 2);
 }
-function isinteger(p: unknown): boolean {
+function isinteger(p: Rat): boolean {
     return isrational(p) && bignum_equal(p.b, 1);
 }
 function
