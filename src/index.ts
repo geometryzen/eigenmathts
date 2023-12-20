@@ -1639,10 +1639,11 @@ function emit_function(p: unknown): void {
 
     if (car(p) == symbol(INDEX)) {
         p = cdr(p);
-        if (issymbol(car(p)))
-            emit_symbol(car(p));
+        const leading = car(p);
+        if (issymbol(leading))
+            emit_symbol(leading);
         else
-            emit_subexpr(car(p));
+            emit_subexpr(leading);
         emit_indices(p);
         return;
     }
@@ -1684,10 +1685,11 @@ function emit_function(p: unknown): void {
 
     // default
 
-    if (issymbol(car(p)))
-        emit_symbol(car(p));
+    const leading = car(p);
+    if (issymbol(leading))
+        emit_symbol(leading);
     else
-        emit_subexpr(car(p));
+        emit_subexpr(leading);
 
     emit_args(p);
 }
@@ -1967,7 +1969,7 @@ function emit_subexpr(p: unknown): void {
     emit_update_subexpr();
 }
 
-function emit_symbol(p: unknown): void {
+function emit_symbol(p: Sym): void {
 
     if (p == symbol(EXP1)) {
         emit_roman_string("exp(1)");
@@ -5825,13 +5827,13 @@ function eval_draw(p1: unknown): void {
     if (!(issymbol(T) && isusersymbol(T)))
         T = symbol(X_LOWER);
 
-    save_symbol(T);
+    save_symbol(T as Sym);
 
     setup_trange();
     setup_xrange();
     setup_yrange();
 
-    setup_final(F, T);
+    setup_final(F, T as Sym);
 
     draw_array = [];
 
@@ -14514,7 +14516,6 @@ function power_natural_number(EXPO: unknown) {
 // BASE and EXPO are numbers
 
 function power_numbers(BASE: Num, EXPO: Num) {
-    var a, b, h, i, n, p1, p2;
 
     // n^0
 
@@ -14554,8 +14555,8 @@ function power_numbers(BASE: Num, EXPO: Num) {
     // integer exponent?
 
     if (isinteger(EXPO)) {
-        a = bignum_pow(BASE.a, EXPO.a);
-        b = bignum_pow(BASE.b, EXPO.a);
+        const a = bignum_pow(BASE.a, EXPO.a);
+        const b = bignum_pow(BASE.b, EXPO.a);
         if (isnegativenumber(BASE) && bignum_odd(EXPO.a))
             if (isnegativenumber(EXPO))
                 push_bignum(-1, b, a); // reciprocate
@@ -14571,7 +14572,7 @@ function power_numbers(BASE: Num, EXPO: Num) {
 
     // exponent is a root
 
-    h = stack.length;
+    const h = stack.length;
 
     // put factors on stack
 
@@ -14584,24 +14585,24 @@ function power_numbers(BASE: Num, EXPO: Num) {
 
     // normalize factors
 
-    n = stack.length - h; // fix n now, stack can grow
+    let n = stack.length - h; // fix n now, stack can grow
 
-    for (i = 0; i < n; i++) {
-        p1 = stack[h + i];
+    for (let i = 0; i < n; i++) {
+        const p1 = stack[h + i];
         if (car(p1) == symbol(POWER)) {
-            BASE = cadr(p1);
-            EXPO = caddr(p1);
-            power_numbers_factor(BASE, EXPO);
+            BASE = cadr(p1) as Num;
+            EXPO = caddr(p1) as Num;
+            power_numbers_factor(BASE as Rat, EXPO as Rat);
             stack[h + i] = pop(); // fill hole
         }
     }
 
     // combine numbers (leaves radicals on stack)
 
-    p1 = one;
+    let p1 = one;
 
-    for (i = h; i < stack.length; i++) {
-        p2 = stack[i];
+    for (let i = h; i < stack.length; i++) {
+        const p2 = stack[i];
         if (isnum(p2)) {
             push(p1);
             push(p2);
@@ -14634,11 +14635,10 @@ function power_numbers(BASE: Num, EXPO: Num) {
 // BASE is an integer
 
 function power_numbers_factor(BASE: Rat, EXPO: Rat): void {
-    var a, b, n, q, r, p0;
 
     if (isminusone(BASE)) {
         power_minusone(EXPO);
-        p0 = pop();
+        let p0 = pop();
         if (car(p0) == symbol(MULTIPLY)) {
             p0 = cdr(p0);
             while (iscons(p0)) {
@@ -14653,8 +14653,8 @@ function power_numbers_factor(BASE: Rat, EXPO: Rat): void {
 
     if (isinteger(EXPO)) {
 
-        a = bignum_pow(BASE.a, EXPO.a);
-        b = bignum_int(1);
+        const a = bignum_pow(BASE.a, EXPO.a);
+        const b = bignum_int(1);
 
         if (isnegativenumber(EXPO))
             push_bignum(1, b, a); // reciprocate
@@ -14668,15 +14668,15 @@ function power_numbers_factor(BASE: Rat, EXPO: Rat): void {
     // ------ == q + ------
     // EXPO.b        EXPO.b
 
-    q = bignum_div(EXPO.a, EXPO.b);
-    r = bignum_mod(EXPO.a, EXPO.b);
+    const q = bignum_div(EXPO.a, EXPO.b);
+    const r = bignum_mod(EXPO.a, EXPO.b);
 
     // process q
 
     if (!bignum_iszero(q)) {
 
-        a = bignum_pow(BASE.a, q);
-        b = bignum_int(1);
+        const a = bignum_pow(BASE.a, q);
+        const b = bignum_int(1);
 
         if (isnegativenumber(EXPO))
             push_bignum(1, b, a); // reciprocate
@@ -14686,9 +14686,9 @@ function power_numbers_factor(BASE: Rat, EXPO: Rat): void {
 
     // process r
 
-    n = bignum_smallnum(BASE.a);
+    const n0 = bignum_smallnum(BASE.a);
 
-    if (n != null) {
+    if (n0 != null) {
         // BASE is 32 bits or less, hence BASE is a prime number, no root
         push_symbol(POWER);
         push(BASE);
@@ -14699,9 +14699,9 @@ function power_numbers_factor(BASE: Rat, EXPO: Rat): void {
 
     // BASE was too big to factor, try finding root
 
-    n = bignum_root(BASE.a, EXPO.b);
+    const n1 = bignum_root(BASE.a, EXPO.b);
 
-    if (n == null) {
+    if (n1 == null) {
         // no root
         push_symbol(POWER);
         push(BASE);
@@ -14712,7 +14712,7 @@ function power_numbers_factor(BASE: Rat, EXPO: Rat): void {
 
     // raise n to rth power
 
-    n = bignum_pow(n, r);
+    const n = bignum_pow(n1, r);
 
     if (isnegativenumber(EXPO))
         push_bignum(1, bignum_int(1), n); // reciprocate
@@ -14720,18 +14720,16 @@ function power_numbers_factor(BASE: Rat, EXPO: Rat): void {
         push_bignum(1, n, bignum_int(1));
 }
 
-function
-    power_double(BASE, EXPO) {
-    var base, d, expo;
+function power_double(BASE: unknown, EXPO: unknown) {
 
     push(BASE);
-    base = pop_double();
+    const base = pop_double();
 
     push(EXPO);
-    expo = pop_double();
+    const expo = pop_double();
 
     if (base > 0 || expo == Math.floor(expo)) {
-        d = Math.pow(base, expo);
+        const d = Math.pow(base, expo);
         push_double(d);
         return;
     }
@@ -14743,7 +14741,7 @@ function
     if (base == -1)
         return;
 
-    d = Math.pow(-base, expo);
+    const d = Math.pow(-base, expo);
     push_double(d);
 
     multiply();
@@ -14751,14 +14749,13 @@ function
 // BASE is a sum of terms
 
 function power_sum(BASE: unknown, EXPO: unknown): void {
-    var h, i, n, p1, p2;
 
     if (iscomplexnumber(BASE) && isnum(EXPO)) {
         power_complex_number(BASE, EXPO);
         return;
     }
 
-    if (expanding == 0 || !issmallinteger(EXPO) || isnegativenumber(EXPO)) {
+    if (expanding == 0 || !issmallinteger(EXPO) || (isnum(EXPO) && isnegativenumber(EXPO))) {
         push_symbol(POWER);
         push(BASE);
         push(EXPO);
@@ -14767,16 +14764,16 @@ function power_sum(BASE: unknown, EXPO: unknown): void {
     }
 
     push(EXPO);
-    n = pop_integer();
+    const n = pop_integer();
 
     // square the sum first (prevents infinite loop through multiply)
 
-    h = stack.length;
+    const h = stack.length;
 
-    p1 = cdr(BASE);
+    let p1 = cdr(BASE);
 
     while (iscons(p1)) {
-        p2 = cdr(BASE);
+        let p2 = cdr(BASE);
         while (iscons(p2)) {
             push(car(p1));
             push(car(p2));
@@ -14790,12 +14787,12 @@ function power_sum(BASE: unknown, EXPO: unknown): void {
 
     // continue up to power n
 
-    for (i = 2; i < n; i++) {
+    for (let i = 2; i < n; i++) {
         push(BASE);
         multiply();
     }
 }
-function prefixform(p) {
+function prefixform(p: unknown) {
     if (iscons(p)) {
         outbuf += "(";
         prefixform(car(p));
@@ -14834,8 +14831,7 @@ function prefixform(p) {
     else
         outbuf += " ? ";
 }
-function
-    print_infixform(p) {
+function print_infixform(p: unknown) {
     outbuf = "";
     infixform_expr(p);
     infixform_write("\n");
@@ -14872,33 +14868,30 @@ function printbuf(s: string, color: 1 | 2 | 3): void {
 
     stdout.innerHTML += s;
 }
-function
-    printname(p) {
+function printname(p: Sym) {
     if ("printname" in p)
         return p.printname;
     else
         return "?";
 }
-function
-    promote_tensor() {
-    var i, j, k, ndim1, ndim2, nelem1, nelem2, p1, p2, p3;
+function promote_tensor(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (!istensor(p1)) {
         push(p1);
         return;
     }
 
-    ndim1 = p1.dim.length;
-    nelem1 = p1.elem.length;
+    const ndim1 = p1.dim.length;
+    const nelem1 = p1.elem.length;
 
     // check
 
-    p2 = p1.elem[0];
+    let p2 = p1.elem[0];
 
-    for (i = 1; i < nelem1; i++) {
-        p3 = p1.elem[i];
+    for (let i = 1; i < nelem1; i++) {
+        const p3 = p1.elem[i];
         if (!compatible_dimensions(p2, p3))
             stopf("tensor dimensions");
     }
@@ -14908,31 +14901,31 @@ function
         return; // all elements are scalars
     }
 
-    ndim2 = p2.dim.length;
-    nelem2 = p2.elem.length;
+    const ndim2 = p2.dim.length;
+    const nelem2 = p2.elem.length;
 
     // alloc
 
-    p3 = alloc_tensor();
+    const p3 = alloc_tensor();
 
     // merge dimensions
 
-    k = 0;
+    let k = 0;
 
-    for (i = 0; i < ndim1; i++)
+    for (let i = 0; i < ndim1; i++)
         p3.dim[k++] = p1.dim[i];
 
-    for (i = 0; i < ndim2; i++)
+    for (let i = 0; i < ndim2; i++)
         p3.dim[k++] = p2.dim[i];
 
     // merge elements
 
     k = 0;
 
-    for (i = 0; i < nelem1; i++) {
+    for (let i = 0; i < nelem1; i++) {
         p2 = p1.elem[i];
-        for (j = 0; j < nelem2; j++)
-            p3.elem[k++] = p2.elem[j];
+        for (let j = 0; j < nelem2; j++)
+            p3.elem[k++] = (p2 as Tensor).elem[j];
     }
 
     push(p3);
@@ -14940,14 +14933,14 @@ function
 function push(a: unknown): void {
     stack.push(a);
 }
-function push_double(d) {
+function push_double(d: number): void {
     push({ d: d });
 }
 function push_integer(n: number): void {
     push_rational(n, 1);
 }
-function push_rational(a, b) {
-    var sign;
+function push_rational(a: number, b: number) {
+    let sign: 1 | -1;
 
     if (a < 0)
         sign = -1;
@@ -14956,13 +14949,12 @@ function push_rational(a, b) {
 
     a = Math.abs(a);
 
-    a = bignum_int(a);
-    b = bignum_int(b);
+    const A = bignum_int(a);
+    const B = bignum_int(b);
 
-    push_bignum(sign, a, b);
+    push_bignum(sign, A, B);
 }
-function
-    push_string(s) {
+function push_string(s: string) {
     push({ string: s });
 }
 function push_symbol(p: string): void {
@@ -14973,25 +14965,23 @@ function
     push_integer(-1);
     power();
 }
-function
-    reduce_radical_double(h, COEFF) {
-    var a, b, c, i, n, p1;
+function reduce_radical_double(h: number, COEFF: Flt) {
 
-    c = COEFF.d;
+    let c = COEFF.d;
 
-    n = stack.length;
+    let n = stack.length;
 
-    for (i = h; i < n; i++) {
+    for (let i = h; i < n; i++) {
 
-        p1 = stack[i];
+        const p1 = stack[i];
 
         if (isradical(p1)) {
 
             push(cadr(p1)); // base
-            a = pop_double();
+            const a = pop_double();
 
             push(caddr(p1)); // exponent
-            b = pop_double();
+            const b = pop_double();
 
             c = c * Math.pow(a, b); // a > 0 by isradical above
 
@@ -15003,52 +14993,49 @@ function
     }
 
     push_double(c);
-    COEFF = pop();
+    const C = pop();
 
-    return COEFF;
+    return C;
 }
-function
-    reduce_radical_factors(h, COEFF) {
+function reduce_radical_factors(h: number, COEFF: unknown) {
     if (!any_radical_factors(h))
         return COEFF;
 
     if (isrational(COEFF))
         return reduce_radical_rational(h, COEFF);
     else
-        return reduce_radical_double(h, COEFF);
+        return reduce_radical_double(h, COEFF as Flt);
 }
-function
-    reduce_radical_rational(h, COEFF) {
-    var i, k, n, p1, p2, NUMER, DENOM, BASE, EXPO;
+function reduce_radical_rational(h: number, COEFF: Rat) {
 
     if (isplusone(COEFF) || isminusone(COEFF))
         return COEFF; // COEFF has no factors, no cancellation is possible
 
     push(COEFF);
     absfunc();
-    p1 = pop();
+    let p1 = pop();
 
     push(p1);
     numerator();
-    NUMER = pop();
+    let NUMER = pop();
 
     push(p1);
     denominator();
-    DENOM = pop();
+    let DENOM = pop();
 
-    k = 0;
+    let k = 0;
 
-    n = stack.length;
+    const n = stack.length;
 
-    for (i = h; i < n; i++) {
+    for (let i = h; i < n; i++) {
         p1 = stack[i];
         if (!isradical(p1))
             continue;
-        BASE = cadr(p1);
-        EXPO = caddr(p1);
-        if (isnegativenumber(EXPO)) {
-            mod_integers(NUMER, BASE);
-            p2 = pop();
+        const BASE = cadr(p1);
+        const EXPO = caddr(p1);
+        if (isnum(EXPO) && isnegativenumber(EXPO)) {
+            mod_integers(NUMER as Rat, BASE as Rat);
+            const p2 = pop();
             if (iszero(p2)) {
                 push(NUMER);
                 push(BASE);
@@ -15063,9 +15050,10 @@ function
                 stack[i] = pop();
                 k++;
             }
-        } else {
-            mod_integers(DENOM, BASE);
-            p2 = pop();
+        }
+        else {
+            mod_integers(DENOM as Rat, BASE as Rat);
+            const p2 = pop();
             if (iszero(p2)) {
                 push(DENOM);
                 push(BASE);
@@ -15089,7 +15077,7 @@ function
         divide();
         if (isnegativenumber(COEFF))
             negate();
-        COEFF = pop();
+        COEFF = pop() as Rat;
     }
 
     return COEFF;
@@ -15136,13 +15124,13 @@ function run_nib(): void {
         eval_and_print_result();
     }
 }
-function sample(F, T, t) {
+function sample(F: unknown, T: unknown, t: number) {
     let X: unknown;
     let Y: unknown;
 
     push_double(t);
     let p1 = pop();
-    set_symbol(T, p1, symbol(NIL));
+    set_symbol(T as Sym, p1, symbol(NIL));
 
     push(F);
     eval_nonstop();
@@ -15176,8 +15164,7 @@ function sample(F, T, t) {
 
     draw_array.push({ t: t, x: x, y: y });
 }
-function
-    save_symbol(p) {
+function save_symbol(p: Sym) {
     frame.push(p);
     frame.push(get_binding(p));
     frame.push(get_usrfunc(p));
@@ -15392,7 +15379,7 @@ function scan_factor(): void {
 
     // index
 
-    if (token == "[") {
+    if ((token as string) == "[") {
 
         scan_level++;
 
@@ -15417,7 +15404,7 @@ function scan_factor(): void {
         list(stack.length - h);
     }
 
-    while (token == "!") {
+    while ((token as string) == "!") {
         get_token(); // get token after !
         push_symbol(FACTORIAL);
         swap();
@@ -15651,12 +15638,11 @@ function get_token_nib() {
     token = c;
 }
 
-function
-    update_token_buf(j, k) {
+function update_token_buf(j: number, k: number) {
     token_buf = instring.substring(j, k);
 }
 
-function scan_error(s) {
+function scan_error(s: string): never {
     let t = inbuf.substring(trace1, scan_index);
 
     t += "\nStop: Syntax error, " + s;
@@ -15690,7 +15676,7 @@ function set_symbol(p1: Sym, p2: unknown, p3: unknown): void {
     binding[p1.printname] = p2;
     usrfunc[p1.printname] = p3;
 }
-function setup_final(F, T) {
+function setup_final(F: unknown, T: Sym) {
 
     push_double(tmin);
     let p1 = pop();
@@ -15710,7 +15696,7 @@ function setup_trange() {
     tmin = -Math.PI;
     tmax = Math.PI;
 
-    let p1 = lookup("trange");
+    let p1: unknown = lookup("trange");
     push(p1);
     eval_nonstop();
     floatfunc();
@@ -15736,7 +15722,7 @@ function setup_xrange(): void {
     xmin = -10;
     xmax = 10;
 
-    let p1 = lookup("xrange");
+    let p1: unknown = lookup("xrange");
     push(p1);
     eval_nonstop();
     floatfunc();
@@ -15762,7 +15748,7 @@ function setup_yrange(): void {
     ymin = -10;
     ymax = 10;
 
-    let p1 = lookup("yrange");
+    let p1: unknown = lookup("yrange");
     push(p1);
     eval_nonstop();
     floatfunc();
@@ -15832,7 +15818,7 @@ function static_reciprocate(): void {
     // save divide by zero error for runtime
 
     if (iszero(p2)) {
-        if (!isinteger1(p1))
+        if (!(isrational(p1) && isinteger1(p1)))
             push(p1);
         push_symbol(POWER);
         push(p2);
@@ -15849,7 +15835,7 @@ function static_reciprocate(): void {
     }
 
     if (isnum(p2)) {
-        if (!isinteger1(p1))
+        if (!(isrational(p1) && isinteger1(p1)))
             push(p1);
         push(p2);
         reciprocate();
@@ -15857,7 +15843,7 @@ function static_reciprocate(): void {
     }
 
     if (car(p2) == symbol(POWER) && isnum(caddr(p2))) {
-        if (!isinteger1(p1))
+        if (!(isrational(p1) && isinteger1(p1)))
             push(p1);
         push_symbol(POWER);
         push(cadr(p2));
@@ -15867,7 +15853,7 @@ function static_reciprocate(): void {
         return;
     }
 
-    if (!isinteger1(p1))
+    if (!(isrational(p1) && isinteger1(p1)))
         push(p1);
 
     push_symbol(POWER);
