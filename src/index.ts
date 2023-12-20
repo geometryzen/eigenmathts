@@ -11404,8 +11404,8 @@ function eval_user_function(p1: unknown): void {
     restore_symbol();
     restore_symbol();
 }
-function eval_user_symbol(p1: Sym): void {
-    const p2 = get_binding(p1);
+function eval_user_symbol(p1: unknown): void {
+    const p2 = get_binding(p1 as Sym);
     if (p1 == p2)
         push(p1); // symbol evaluates to itself
     else {
@@ -13333,15 +13333,28 @@ function isminusoneoversqrttwo(p: unknown) {
 function isnegativenumber(p: Num): boolean {
     return (isrational(p) && p.sign == -1) || (isdouble(p) && p.d < 0);
 }
-function isnegativeterm(p: unknown) {
-    return isnegativenumber(p) || (car(p) == symbol(MULTIPLY) && isnegativenumber(cadr(p)));
+function isnegativeterm(p: unknown): boolean {
+    if (isnum(p) && isnegativenumber(p)) {
+        return true;
+    }
+    else if (car(p) == symbol(MULTIPLY)) {
+        const leading = cadr(p);
+        return isnum(leading) && isnegativenumber(leading);
+    }
+    else {
+        return false;
+    }
 }
 function isnum(p: unknown): p is Num {
     return isrational(p) || isdouble(p);
 }
 function isnumerator(p: unknown) {
-    if (car(p) == symbol(POWER) && isnegativenumber(caddr(p)))
-        return 0;
+    if (car(p) == symbol(POWER)) {
+        const expo = caddr(p);
+        if (isnum(expo) && isnegativenumber(expo)) {
+            return 0;
+        }
+    }
 
     if (isrational(p) && bignum_equal(p.a, 1))
         return 0;
@@ -13360,7 +13373,8 @@ function isposint(p: Rat): boolean {
 function isradical(p: unknown): boolean {
     if (car(p) == symbol(POWER)) {
         const base = cadr(p);
-        return isrational(base) && isposint(base) && isfraction(caddr(p));
+        const expo = caddr(p);
+        return isrational(base) && isposint(base) && isrational(expo) && isfraction(expo);
     }
     else {
         return false;
@@ -13370,7 +13384,7 @@ function isrational(p: unknown): p is Rat {
     return "a" in (p as unknown as Rat);
 }
 function issmallinteger(p: unknown) {
-    if (isinteger(p))
+    if (isrational(p) && isinteger(p))
         return bignum_issmallnum(p.a);
 
     if (isdouble(p))
@@ -13409,7 +13423,6 @@ function isusersymbolsomewhere(p: unknown) {
     return 0;
 }
 function iszero(p: unknown) {
-    var i, n;
 
     if (isrational(p))
         return bignum_iszero(p.a);
@@ -13418,8 +13431,8 @@ function iszero(p: unknown) {
         return p.d == 0;
 
     if (istensor(p)) {
-        n = p.elem.length;
-        for (i = 0; i < n; i++) {
+        const n = p.elem.length;
+        for (let i = 0; i < n; i++) {
             if (!iszero(p.elem[i]))
                 return 0;
         }
@@ -13444,7 +13457,7 @@ function list(n: number) {
     for (let i = 0; i < n; i++)
         cons();
 }
-function    lookup(s: string) {
+function lookup(s: string) {
     let p = symtab[s];
     if (p == undefined) {
         p = { printname: s, func: eval_user_symbol };
@@ -13489,7 +13502,7 @@ function multiply_noexpand(): void {
     multiply();
     expanding = t;
 }
-function multiply_numbers(p1, p2): void {
+function multiply_numbers(p1: unknown, p2: unknown): void {
 
     if (isrational(p1) && isrational(p2)) {
         multiply_rationals(p1, p2);
@@ -13505,20 +13518,22 @@ function multiply_numbers(p1, p2): void {
     push_double(a * b);
 }
 
-function
-    multiply_rationals(p1, p2) {
-    var a, b, d, sign;
+function multiply_rationals(p1: Rat, p2: Rat) {
 
     if (iszero(p1) || iszero(p2)) {
         push_integer(0);
         return;
     }
 
+    let sign: 1 | -1;
+
     if (p1.sign == p2.sign)
         sign = 1;
     else
         sign = -1;
 
+    let a: number[];
+    let b: number[];
     if (isinteger(p1) && isinteger(p2)) {
         a = bignum_mul(p1.a, p2.a);
         b = bignum_int(1);
@@ -13529,7 +13544,7 @@ function
     a = bignum_mul(p1.a, p2.a);
     b = bignum_mul(p1.b, p2.b);
 
-    d = bignum_gcd(a, b);
+    const d = bignum_gcd(a, b);
 
     a = bignum_div(a, d);
     b = bignum_div(b, d);
@@ -13588,11 +13603,10 @@ function multiply_scalar_factors(h: number): void {
     }
 }
 function multiply_tensor_factors(h: number) {
-    var i, n, p1, T;
-    T = symbol(NIL);
-    n = stack.length;
-    for (i = h; i < n; i++) {
-        p1 = stack[i];
+    let T: unknown = symbol(NIL);
+    let n = stack.length;
+    for (let i = h; i < n; i++) {
+        const p1 = stack[i];
         if (!istensor(p1))
             continue;
         if (istensor(T)) {
@@ -13600,7 +13614,8 @@ function multiply_tensor_factors(h: number) {
             push(p1);
             hadamard();
             T = pop();
-        } else
+        }
+        else
             T = p1;
         stack.splice(i, 1); // remove factor
         i--; // use same index again
@@ -13608,17 +13623,14 @@ function multiply_tensor_factors(h: number) {
     }
     return T;
 }
-function
-    negate() {
+function negate(): void {
     push_integer(-1);
     multiply();
 }
-function
-    normalize_polar(EXPO) {
-    var h, p1;
+function normalize_polar(EXPO: unknown) {
     if (car(EXPO) == symbol(ADD)) {
-        h = stack.length;
-        p1 = cdr(EXPO);
+        const h = stack.length;
+        let p1 = cdr(EXPO);
         while (iscons(p1)) {
             EXPO = car(p1);
             if (isdenormalpolarterm(EXPO))
@@ -13632,13 +13644,12 @@ function
             p1 = cdr(p1);
         }
         multiply_factors(stack.length - h);
-    } else
+    }
+    else
         normalize_polar_term(EXPO);
 }
 
-function
-    normalize_polar_term(EXPO) {
-    var R;
+function normalize_polar_term(EXPO: unknown) {
 
     // exp(i pi) = -1
 
@@ -13647,17 +13658,15 @@ function
         return;
     }
 
-    R = cadr(EXPO); // R = coeff of term
+    const R = cadr(EXPO); // R = coeff of term
 
     if (isrational(R))
         normalize_polar_term_rational(R);
     else
-        normalize_polar_term_double(R);
+        normalize_polar_term_double(R as Flt);
 }
 
-function
-    normalize_polar_term_rational(R) {
-    var n;
+function normalize_polar_term_rational(R: unknown) {
 
     // R = R mod 2
 
@@ -13668,7 +13677,7 @@ function
 
     // convert negative rotation to positive
 
-    if (isnegativenumber(R)) {
+    if (isnum(R) && isnegativenumber(R)) {
         push(R);
         push_integer(2);
         add();
@@ -13679,7 +13688,7 @@ function
     push_integer(2);
     multiply();
     floorfunc();
-    n = pop_integer(); // number of 90 degree turns
+    const n = pop_integer(); // number of 90 degree turns
 
     push(R);
     push_integer(n);
@@ -13747,7 +13756,8 @@ function
                 push_integer(-1);
                 push(imaginaryunit);
                 list(3);
-            } else {
+            }
+            else {
                 push_symbol(MULTIPLY);
                 push_integer(-1);
                 push(imaginaryunit);
@@ -13765,11 +13775,9 @@ function
     }
 }
 
-function
-    normalize_polar_term_double(R) {
-    var coeff, n, r;
+function normalize_polar_term_double(R: Flt) {
 
-    coeff = R.d;
+    let coeff = R.d;
 
     // coeff = coeff mod 2
 
@@ -13780,9 +13788,9 @@ function
     if (coeff < 0)
         coeff += 2;
 
-    n = Math.floor(2 * coeff); // number of 1/4 turns
+    const n = Math.floor(2 * coeff); // number of 1/4 turns
 
-    r = coeff - n / 2; // remainder
+    const r = coeff - n / 2; // remainder
 
     switch (n) {
 
@@ -13843,7 +13851,8 @@ function
                 push_integer(-1);
                 push(imaginaryunit);
                 list(3);
-            } else {
+            }
+            else {
                 push_symbol(MULTIPLY);
                 push_integer(-1);
                 push(imaginaryunit);
@@ -13860,12 +13869,10 @@ function
             break;
     }
 }
-function
-    normalize_power_factors(h) {
-    var i, k, p1;
-    k = stack.length;
-    for (i = h; i < k; i++) {
-        p1 = stack[i];
+function normalize_power_factors(h: number) {
+    const k = stack.length;
+    for (let i = h; i < k; i++) {
+        let p1 = stack[i];
         if (car(p1) == symbol(POWER)) {
             push(cadr(p1));
             push(caddr(p1));
@@ -13879,7 +13886,8 @@ function
                     push(car(p1));
                     p1 = cdr(p1);
                 }
-            } else
+            }
+            else
                 stack[i] = p1;
         }
     }
@@ -13925,8 +13933,7 @@ function order_factor(p: unknown): 1 | 2 | 3 | 4 | 5 | 6 {
 
     return 4;
 }
-function
-    partition_term() {
+function partition_term() {
     var h, n;
     var p1, F, X;
 
@@ -14385,7 +14392,8 @@ function
                 push_integer(-1);
                 push(imaginaryunit);
                 list(3);
-            } else {
+            }
+            else {
                 push_symbol(POWER);
                 push_integer(-1);
                 push(R);
