@@ -13171,28 +13171,29 @@ function isalpha(s: string): boolean {
     const c = s.charCodeAt(0);
     return (c >= 65 && c <= 90) || (c >= 97 && c <= 122);
 }
-function iscomplexnumber(p: unknown) {
+function iscomplexnumber(p: unknown): boolean {
     return isimaginarynumber(p) || (lengthf(p) == 3 && car(p) == symbol(ADD) && isnum(cadr(p)) && isimaginarynumber(caddr(p)));
 }
-function
-    iscons(p) {
-    if ("car" in p)
+function iscons(p: unknown) {
+    if ("car" in (p as Cons))
         return 1;
     else
         return 0;
 }
-function
-    isdenominator(p) {
-    if (car(p) == symbol(POWER) && isnegativenumber(caddr(p)))
-        return 1;
+function isdenominator(p: unknown) {
+    if (car(p) == symbol(POWER)) {
+        const expo = caddr(p);
+        if (isnum(expo) && isnegativenumber(expo)) {
+            return 1;
+        }
+    }
 
     if (isrational(p) && !bignum_equal(p.b, 1))
         return 1;
 
     return 0;
 }
-function
-    isdenormalpolar(p) {
+function isdenormalpolar(p: unknown) {
     if (car(p) == symbol(ADD)) {
         p = cdr(p);
         while (iscons(p)) {
@@ -13206,8 +13207,7 @@ function
     return isdenormalpolarterm(p);
 }
 
-function
-    isdenormalpolarterm(p) {
+function isdenormalpolarterm(p: unknown) {
     if (car(p) != symbol(MULTIPLY))
         return 0;
 
@@ -13219,7 +13219,7 @@ function
 
     p = cadr(p); // p = coeff of term
 
-    if (isnegativenumber(p))
+    if (isnum(p) && isnegativenumber(p))
         return 1; // p < 0
 
     push(p);
@@ -13227,7 +13227,7 @@ function
     add();
     p = pop();
 
-    if (!isnegativenumber(p))
+    if (!(isnum(p) && isnegativenumber(p)))
         return 1; // p >= 1/2
 
     return 0;
@@ -13239,8 +13239,7 @@ function isdigit(s: string): boolean {
 function isdouble(p: unknown): p is Flt {
     return "d" in (p as unknown as Flt);
 }
-function
-    isdoublesomewhere(p) {
+function isdoublesomewhere(p: unknown) {
     if (isdouble(p))
         return 1;
 
@@ -13255,8 +13254,7 @@ function
 
     return 0;
 }
-function
-    isdoublez(p) {
+function isdoublez(p: unknown) {
     if (car(p) == symbol(ADD)) {
 
         if (lengthf(p) != 3)
@@ -13290,15 +13288,15 @@ function
 
     return 1;
 }
-function isequaln(p: unknown, n: unknown): boolean {
+function isequaln(p: unknown, n: number): boolean {
     return isequalq(p, n, 1);
 }
 function isequalq(p: unknown, a: number, b: number): boolean {
     if (isrational(p)) {
         if (isnegativenumber(p) && a >= 0)
-            return 0;
+            return false;
         if (!isnegativenumber(p) && a < 0)
-            return 0;
+            return false;
         a = Math.abs(a);
         return bignum_equal(p.a, a) && bignum_equal(p.b, b);
     }
@@ -13306,7 +13304,7 @@ function isequalq(p: unknown, a: number, b: number): boolean {
     if (isdouble(p))
         return p.d == a / b;
 
-    return 0;
+    return false;
 }
 function isfraction(p: Rat): boolean {
     return isrational(p) && !isinteger(p);
@@ -13320,8 +13318,7 @@ function isimaginaryunit(p: unknown): boolean {
 function isinteger(p: Rat): boolean {
     return isrational(p) && bignum_equal(p.b, 1);
 }
-function
-    isinteger1(p) {
+function isinteger1(p: Rat) {
     return isinteger(p) && isplusone(p);
 }
 function iskeyword(p: Sym): boolean {
@@ -13330,21 +13327,19 @@ function iskeyword(p: Sym): boolean {
 function isminusone(p: unknown): boolean {
     return isequaln(p, -1);
 }
-function
-    isminusoneoversqrttwo(p) {
+function isminusoneoversqrttwo(p: unknown) {
     return lengthf(p) == 3 && car(p) == symbol(MULTIPLY) && isminusone(cadr(p)) && isoneoversqrttwo(caddr(p));
 }
 function isnegativenumber(p: Num): boolean {
     return (isrational(p) && p.sign == -1) || (isdouble(p) && p.d < 0);
 }
-function isnegativeterm(p) {
+function isnegativeterm(p: unknown) {
     return isnegativenumber(p) || (car(p) == symbol(MULTIPLY) && isnegativenumber(cadr(p)));
 }
 function isnum(p: unknown): p is Num {
     return isrational(p) || isdouble(p);
 }
-function
-    isnumerator(p) {
+function isnumerator(p: unknown) {
     if (car(p) == symbol(POWER) && isnegativenumber(caddr(p)))
         return 0;
 
@@ -13353,12 +13348,10 @@ function
 
     return 1;
 }
-function
-    isoneoversqrttwo(p) {
+function isoneoversqrttwo(p: unknown) {
     return car(p) == symbol(POWER) && isequaln(cadr(p), 2) && isequalq(caddr(p), -1, 2);
 }
-function
-    isplusone(p) {
+function isplusone(p: unknown) {
     return isequaln(p, 1);
 }
 function isposint(p: Rat): boolean {
@@ -13376,8 +13369,7 @@ function isradical(p: unknown): boolean {
 function isrational(p: unknown): p is Rat {
     return "a" in (p as unknown as Rat);
 }
-function
-    issmallinteger(p) {
+function issmallinteger(p: unknown) {
     if (isinteger(p))
         return bignum_issmallnum(p.a);
 
@@ -13401,9 +13393,8 @@ function istensor(p: unknown): p is Tensor {
 function isusersymbol(p: Sym): boolean {
     return issymbol(p) && p.func == eval_user_symbol;
 }
-function
-    isusersymbolsomewhere(p) {
-    if (isusersymbol(p) && p != symbol(PI) && p != symbol(EXP1))
+function isusersymbolsomewhere(p: unknown) {
+    if (issymbol(p) && isusersymbol(p) && p != symbol(PI) && p != symbol(EXP1))
         return 1;
 
     if (iscons(p)) {
@@ -13417,8 +13408,7 @@ function
 
     return 0;
 }
-function
-    iszero(p) {
+function iszero(p: unknown) {
     var i, n;
 
     if (isrational(p))
@@ -13438,29 +13428,24 @@ function
 
     return 0;
 }
-function
-    lengthf(p) {
-    var n = 0;
+function lengthf(p: unknown): number {
+    let n = 0;
     while (iscons(p)) {
         n++;
         p = cdr(p);
     }
     return n;
 }
-function
-    lessp(p1, p2) {
+function lessp(p1: unknown, p2: unknown) {
     return cmp(p1, p2) < 0;
 }
-function
-    list(n) {
-    var i;
+function list(n: number) {
     push_symbol(NIL);
-    for (i = 0; i < n; i++)
+    for (let i = 0; i < n; i++)
         cons();
 }
-function
-    lookup(s) {
-    var p = symtab[s];
+function    lookup(s: string) {
+    let p = symtab[s];
     if (p == undefined) {
         p = { printname: s, func: eval_user_symbol };
         symtab[s] = p;
