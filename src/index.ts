@@ -4306,7 +4306,8 @@ function arg1(): void {
     push_integer(0); // p1 is real
 }
 function eval_binding(p1: unknown): void {
-    push(get_binding(cadr(p1)));
+    const sym = cadr(p1) as Sym;
+    push(get_binding(sym));
 }
 function eval_ceiling(p1: unknown): void {
     push(cadr(p1));
@@ -11336,7 +11337,7 @@ function eval_unit(p1: unknown): void {
 }
 function eval_user_function(p1: unknown): void {
 
-    const FUNC_NAME = car(p1);
+    const FUNC_NAME = car(p1) as Sym;
     let FUNC_ARGS = cdr(p1);
 
     const FUNC_DEFN = get_usrfunc(FUNC_NAME);
@@ -11403,7 +11404,7 @@ function eval_user_function(p1: unknown): void {
     restore_symbol();
     restore_symbol();
 }
-function eval_user_symbol(p1: unknown): void {
+function eval_user_symbol(p1: Sym): void {
     const p2 = get_binding(p1);
     if (p1 == p2)
         push(p1); // symbol evaluates to itself
@@ -11602,15 +11603,13 @@ function factor_bignum(N: number[], M: unknown): void {
 // factors N or N^M where N and M are rational numbers, returns factors on stack
 
 function factor_factor(): void {
-    var numer, denom;
-    var INPUT, BASE, EXPO;
 
-    INPUT = pop();
+    const INPUT = pop();
 
     if (car(INPUT) == symbol(POWER)) {
 
-        BASE = cadr(INPUT);
-        EXPO = caddr(INPUT);
+        const BASE = cadr(INPUT);
+        const EXPO = caddr(INPUT);
 
         if (!isrational(BASE) || !isrational(EXPO)) {
             push(INPUT); // cannot factor
@@ -11629,8 +11628,8 @@ function factor_factor(): void {
             list(3); // leave on stack
         }
 
-        numer = BASE.a;
-        denom = BASE.b;
+        const numer = BASE.a;
+        const denom = BASE.b;
 
         if (!bignum_equal(numer, 1))
             factor_bignum(numer, EXPO);
@@ -11639,8 +11638,8 @@ function factor_factor(): void {
             // flip sign of exponent
             push(EXPO);
             negate();
-            EXPO = pop();
-            factor_bignum(denom, EXPO);
+            const expo = pop();
+            factor_bignum(denom, expo);
         }
 
         return;
@@ -11654,8 +11653,8 @@ function factor_factor(): void {
     if (isnegativenumber(INPUT))
         push_integer(-1);
 
-    numer = INPUT.a;
-    denom = INPUT.b;
+    const numer = INPUT.a;
+    const denom = INPUT.b;
 
     if (!bignum_equal(numer, 1))
         factor_bignum(numer, one);
@@ -12296,22 +12295,23 @@ function factor_int(n: number): void {
     push_integer(n);
     push_integer(1);
 }
-function
-    find_denominator(p) {
-    var q;
+function find_denominator(p: unknown): 0 | 1 {
     p = cdr(p);
     while (iscons(p)) {
-        q = car(p);
-        if (car(q) == symbol(POWER) && isnegativenumber(caddr(q)))
-            return 1;
+        const q = car(p);
+        if (car(q) == symbol(POWER)) {
+            const expo = caddr(q);
+            if (isrational(expo) && isnegativenumber(expo)) {
+                return 1;
+            }
+        }
         p = cdr(p);
     }
     return 0;
 }
 // returns 1 with divisor on stack, otherwise returns 0
 
-function
-    find_divisor(p) {
+function find_divisor(p: unknown): 0 | 1 {
     if (car(p) == symbol(ADD)) {
         p = cdr(p);
         while (iscons(p)) {
@@ -12325,8 +12325,7 @@ function
     return find_divisor_term(p);
 }
 
-function
-    find_divisor_term(p) {
+function find_divisor_term(p: unknown): 0 | 1 {
     if (car(p) == symbol(MULTIPLY)) {
         p = cdr(p);
         while (iscons(p)) {
@@ -12340,9 +12339,8 @@ function
     return find_divisor_factor(p);
 }
 
-function
-    find_divisor_factor(p) {
-    if (isinteger(p))
+function find_divisor_factor(p: unknown): 0 | 1 {
+    if (isrational(p) && isinteger(p))
         return 0;
 
     if (isrational(p)) {
@@ -12366,17 +12364,20 @@ function
 
     return 0;
 }
-function
-    findf(p, q) // is q in p?
-{
-    var i, n;
+/**
+ * Determines whether q is in p.
+ * @param p 
+ * @param q 
+ * @returns 
+ */
+function findf(p: unknown, q: unknown): 0 | 1 {
 
     if (equal(p, q))
         return 1;
 
     if (istensor(p)) {
-        n = p.elem.length;
-        for (i = 0; i < n; i++) {
+        const n = p.elem.length;
+        for (let i = 0; i < n; i++) {
             if (findf(p.elem[i], q))
                 return 1;
         }
@@ -12612,38 +12613,32 @@ function get_xheight(font_num: number): number {
     }
 }
 
-function
-    get_operator_height(font_num) {
+function get_operator_height(font_num: number): number {
     return get_cap_height(font_num) / 2;
 }
-function
-    get_binding(p1) {
-    var p2;
+function get_binding(p1: Sym): unknown {
     if (!isusersymbol(p1))
         stopf("symbol error");
-    p2 = binding[p1.printname];
+    let p2 = binding[p1.printname];
     if (p2 == undefined || p2 == symbol(NIL))
         p2 = p1; // symbol binds to itself
     return p2;
 }
-function
-    get_usrfunc(p) {
+function get_usrfunc(p: Sym): unknown {
     if (!isusersymbol(p))
         stopf("symbol error");
-    p = usrfunc[p.printname];
-    if (p == undefined)
-        p = symbol(NIL);
-    return p;
+    let f = usrfunc[p.printname];
+    if (f == undefined)
+        f = symbol(NIL);
+    return f;
 }
-function
-    infixform_subexpr(p) {
+function infixform_subexpr(p: unknown): void {
     infixform_write("(");
     infixform_expr(p);
     infixform_write(")");
 }
 
-function
-    infixform_expr(p) {
+function infixform_expr(p: unknown): void {
     if (isnegativeterm(p) || (car(p) == symbol(ADD) && isnegativeterm(cadr(p))))
         infixform_write("-");
     if (car(p) == symbol(ADD))
@@ -12652,8 +12647,7 @@ function
         infixform_term(p);
 }
 
-function
-    infixform_expr_nib(p) {
+function infixform_expr_nib(p: unknown): void {
     infixform_term(cadr(p));
     p = cddr(p);
     while (iscons(p)) {
@@ -12666,16 +12660,14 @@ function
     }
 }
 
-function
-    infixform_term(p) {
+function infixform_term(p: unknown): void {
     if (car(p) == symbol(MULTIPLY))
         infixform_term_nib(p);
     else
         infixform_factor(p);
 }
 
-function
-    infixform_term_nib(p) {
+function infixform_term_nib(p: unknown): void {
     if (find_denominator(p)) {
         infixform_numerators(p);
         infixform_write(" / ");
@@ -12701,17 +12693,15 @@ function
     }
 }
 
-function
-    infixform_numerators(p) {
-    var k, q, s;
+function infixform_numerators(p: unknown): void {
 
-    k = 0;
+    let k = 0;
 
     p = cdr(p);
 
     while (iscons(p)) {
 
-        q = car(p);
+        const q = car(p);
         p = cdr(p);
 
         if (!isnumerator(q))
@@ -12721,7 +12711,7 @@ function
             infixform_write(" "); // space in between factors
 
         if (isrational(q)) {
-            s = bignum_itoa(q.a);
+            const s = bignum_itoa(q.a);
             infixform_write(s);
             continue;
         }
@@ -12733,22 +12723,20 @@ function
         infixform_write("1");
 }
 
-function
-    infixform_denominators(p) {
-    var k, n, q, s;
+function infixform_denominators(p: unknown): void {
 
-    n = count_denominators(p);
+    const n = count_denominators(p);
 
     if (n > 1)
         infixform_write("(");
 
-    k = 0;
+    let k = 0;
 
     p = cdr(p);
 
     while (iscons(p)) {
 
-        q = car(p);
+        let q = car(p);
         p = cdr(p);
 
         if (!isdenominator(q))
@@ -12758,7 +12746,7 @@ function
             infixform_write(" "); // space in between factors
 
         if (isrational(q)) {
-            s = bignum_itoa(q.b);
+            const s = bignum_itoa(q.b);
             infixform_write(s);
             continue;
         }
@@ -12766,7 +12754,8 @@ function
         if (isminusone(caddr(q))) {
             q = cadr(q);
             infixform_factor(q);
-        } else {
+        }
+        else {
             infixform_base(cadr(q));
             infixform_write("^");
             infixform_numeric_exponent(caddr(q)); // sign is not emitted
@@ -12777,8 +12766,7 @@ function
         infixform_write(")");
 }
 
-function
-    infixform_factor(p) {
+function infixform_factor(p: unknown): void {
     if (isrational(p)) {
         infixform_rational(p);
         return;
@@ -12888,8 +12876,7 @@ function
     infixform_write(" ? ");
 }
 
-function
-    infixform_power(p) {
+function infixform_power(p: unknown): void {
     if (cadr(p) == symbol(EXP1)) {
         infixform_write("exp(");
         infixform_expr(caddr(p));
@@ -12908,7 +12895,8 @@ function
         }
     }
 
-    if (isnegativenumber(caddr(p))) {
+    const expo = caddr(p);
+    if (isnum(expo) && isnegativenumber(expo)) {
         infixform_reciprocal(p);
         return;
     }
@@ -12929,8 +12917,7 @@ function
 
 // p = y^x where x is a negative number
 
-function
-    infixform_reciprocal(p) {
+function infixform_reciprocal(p: unknown): void {
     infixform_write("1 / "); // numerator
     if (isminusone(caddr(p))) {
         p = cadr(p);
@@ -12942,8 +12929,7 @@ function
     }
 }
 
-function
-    infixform_factorial(p) {
+function infixform_factorial(p: unknown): void {
     infixform_base(cadr(p));
     infixform_write("!");
 }
