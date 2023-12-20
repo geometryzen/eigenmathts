@@ -13237,7 +13237,7 @@ function isdigit(s: string): boolean {
     return c >= 48 && c <= 57;
 }
 function isdouble(p: unknown): p is Flt {
-    return "d" in (p as unknown as Flt);
+    return "d" in (p as Flt);
 }
 function isdoublesomewhere(p: unknown) {
     if (isdouble(p))
@@ -13934,23 +13934,21 @@ function order_factor(p: unknown): 1 | 2 | 3 | 4 | 5 | 6 {
     return 4;
 }
 function partition_term() {
-    var h, n;
-    var p1, F, X;
 
-    X = pop();
-    F = pop();
+    const X = pop();
+    const F = pop();
 
     // push const factors
 
-    h = stack.length;
-    p1 = cdr(F);
+    let h = stack.length;
+    let p1 = cdr(F);
     while (iscons(p1)) {
         if (!findf(car(p1), X))
             push(car(p1));
         p1 = cdr(p1);
     }
 
-    n = stack.length - h;
+    let n = stack.length - h;
 
     if (n == 0)
         push_integer(1);
@@ -13984,34 +13982,32 @@ function partition_term() {
 }
 // https://github.com/ghewgill/picomath
 
-function
-    erf(x) {
+function erf(x: number): number {
     if (x == 0)
         return 0;
 
     // constants
-    var a1 = 0.254829592;
-    var a2 = -0.284496736;
-    var a3 = 1.421413741;
-    var a4 = -1.453152027;
-    var a5 = 1.061405429;
-    var p = 0.3275911;
+    const a1 = 0.254829592;
+    const a2 = -0.284496736;
+    const a3 = 1.421413741;
+    const a4 = -1.453152027;
+    const a5 = 1.061405429;
+    const p = 0.3275911;
 
     // Save the sign of x
-    var sign = 1;
+    let sign = 1;
     if (x < 0)
         sign = -1;
     x = Math.abs(x);
 
     // A&S formula 7.1.26
-    var t = 1.0 / (1.0 + p * x);
-    var y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+    const t = 1.0 / (1.0 + p * x);
+    const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
 
     return sign * y;
 }
 
-function
-    erfc(x) {
+function erfc(x: number): number {
     return 1.0 - erf(x);
 }
 function
@@ -14020,20 +14016,20 @@ function
         stopf("stack error");
     return stack.pop();
 }
-function
-    pop_double() {
-    var a, b, d, p;
+function pop_double(): number {
 
-    p = pop();
+    const p = pop();
 
     if (!isnum(p))
         stopf("number expected");
 
+    let d: number;
+
     if (isdouble(p))
         d = p.d;
     else {
-        a = bignum_float(p.a);
-        b = bignum_float(p.b);
+        const a = bignum_float(p.a);
+        const b = bignum_float(p.b);
         d = a / b;
         if (isnegativenumber(p))
             d = -d;
@@ -14060,21 +14056,19 @@ function pop_integer(): number {
 
     return n;
 }
-function
-    power_complex_double(BASE, EXPO, X, Y) {
-    var expo, r, theta, x, y;
+function power_complex_double(BASE: unknown, EXPO: unknown, X: unknown, Y: unknown): void {
 
     push(X);
-    x = pop_double();
+    let x = pop_double();
 
     push(Y);
-    y = pop_double();
+    let y = pop_double();
 
     push(EXPO);
-    expo = pop_double();
+    const expo = pop_double();
 
-    r = Math.sqrt(x * x + y * y);
-    theta = Math.atan2(y, x);
+    let r = Math.sqrt(x * x + y * y);
+    let theta = Math.atan2(y, x);
 
     r = Math.pow(r, expo);
     theta = expo * theta;
@@ -14088,9 +14082,7 @@ function
     multiply();
     add();
 }
-function
-    power_complex_minus(X, Y, n) {
-    var i, R, PX, PY;
+function power_complex_minus(X: unknown, Y: unknown, n: number): void {
 
     // R = X^2 + Y^2
 
@@ -14101,7 +14093,7 @@ function
     push(Y);
     multiply();
     add();
-    R = pop();
+    const R = pop();
 
     // X = X / R
 
@@ -14118,10 +14110,10 @@ function
     divide();
     Y = pop();
 
-    PX = X;
-    PY = Y;
+    let PX = X;
+    let PY = Y;
 
-    for (i = 1; i < n; i++) {
+    for (let i = 1; i < n; i++) {
 
         push(PX);
         push(X);
@@ -14151,9 +14143,9 @@ function
     multiply();
     add();
 }
-function
-    power_complex_number(BASE, EXPO) {
-    var n, X, Y;
+function power_complex_number(BASE: unknown, EXPO: unknown) {
+    let X: unknown;
+    let Y: unknown;
 
     // prefixform(2 + 3 i) = (add 2 (multiply 3 (power -1 1/2)))
 
@@ -14169,10 +14161,12 @@ function
             Y = cadaddr(BASE);
         else
             Y = one;
-    } else if (car(BASE) == symbol(MULTIPLY)) {
+    }
+    else if (car(BASE) == symbol(MULTIPLY)) {
         X = zero;
         Y = cadr(BASE);
-    } else {
+    }
+    else {
         X = zero;
         Y = one;
     }
@@ -14182,7 +14176,7 @@ function
         return;
     }
 
-    if (!isinteger(EXPO)) {
+    if (!(isrational(EXPO) && isinteger(EXPO))) {
         power_complex_rational(BASE, EXPO, X, Y);
         return;
     }
@@ -14196,7 +14190,7 @@ function
     }
 
     push(EXPO);
-    n = pop_integer();
+    const n = pop_integer();
 
     if (n > 0)
         power_complex_plus(X, Y, n);
@@ -14205,14 +14199,12 @@ function
     else
         push_integer(1);
 }
-function
-    power_complex_plus(X, Y, n) {
-    var i, PX, PY;
+function power_complex_plus(X: unknown, Y: unknown, n: number) {
 
-    PX = X;
-    PY = Y;
+    let PX = X;
+    let PY = Y;
 
-    for (i = 1; i < n; i++) {
+    for (let i = 1; i < n; i++) {
 
         push(PX);
         push(X);
@@ -14242,8 +14234,7 @@ function
     multiply();
     add();
 }
-function
-    power_complex_rational(BASE, EXPO, X, Y) {
+function power_complex_rational(BASE: unknown, EXPO: unknown, X: unknown, Y: unknown) {
     // calculate sqrt(X^2 + Y^2) ^ (1/2 * EXPO)
 
     push(X);
@@ -14274,8 +14265,7 @@ function
 
     multiply();
 }
-function
-    power_minusone(EXPO) {
+function power_minusone(EXPO: unknown) {
     // optimization for i
 
     if (isequalq(EXPO, 1, 2)) {
@@ -14310,20 +14300,18 @@ function
     list(3);
 }
 
-function
-    normalize_clock_rational(EXPO) {
-    var n, R;
+function normalize_clock_rational(EXPO: unknown) {
 
     // R = EXPO mod 2
 
     push(EXPO);
     push_integer(2);
     modfunc();
-    R = pop();
+    let R = pop();
 
     // convert negative rotation to positive
 
-    if (isnegativenumber(R)) {
+    if (isnum(R) && isnegativenumber(R)) {
         push(R);
         push_integer(2);
         add();
@@ -14334,7 +14322,7 @@ function
     push_integer(2);
     multiply();
     floorfunc();
-    n = pop_integer(); // number of 90 degree turns
+    const n = pop_integer(); // number of 90 degree turns
 
     push(R);
     push_integer(n);
@@ -14405,11 +14393,9 @@ function
     }
 }
 
-function
-    normalize_clock_double(EXPO) {
-    var expo, n, r;
+function normalize_clock_double(EXPO: Flt) {
 
-    expo = EXPO.d;
+    let expo = EXPO.d;
 
     // expo = expo mod 2
 
@@ -14420,9 +14406,9 @@ function
     if (expo < 0)
         expo += 2;
 
-    n = Math.floor(2 * expo); // number of 90 degree turns
+    const n = Math.floor(2 * expo); // number of 90 degree turns
 
-    r = expo - n / 2; // remainder
+    const r = expo - n / 2; // remainder
 
     switch (n) {
 
@@ -14471,7 +14457,8 @@ function
                 push_integer(-1);
                 push(imaginaryunit);
                 list(3);
-            } else {
+            }
+            else {
                 push_symbol(POWER);
                 push_integer(-1);
                 push_double(r - 0.5);
@@ -14480,19 +14467,20 @@ function
             break;
     }
 }
-function
-    power_natural_number(EXPO) {
-    var x, y;
+function power_natural_number(EXPO: unknown) {
 
     // exp(x + i y) = exp(x) (cos(y) + i sin(y))
+    let x: number;
+    let y: number;
 
     if (isdoublez(EXPO)) {
         if (car(EXPO) == symbol(ADD)) {
-            x = cadr(EXPO).d;
-            y = cadaddr(EXPO).d;
-        } else {
+            x = (cadr(EXPO) as Flt).d;
+            y = (cadaddr(EXPO) as Flt).d;
+        }
+        else {
             x = 0.0;
-            y = cadr(EXPO).d;
+            y = (cadr(EXPO) as Flt).d;
         }
         push_double(Math.exp(x));
         push_double(y);
@@ -14525,8 +14513,7 @@ function
 }
 // BASE and EXPO are numbers
 
-function
-    power_numbers(BASE, EXPO) {
+function power_numbers(BASE: Num, EXPO: Num) {
     var a, b, h, i, n, p1, p2;
 
     // n^0
@@ -14646,8 +14633,7 @@ function
 
 // BASE is an integer
 
-function
-    power_numbers_factor(BASE, EXPO) {
+function power_numbers_factor(BASE: Rat, EXPO: Rat): void {
     var a, b, n, q, r, p0;
 
     if (isminusone(BASE)) {
@@ -14659,7 +14645,8 @@ function
                 push(car(p0));
                 p0 = cdr(p0);
             }
-        } else
+        }
+        else
             push(p0);
         return;
     }
