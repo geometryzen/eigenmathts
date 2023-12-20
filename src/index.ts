@@ -11145,7 +11145,6 @@ function eval_tensor(p1: Tensor) {
     promote_tensor();
 }
 function eval_test(p1: unknown): void {
-    var p2;
     p1 = cdr(p1);
     while (iscons(p1)) {
         if (!iscons(cdr(p1))) {
@@ -11155,7 +11154,7 @@ function eval_test(p1: unknown): void {
         }
         push(car(p1));
         evalp();
-        p2 = pop();
+        const p2 = pop();
         if (!iszero(p2)) {
             push(cadr(p1));
             evalf();
