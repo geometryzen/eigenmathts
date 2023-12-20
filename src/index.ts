@@ -15113,10 +15113,11 @@ function restore_symbol(): void {
  * to the HTMLElement with Id "stdout".
  */
 export function run(): void {
+    const scriptText = (document.getElementById("stdin") as HTMLTextAreaElement).value;
     const stdout = document.getElementById("stdout");
     stdout.innerHTML = "";
     try {
-        run_nib();
+        executeScript(scriptText);
     }
     catch (errmsg) {
         if ((errmsg as string).length > 0) {
@@ -15132,10 +15133,14 @@ export function run(): void {
         }
     }
 }
+/**
+ * Work In Progress
+ * @param scriptText 
+ * @returns 
+ */
+export function executeScript(scriptText: string): string[] {
 
-function run_nib(): void {
-
-    inbuf = (document.getElementById("stdin") as HTMLTextAreaElement).value;
+    inbuf = scriptText;
 
     init();
     initscript();
@@ -15152,6 +15157,11 @@ function run_nib(): void {
 
         eval_and_print_result();
     }
+
+    // Make a defensive copy of the output.
+    return outputs.map(function (x) {
+        return x;
+    });
 }
 function sample(F: unknown, T: unknown, t: number) {
     let X: unknown;
