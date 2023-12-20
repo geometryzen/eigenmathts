@@ -1417,7 +1417,7 @@ function emit_args(p: unknown): void {
 }
 
 function emit_base(p: unknown): void {
-    if (isnum(p) && isnegativenumber(p) || isfraction(p) || isdouble(p) || car(p) == symbol(ADD) || car(p) == symbol(MULTIPLY) || car(p) == symbol(POWER))
+    if (isnum(p) && isnegativenumber(p) || (isrational(p) && isfraction(p)) || isdouble(p) || car(p) == symbol(ADD) || car(p) == symbol(MULTIPLY) || car(p) == symbol(POWER))
         emit_subexpr(p);
     else
         emit_expr(p);
@@ -1627,7 +1627,7 @@ function emit_function(p: unknown): void {
 
     if (car(p) == symbol(FACTORIAL)) {
         p = cadr(p);
-        if (isposint(p) || issymbol(p))
+        if (isrational(p) && isposint(p) || issymbol(p))
             emit_expr(p);
         else
             emit_subexpr(p);
@@ -6252,7 +6252,7 @@ function factorial(): void {
 
     const p1 = pop();
 
-    if (isposint(p1)) {
+    if (isrational(p1) && isposint(p1)) {
         push(p1);
         const n = pop_integer();
         push_integer(1);
@@ -9075,7 +9075,7 @@ function power(): void {
 
     // BASE is a numerical fraction?
 
-    if (isfraction(BASE)) {
+    if (isrational(BASE) && isfraction(BASE)) {
         // power numerator, power denominator
         // EXPO is not numerical, that case was handled by power_numbers() above
         push(BASE);
@@ -12758,7 +12758,7 @@ function infixform_denominators(p: unknown): void {
         else {
             infixform_base(cadr(q));
             infixform_write("^");
-            infixform_numeric_exponent(caddr(q)); // sign is not emitted
+            infixform_numeric_exponent(caddr(q) as Num); // sign is not emitted
         }
     }
 
@@ -12922,10 +12922,11 @@ function infixform_reciprocal(p: unknown): void {
     if (isminusone(caddr(p))) {
         p = cadr(p);
         infixform_factor(p);
-    } else {
+    }
+    else {
         infixform_base(cadr(p));
         infixform_write("^");
-        infixform_numeric_exponent(caddr(p)); // sign is not emitted
+        infixform_numeric_exponent(caddr(p) as Num); // sign is not emitted
     }
 }
 
@@ -12934,8 +12935,7 @@ function infixform_factorial(p: unknown): void {
     infixform_write("!");
 }
 
-function
-    infixform_index(p) {
+function infixform_index(p: unknown): void {
     infixform_base(cadr(p));
     infixform_write("[");
     p = cddr(p);
@@ -12951,8 +12951,7 @@ function
     infixform_write("]");
 }
 
-function
-    infixform_arglist(p) {
+function infixform_arglist(p: unknown): void {
     infixform_write("(");
     p = cdr(p);
     if (iscons(p)) {
@@ -12969,31 +12968,28 @@ function
 
 // sign is not emitted
 
-function
-    infixform_rational(p) {
-    var s;
+function infixform_rational(p: Rat): void {
 
-    s = bignum_itoa(p.a);
-    infixform_write(s);
+    const a = bignum_itoa(p.a);
+    infixform_write(a);
 
     if (isinteger(p))
         return;
 
     infixform_write("/");
 
-    s = bignum_itoa(p.b);
-    infixform_write(s);
+    const b = bignum_itoa(p.b);
+    infixform_write(b);
 }
 
 // sign is not emitted
 
 function
-    infixform_double(p) {
-    var i, j, k, s;
+    infixform_double(p: Flt): void {
 
-    s = fmtnum(p.d);
+    const s = fmtnum(p.d);
 
-    k = 0;
+    let k = 0;
 
     while (k < s.length && s.charAt(k) != "." && s.charAt(k) != "E" && s.charAt(k) != "e")
         k++;
@@ -13004,12 +13000,12 @@ function
 
     if (s.charAt(k) == ".") {
 
-        i = k++;
+        const i = k++;
 
         while (k < s.length && s.charAt(k) != "E" && s.charAt(k) != "e")
             k++;
 
-        j = k;
+        let j = k;
 
         while (s.charAt(j - 1) == "0")
             j--;
@@ -13032,7 +13028,8 @@ function
             k++;
         infixform_write(s.substring(k));
         infixform_write(")");
-    } else {
+    }
+    else {
         if (s.charAt(k) == "+")
             k++;
         while (s.charAt(k) == "0") // skip leading zeroes
@@ -13041,8 +13038,7 @@ function
     }
 }
 
-function
-    infixform_base(p) {
+function infixform_base(p: unknown): void {
     if (isnum(p))
         infixform_numeric_base(p);
     else if (car(p) == symbol(ADD) || car(p) == symbol(MULTIPLY) || car(p) == symbol(POWER) || car(p) == symbol(FACTORIAL))
@@ -13051,9 +13047,8 @@ function
         infixform_expr(p);
 }
 
-function
-    infixform_numeric_base(p) {
-    if (isposint(p))
+function infixform_numeric_base(p: unknown): void {
+    if (isrational(p) && isposint(p))
         infixform_rational(p);
     else
         infixform_subexpr(p);
@@ -13061,8 +13056,7 @@ function
 
 // sign is not emitted
 
-function
-    infixform_numeric_exponent(p) {
+function infixform_numeric_exponent(p: Num): void {
     if (isdouble(p)) {
         infixform_write("(");
         infixform_double(p);
@@ -13070,7 +13064,7 @@ function
         return;
     }
 
-    if (isinteger(p)) {
+    if (isrational(p) && isinteger(p)) {
         infixform_rational(p);
         return;
     }
@@ -13080,32 +13074,29 @@ function
     infixform_write(")");
 }
 
-function
-    infixform_tensor(p) {
+function infixform_tensor(p: Tensor): void {
     infixform_tensor_nib(p, 0, 0);
 }
 
-function
-    infixform_tensor_nib(p, d, k) {
-    var i, n, span;
+function infixform_tensor_nib(p: Tensor, d: number, k: number): void {
 
     if (d == p.dim.length) {
         infixform_expr(p.elem[k]);
         return;
     }
 
-    span = 1;
+    let span = 1;
 
-    n = p.dim.length;
+    let n = p.dim.length;
 
-    for (i = d + 1; i < n; i++)
+    for (let i = d + 1; i < n; i++)
         span *= p.dim[i];
 
     infixform_write("(");
 
     n = p.dim[d];
 
-    for (i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
 
         infixform_tensor_nib(p, d + 1, k);
 
@@ -13118,11 +13109,10 @@ function
     infixform_write(")");
 }
 
-function
-    infixform_write(s) {
+function infixform_write(s: unknown): void {
     outbuf += s;
 }
-function init() {
+function init(): void {
     eval_level = 0;
     expanding = 1;
     drawing = 0;
@@ -13171,20 +13161,17 @@ function initscript(): void {
         pop();
     }
 }
-function
-    inrange(x, y) {
+function inrange(x: number, y: number): boolean {
     return x > -0.5 && x < DRAW_WIDTH + 0.5 && y > -0.5 && y < DRAW_HEIGHT + 0.5;
 }
-function
-    isalnum(s) {
+function isalnum(s: string): boolean {
     return isalpha(s) || isdigit(s);
 }
 function isalpha(s: string): boolean {
     const c = s.charCodeAt(0);
     return (c >= 65 && c <= 90) || (c >= 97 && c <= 122);
 }
-function
-    iscomplexnumber(p) {
+function iscomplexnumber(p: unknown) {
     return isimaginarynumber(p) || (lengthf(p) == 3 && car(p) == symbol(ADD) && isnum(cadr(p)) && isimaginarynumber(caddr(p)));
 }
 function
@@ -13303,12 +13290,10 @@ function
 
     return 1;
 }
-function
-    isequaln(p, n) {
+function isequaln(p: unknown, n: unknown): boolean {
     return isequalq(p, n, 1);
 }
-function
-    isequalq(p, a, b) {
+function isequalq(p: unknown, a: number, b: number): boolean {
     if (isrational(p)) {
         if (isnegativenumber(p) && a >= 0)
             return 0;
@@ -13323,16 +13308,13 @@ function
 
     return 0;
 }
-function
-    isfraction(p) {
+function isfraction(p: Rat): boolean {
     return isrational(p) && !isinteger(p);
 }
-function
-    isimaginarynumber(p) {
+function isimaginarynumber(p: unknown): boolean {
     return isimaginaryunit(p) || (lengthf(p) == 3 && car(p) == symbol(MULTIPLY) && isnum(cadr(p)) && isimaginaryunit(caddr(p)));
 }
-function
-    isimaginaryunit(p) {
+function isimaginaryunit(p: unknown): boolean {
     return car(p) == symbol(POWER) && isminusone(cadr(p)) && isequalq(caddr(p), 1, 2);
 }
 function isinteger(p: Rat): boolean {
@@ -13345,8 +13327,7 @@ function
 function iskeyword(p: Sym): boolean {
     return issymbol(p) && p.func != eval_user_symbol;
 }
-function
-    isminusone(p) {
+function isminusone(p: unknown): boolean {
     return isequaln(p, -1);
 }
 function
@@ -13380,16 +13361,20 @@ function
     isplusone(p) {
     return isequaln(p, 1);
 }
-function
-    isposint(p) {
+function isposint(p: Rat): boolean {
     return isinteger(p) && !isnegativenumber(p);
 }
-function
-    isradical(p) {
-    return car(p) == symbol(POWER) && isposint(cadr(p)) && isfraction(caddr(p));
+function isradical(p: unknown): boolean {
+    if (car(p) == symbol(POWER)) {
+        const base = cadr(p);
+        return isrational(base) && isposint(base) && isfraction(caddr(p));
+    }
+    else {
+        return false;
+    }
 }
-function isrational(p: unknwown): p is Rat {
-    return "a" in p;
+function isrational(p: unknown): p is Rat {
+    return "a" in (p as unknown as Rat);
 }
 function
     issmallinteger(p) {
