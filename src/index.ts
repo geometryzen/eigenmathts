@@ -10116,15 +10116,13 @@ function set_component(LVAL: unknown, RVAL: unknown, h: number): void {
 //	cdadr(p1) points to the list (x y)
 //	caddr(p1) points to (power x y)
 
-function
-    setq_usrfunc(p1) {
-    var A, B, C, F;
+function setq_usrfunc(p1: unknown): void {
 
-    F = caadr(p1); // function name
-    A = cdadr(p1); // function args
-    B = caddr(p1); // function body
+    const F = caadr(p1); // function name
+    const A = cdadr(p1); // function args
+    const B = caddr(p1); // function body
 
-    if (!isusersymbol(F))
+    if (!(issymbol(F) && isusersymbol(F)))
         stopf("user symbol expected");
 
     if (lengthf(A) > 9)
@@ -10132,13 +10130,12 @@ function
 
     push(B);
     convert_body(A);
-    C = pop();
+    const C = pop();
 
     set_symbol(F, B, C);
 }
 
-function
-    convert_body(A) {
+function convert_body(A: unknown): void {
     if (!iscons(A))
         return;
 
@@ -10211,28 +10208,18 @@ function
     push_symbol(ARG9);
     subst();
 }
-function
-    eval_sgn(p1) {
+function eval_sgn(p1: unknown): void {
     push(cadr(p1));
     evalf();
     sgn();
 }
 
-function
-    sgn() {
-    var i, n, p1;
+function sgn() {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
-            sgn();
-            p1.elem[i] = pop();
-        }
-        push(p1);
+        push(elementwise(p1, sgn));
         return;
     }
 
@@ -10253,39 +10240,32 @@ function
     else
         push_integer(1);
 }
-function
-    eval_simplify(p1) {
+function eval_simplify(p1: unknown): void {
     push(cadr(p1));
     evalf();
     simplify();
 }
 
-function
-    simplify() {
-    var p1;
-    p1 = pop();
+function simplify(): void {
+    const p1 = pop();
     if (istensor(p1))
         simplify_tensor(p1);
     else
         simplify_scalar(p1);
 }
 
-function
-    simplify_tensor(p1) {
-    var i, n;
+function simplify_tensor(p1: Tensor): void {
     p1 = copy_tensor(p1);
     push(p1);
-    n = p1.elem.length;
-    for (i = 0; i < n; i++) {
+    const n = p1.elem.length;
+    for (let i = 0; i < n; i++) {
         push(p1.elem[i]);
         simplify();
         p1.elem[i] = pop();
     }
 }
 
-function
-    simplify_scalar(p1) {
-    var h;
+function simplify_scalar(p1: unknown): void {
 
     // already simple?
 
@@ -10294,7 +10274,7 @@ function
         return;
     }
 
-    h = stack.length;
+    const h = stack.length;
     push(car(p1));
     p1 = cdr(p1);
 
@@ -10312,11 +10292,9 @@ function
     simplify_pass3(); // try polar form
 }
 
-function
-    simplify_pass1() {
-    var p1, NUM, DEN, R, T;
+function simplify_pass1(): void {
 
-    p1 = pop();
+    let p1 = pop();
 
     // already simple?
 
@@ -10324,6 +10302,8 @@ function
         push(p1);
         return;
     }
+
+    let T: unknown;
 
     if (car(p1) == symbol(ADD)) {
         push(p1);
@@ -10333,17 +10313,18 @@ function
             push(p1); // no change
             return;
         }
-    } else
+    }
+    else
         T = p1;
 
     push(T);
     numerator();
-    NUM = pop();
+    let NUM = pop();
 
     push(T);
     denominator();
     evalf(); // to expand denominator
-    DEN = pop();
+    let DEN = pop();
 
     // if DEN is a sum then rationalize it
 
@@ -10384,7 +10365,7 @@ function
     push(cadr(DEN)); // push first term of denominator
     divide();
 
-    R = pop(); // provisional ratio
+    const R = pop(); // provisional ratio
 
     push(R);
     push(DEN);
@@ -10403,11 +10384,9 @@ function
 
 // try exponential form
 
-function
-    simplify_pass2() {
-    var p1, p2;
+function simplify_pass2(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     // already simple?
 
@@ -10420,7 +10399,7 @@ function
     circexp();
     rationalize();
     evalf(); // to normalize
-    p2 = pop();
+    const p2 = pop();
 
     if (complexity(p2) < complexity(p1)) {
         push(p2);
@@ -10432,11 +10411,9 @@ function
 
 // try polar form
 
-function
-    simplify_pass3() {
-    var p1, p2;
+function simplify_pass3(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (car(p1) != symbol(ADD) || isusersymbolsomewhere(p1) || !findf(p1, imaginaryunit)) {
         push(p1);
@@ -10445,7 +10422,7 @@ function
 
     push(p1);
     polar();
-    p2 = pop();
+    const p2 = pop();
 
     if (!iscons(p2)) {
         push(p2);
@@ -10454,34 +10431,24 @@ function
 
     push(p1);
 }
-function
-    eval_sin(p1) {
+function eval_sin(p1: unknown): void {
     push(cadr(p1));
     evalf();
     sinfunc();
 }
 
-function
-    sinfunc() {
-    var d, i, n, p1, p2, X, Y;
+function sinfunc(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
-            sinfunc();
-            p1.elem[i] = pop();
-        }
-        push(p1);
+        push(elementwise(p1, sinfunc));
         return;
     }
 
     if (isdouble(p1)) {
         push(p1);
-        d = pop_double();
+        let d = pop_double();
         d = Math.sin(d);
         push_double(d);
         return;
@@ -10525,8 +10492,8 @@ function
     // sin(arctan(y,x)) = y (x^2 + y^2)^(-1/2)
 
     if (car(p1) == symbol(ARCTAN)) {
-        X = caddr(p1);
-        Y = cadr(p1);
+        const X = caddr(p1);
+        const Y = cadr(p1);
         push(Y);
         push(X);
         push(X);
@@ -10559,7 +10526,7 @@ function
     push(p1);
     push_symbol(PI);
     divide();
-    p2 = pop();
+    let p2 = pop();
 
     if (!isnum(p2)) {
         push_symbol(SIN);
@@ -10570,7 +10537,7 @@ function
 
     if (isdouble(p2)) {
         push(p2);
-        d = pop_double();
+        let d = pop_double();
         d = Math.sin(d * Math.PI);
         push_double(d);
         return;
@@ -10581,7 +10548,7 @@ function
     multiply();
     p2 = pop();
 
-    if (!isinteger(p2)) {
+    if (!(isrational(p2) && isinteger(p2))) {
         push_symbol(SIN);
         push(p1);
         list(2);
@@ -10591,7 +10558,7 @@ function
     push(p2);
     push_integer(360);
     modfunc();
-    n = pop_integer();
+    const n = pop_integer();
 
     switch (n) {
         case 0:
@@ -10654,18 +10621,16 @@ function
 
 // sin(x + n/2 pi) = sin(x) cos(n/2 pi) + cos(x) sin(n/2 pi)
 
-function
-    sinfunc_sum(p1) {
-    var p2, p3;
-    p2 = cdr(p1);
+function sinfunc_sum(p1: unknown): void {
+    let p2 = cdr(p1);
     while (iscons(p2)) {
         push_integer(2);
         push(car(p2));
         multiply();
         push_symbol(PI);
         divide();
-        p3 = pop();
-        if (isinteger(p3)) {
+        let p3 = pop();
+        if (isrational(p3) && isinteger(p3)) {
             push(p1);
             push(car(p2));
             subtract();
@@ -10689,8 +10654,7 @@ function
     push(p1);
     list(2);
 }
-function
-    eval_sinh(p1) {
+function eval_sinh(p1: unknown): void {
     push(cadr(p1));
     evalf();
     sinhfunc();
