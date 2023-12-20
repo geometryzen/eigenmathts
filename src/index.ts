@@ -16,7 +16,7 @@ export interface Str {
 }
 export interface Sym {
     printname: string;
-    func: unknown;
+    func: (args: unknown) => void;
 }
 export interface Tensor {
     dim: number[];
@@ -1976,7 +1976,7 @@ function emit_symbol(p: unknown): void {
 
     const s = printname(p);
 
-    if (iskeyword(p) || p == symbol(LAST) || p == symbol(TRACE) || p == symbol(TTY)) {
+    if ((issymbol(p) && iskeyword(p)) || p == symbol(LAST) || p == symbol(TRACE) || p == symbol(TTY)) {
         emit_roman_string(s);
         return;
     }
@@ -11165,8 +11165,7 @@ function eval_test(p1: unknown): void {
     push_symbol(NIL);
 }
 
-function
-    eval_testeq(p1) {
+function eval_testeq(p1: unknown): void {
     push(cadr(p1));
     evalf();
     push(caddr(p1));
@@ -11180,40 +11179,35 @@ function
         push_integer(0);
 }
 
-function
-    eval_testge(p1) {
+function eval_testge(p1: unknown): void {
     if (cmp_args(p1) >= 0)
         push_integer(1);
     else
         push_integer(0);
 }
 
-function
-    eval_testgt(p1) {
+function eval_testgt(p1: unknown): void {
     if (cmp_args(p1) > 0)
         push_integer(1);
     else
         push_integer(0);
 }
 
-function
-    eval_testle(p1) {
+function eval_testle(p1: unknown): void {
     if (cmp_args(p1) <= 0)
         push_integer(1);
     else
         push_integer(0);
 }
 
-function
-    eval_testlt(p1) {
+function eval_testlt(p1: unknown): void {
     if (cmp_args(p1) < 0)
         push_integer(1);
     else
         push_integer(0);
 }
 
-function
-    cmp_args(p1) {
+function cmp_args(p1: unknown): 0 | 1 | -1 {
     push(cadr(p1));
     evalf();
     push(caddr(p1));
@@ -11231,14 +11225,11 @@ function
     else
         return 1;
 }
-function
-    eval_transpose(p1) {
-    var m, n;
-    var p2;
+function eval_transpose(p1: unknown): void {
 
     push(cadr(p1));
     evalf();
-    p2 = pop();
+    const p2 = pop();
     push(p2);
 
     if (!istensor(p2) || p2.dim.length < 2)
@@ -11255,11 +11246,11 @@ function
 
         push(car(p1));
         evalf();
-        n = pop_integer();
+        const n = pop_integer();
 
         push(cadr(p1));
         evalf();
-        m = pop_integer();
+        const m = pop_integer();
 
         transpose(n, m);
 
@@ -11267,16 +11258,13 @@ function
     }
 }
 
-function
-    transpose(n, m) {
-    var i, j, k, ndim, nelem;
-    var index = [];
-    var p1, p2;
+function transpose(n: number, m: number): void {
+    const index: number[] = [];
 
-    p1 = pop();
+    const p1 = pop() as Tensor;
 
-    ndim = p1.dim.length;
-    nelem = p1.elem.length;
+    const ndim = p1.dim.length;
+    const nelem = p1.elem.length;
 
     if (n < 1 || n > ndim || m < 1 || m > ndim)
         stopf("transpose: index error");
@@ -11284,21 +11272,21 @@ function
     n--; // make zero based
     m--;
 
-    p2 = copy_tensor(p1);
+    const p2 = copy_tensor(p1);
 
     // interchange indices n and m
 
     p2.dim[n] = p1.dim[m];
     p2.dim[m] = p1.dim[n];
 
-    for (i = 0; i < ndim; i++)
+    for (let i = 0; i < ndim; i++)
         index[i] = 0;
 
-    for (i = 0; i < nelem; i++) {
+    for (let i = 0; i < nelem; i++) {
 
-        k = 0;
+        let k = 0;
 
-        for (j = 0; j < ndim; j++) {
+        for (let j = 0; j < ndim; j++) {
             if (j == n)
                 k = k * p1.dim[m] + index[m];
             else if (j == m)
@@ -11311,7 +11299,7 @@ function
 
         // increment index
 
-        for (j = ndim - 1; j >= 0; j--) {
+        for (let j = ndim - 1; j >= 0; j--) {
             if (++index[j] < p1.dim[j])
                 break;
             index[j] = 0;
@@ -11320,14 +11308,12 @@ function
 
     push(p2);
 }
-function
-    eval_unit(p1) {
-    var i, j, n;
+function eval_unit(p1: unknown): void {
 
     push(cadr(p1));
     evalf();
 
-    n = pop_integer();
+    const n = pop_integer();
 
     if (n < 1)
         stopf("unit: index err");
@@ -11337,25 +11323,23 @@ function
         return;
     }
 
-    p1 = alloc_matrix(n, n);
+    const M = alloc_matrix(n, n);
 
-    for (i = 0; i < n; i++)
-        for (j = 0; j < n; j++)
+    for (let i = 0; i < n; i++)
+        for (let j = 0; j < n; j++)
             if (i == j)
-                p1.elem[n * i + j] = one;
+                M.elem[n * i + j] = one;
             else
-                p1.elem[n * i + j] = zero;
+                M.elem[n * i + j] = zero;
 
-    push(p1);
+    push(M);
 }
-function
-    eval_user_function(p1) {
-    var h, i, FUNC_NAME, FUNC_ARGS, FUNC_DEFN;
+function eval_user_function(p1: unknown): void {
 
-    FUNC_NAME = car(p1);
-    FUNC_ARGS = cdr(p1);
+    const FUNC_NAME = car(p1);
+    let FUNC_ARGS = cdr(p1);
 
-    FUNC_DEFN = get_usrfunc(FUNC_NAME);
+    const FUNC_DEFN = get_usrfunc(FUNC_NAME);
 
     // undefined function?
 
@@ -11366,7 +11350,7 @@ function
             expanding--;
             return;
         }
-        h = stack.length;
+        const h = stack.length;
         push(FUNC_NAME);
         while (iscons(FUNC_ARGS)) {
             push(car(FUNC_ARGS));
@@ -11381,7 +11365,7 @@ function
 
     // eval all args before changing bindings
 
-    for (i = 0; i < 9; i++) {
+    for (let i = 0; i < 9; i++) {
         push(car(FUNC_ARGS));
         evalf();
         FUNC_ARGS = cdr(FUNC_ARGS);
@@ -11419,7 +11403,7 @@ function
     restore_symbol();
     restore_symbol();
 }
-function eval_user_symbol(p1) {
+function eval_user_symbol(p1: unknown): void {
     const p2 = get_binding(p1);
     if (p1 == p2)
         push(p1); // symbol evaluates to itself
@@ -11428,45 +11412,43 @@ function eval_user_symbol(p1) {
         evalf();
     }
 }
-function
-    eval_zero(p1) {
-    var h, i, m, n;
+function eval_zero(p1: unknown): void {
 
     p1 = cdr(p1);
-    h = stack.length;
-    m = 1;
+    const h = stack.length;
+    let m = 1;
 
     while (iscons(p1)) {
         push(car(p1));
         evalf();
         dupl();
-        n = pop_integer();
+        const n = pop_integer();
         if (n < 2)
             stopf("zero: dim err");
         m *= n;
         p1 = cdr(p1);
     }
 
-    n = stack.length - h;
+    const n = stack.length - h;
 
     if (n == 0) {
         push_integer(0); // scalar zero
         return;
     }
 
-    p1 = alloc_tensor();
+    const T = alloc_tensor();
 
-    for (i = 0; i < m; i++)
-        p1.elem[i] = zero;
+    for (let i = 0; i < m; i++)
+        T.elem[i] = zero;
 
     // dim info
 
-    for (i = 0; i < n; i++)
-        p1.dim[n - i - 1] = pop_integer();
+    for (let i = 0; i < n; i++)
+        T.dim[n - i - 1] = pop_integer();
 
-    push(p1);
+    push(T);
 }
-function evalf() {
+function evalf(): void {
     eval_level++;
     evalf_nib();
     eval_level--;
@@ -11479,19 +11461,20 @@ function evalf_nib(): void {
 
     const p1 = pop();
 
-    if (iscons(p1) && iskeyword(car(p1))) {
+    const sym = car(p1);
+    if (iscons(p1) && issymbol(sym) && iskeyword(sym)) {
         expanding++;
-        car(p1).func(p1);
+        sym.func(p1);
         expanding--;
         return;
     }
 
-    if (iscons(p1) && isusersymbol(car(p1))) {
+    if (iscons(p1) && issymbol(sym) && isusersymbol(sym)) {
         eval_user_function(p1);
         return;
     }
 
-    if (iskeyword(p1)) { // bare keyword
+    if (issymbol(p1) && iskeyword(p1)) { // bare keyword
         push(p1);
         push_symbol(LAST); // default arg
         list(2);
@@ -11499,7 +11482,7 @@ function evalf_nib(): void {
         return;
     }
 
-    if (isusersymbol(p1)) {
+    if (issymbol(p1) && isusersymbol(p1)) {
         eval_user_symbol(p1);
         return;
     }
@@ -11511,7 +11494,7 @@ function evalf_nib(): void {
 
     push(p1); // rational, double, or string
 }
-function evalp() {
+function evalp(): void {
     const p1 = pop();
     if (car(p1) == symbol(SETQ))
         eval_testeq(p1);
@@ -11520,16 +11503,16 @@ function evalp() {
         evalf();
     }
 }
-function
-    expand_sum_factors(h) {
-    var i, n, p1, p2;
+function expand_sum_factors(h: number): void {
 
-    n = stack.length;
+    let n = stack.length;
 
     if (n - h < 2)
         return;
 
     // search for a sum factor
+    let i: number;
+    let p2: unknown;
 
     for (i = h; i < n; i++) {
         p2 = stack[i];
@@ -11554,7 +11537,7 @@ function
         cons();
     }
 
-    p1 = pop(); // p1 is the multiplier
+    const p1 = pop(); // p1 is the multiplier
 
     p2 = cdr(p2); // p2 is the sum
 
@@ -11569,10 +11552,7 @@ function
 }
 // N is bignum, M is rational
 
-function
-    factor_bignum(N, M) {
-    var h, i, n;
-    var BASE, EXPO;
+function factor_bignum(N: number[], M: unknown): void {
 
     // greater than 31 bits?
 
@@ -11587,18 +11567,18 @@ function
         return;
     }
 
-    h = stack.length;
+    const h = stack.length;
 
-    n = bignum_smallnum(N);
+    let n = bignum_smallnum(N);
 
     factor_int(n);
 
     n = (stack.length - h) / 2; // number of factors on stack
 
-    for (i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
 
-        BASE = stack[h + 2 * i + 0];
-        EXPO = stack[h + 2 * i + 1];
+        const BASE = stack[h + 2 * i + 0];
+        let EXPO = stack[h + 2 * i + 1];
 
         push(EXPO);
         push(M);
@@ -11621,8 +11601,7 @@ function
 }
 // factors N or N^M where N and M are rational numbers, returns factors on stack
 
-function
-    factor_factor() {
+function factor_factor(): void {
     var numer, denom;
     var INPUT, BASE, EXPO;
 
@@ -13377,8 +13356,7 @@ function
     isinteger1(p) {
     return isinteger(p) && isplusone(p);
 }
-function
-    iskeyword(p) {
+function iskeyword(p: Sym): boolean {
     return issymbol(p) && p.func != eval_user_symbol;
 }
 function
