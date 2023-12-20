@@ -1393,7 +1393,7 @@ function display(): void {
 
     outbuf += "</svg><br>";
 
-    stdout.innerHTML += outbuf;
+    outputs.push(outbuf);
 }
 
 function emit_args(p: unknown): void {
@@ -2916,7 +2916,7 @@ function emit_graph(): void {
 
     outbuf += "</svg><br>";
 
-    stdout.innerHTML += outbuf;
+    outputs.push(outbuf);
 }
 function emit_labels(): void {
 
@@ -13148,6 +13148,8 @@ function init(): void {
     push_rational(1, 2);
     list(3);
     imaginaryunit = pop();
+
+    outputs.length = 0;
 }
 const init_script = [
     "i = sqrt(-1)",
@@ -14874,7 +14876,7 @@ function printbuf(s: string, color: 1 | 2 | 3): void {
             break;
     }
 
-    stdout.innerHTML += s;
+    outputs.push(s);
 }
 function printname(p: Sym) {
     if ("printname" in p)
@@ -15111,6 +15113,8 @@ function restore_symbol(): void {
  * to the HTMLElement with Id "stdout".
  */
 export function run(): void {
+    const stdout = document.getElementById("stdout");
+    stdout.innerHTML = "";
     try {
         run_nib();
     }
@@ -15122,13 +15126,16 @@ export function run(): void {
             printbuf(inbuf.substring(trace1, trace2) + "\nStop: " + errmsg, RED);
         }
     }
+    finally {
+        for (const output of outputs) {
+            stdout.innerHTML += output;
+        }
+    }
 }
 
 function run_nib(): void {
 
     inbuf = (document.getElementById("stdin") as HTMLTextAreaElement).value;
-    stdout = document.getElementById("stdout");
-    stdout.innerHTML = "";
 
     init();
     initscript();
@@ -15139,8 +15146,9 @@ function run_nib(): void {
 
         k = scan_inbuf(k);
 
-        if (k == 0)
+        if (k == 0) {
             break; // end of input
+        }
 
         eval_and_print_result();
     }
@@ -15906,7 +15914,7 @@ function trace_input(): void {
 }
 let inbuf: string;
 let outbuf: string;
-let stdout: HTMLElement;
+const outputs: string[] = [];
 let stack: unknown[];
 let frame: unknown[];
 let binding: { [printname: string]: unknown };
