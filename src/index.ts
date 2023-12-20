@@ -10660,27 +10660,18 @@ function eval_sinh(p1: unknown): void {
     sinhfunc();
 }
 
-function
-    sinhfunc() {
-    var d, i, n, p1;
+function sinhfunc(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
-            sinhfunc();
-            p1.elem[i] = pop();
-        }
-        push(p1);
+        push(elementwise(p1, sinhfunc));
         return;
     }
 
     if (isdouble(p1)) {
         push(p1);
-        d = pop_double();
+        let d = pop_double();
         d = Math.sinh(d);
         push_double(d);
         return;
@@ -10724,28 +10715,23 @@ function
     push(p1);
     list(2);
 }
-function
-    eval_sqrt(p1) {
+function eval_sqrt(p1: unknown): void {
     push(cadr(p1));
     evalf();
     sqrtfunc();
 }
 
-function
-    sqrtfunc() {
+function sqrtfunc(): void {
     push_rational(1, 2);
     power();
 }
-function
-    eval_status() {
+function eval_status(): void {
     push_symbol(NIL);
 }
-function
-    eval_stop() {
+function eval_stop(): never {
     stopf("stop");
 }
-function
-    eval_subst(p1) {
+function eval_subst(p1: unknown): void {
     push(cadddr(p1));
     evalf();
     push(caddr(p1));
@@ -10756,29 +10742,27 @@ function
     evalf(); // normalize
 }
 
-function
-    subst() {
-    var h, i, n, p1, p2, p3;
+function subst(): void {
 
-    p3 = pop(); // new expr
-    p2 = pop(); // old expr
+    const p3 = pop(); // new expr
+    const p2 = pop(); // old expr
 
     if (p2 == symbol(NIL) || p3 == symbol(NIL))
         return;
 
-    p1 = pop(); // expr
+    let p1 = pop(); // expr
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
+        const T = copy_tensor(p1);
+        const n = T.elem.length;
+        for (let i = 0; i < n; i++) {
+            push(T.elem[i]);
             push(p2);
             push(p3);
             subst();
-            p1.elem[i] = pop();
+            T.elem[i] = pop();
         }
-        push(p1);
+        push(T);
         return;
     }
 
@@ -10788,7 +10772,7 @@ function
     }
 
     if (iscons(p1)) {
-        h = stack.length;
+        const h = stack.length;
         while (iscons(p1)) {
             push(car(p1));
             push(p2);
@@ -10802,9 +10786,7 @@ function
 
     push(p1);
 }
-function
-    eval_sum(p1) {
-    var h, i, j, k, n, p2, p3;
+function eval_sum(p1: unknown): void {
 
     if (lengthf(p1) == 2) {
         push(cadr(p1));
@@ -10814,34 +10796,34 @@ function
             push(p1);
             return;
         }
-        n = p1.elem.length;
-        for (i = 0; i < n; i++)
+        const n = p1.elem.length;
+        for (let i = 0; i < n; i++)
             push(p1.elem[i]);
         add_terms(n);
         return;
     }
 
-    p2 = cadr(p1);
-    if (!isusersymbol(p2))
+    const p2 = cadr(p1);
+    if (!(issymbol(p2) && isusersymbol(p2)))
         stopf("sum: symbol error");
 
     push(caddr(p1));
     evalf();
-    j = pop_integer();
+    let j = pop_integer();
 
     push(cadddr(p1));
     evalf();
-    k = pop_integer();
+    const k = pop_integer();
 
     p1 = caddddr(p1);
 
     save_symbol(p2);
 
-    h = stack.length;
+    const h = stack.length;
 
     for (; ;) {
         push_integer(j);
-        p3 = pop();
+        const p3 = pop();
         set_symbol(p2, p3, symbol(NIL));
         push(p1);
         evalf();
@@ -10857,34 +10839,24 @@ function
 
     restore_symbol();
 }
-function
-    eval_tan(p1) {
+function eval_tan(p1: unknown): void {
     push(cadr(p1));
     evalf();
     tanfunc();
 }
 
-function
-    tanfunc() {
-    var d, i, n, p1, p2;
+function tanfunc(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
-            tanfunc();
-            p1.elem[i] = pop();
-        }
-        push(p1);
+        push(elementwise(p1, tanfunc));
         return;
     }
 
     if (isdouble(p1)) {
         push(p1);
-        d = pop_double();
+        let d = pop_double();
         d = Math.tan(d);
         push_double(d);
         return;
@@ -10926,7 +10898,7 @@ function
     push(p1);
     push_symbol(PI);
     divide();
-    p2 = pop();
+    let p2 = pop();
 
     if (!isnum(p2)) {
         push_symbol(TAN);
@@ -10937,7 +10909,7 @@ function
 
     if (isdouble(p2)) {
         push(p2);
-        d = pop_double();
+        let d = pop_double();
         d = Math.tan(d * Math.PI);
         push_double(d);
         return;
@@ -10948,7 +10920,7 @@ function
     multiply();
     p2 = pop();
 
-    if (!isinteger(p2)) {
+    if (!(isrational(p2) && isinteger(p2))) {
         push_symbol(TAN);
         push(p1);
         list(2);
@@ -10958,7 +10930,7 @@ function
     push(p2);
     push_integer(360);
     modfunc();
-    n = pop_integer();
+    const n = pop_integer();
 
     switch (n) {
         case 0:
@@ -11012,16 +10984,14 @@ function
 
 // tan(x + n pi) = tan(x)
 
-function
-    tanfunc_sum(p1) {
-    var p2, p3;
-    p2 = cdr(p1);
+function tanfunc_sum(p1: unknown): void {
+    let p2 = cdr(p1);
     while (iscons(p2)) {
         push(car(p2));
         push_symbol(PI);
         divide();
-        p3 = pop();
-        if (isinteger(p3)) {
+        const p3 = pop();
+        if (isrational(p3) && isinteger(p3)) {
             push(p1);
             push(car(p2));
             subtract();
@@ -11034,34 +11004,24 @@ function
     push(p1);
     list(2);
 }
-function
-    eval_tanh(p1) {
+function eval_tanh(p1: unknown): void {
     push(cadr(p1));
     evalf();
     tanhfunc();
 }
 
-function
-    tanhfunc() {
-    var d, i, n, p1;
+function tanhfunc(): void {
 
-    p1 = pop();
+    const p1 = pop();
 
     if (istensor(p1)) {
-        p1 = copy_tensor(p1);
-        n = p1.elem.length;
-        for (i = 0; i < n; i++) {
-            push(p1.elem[i]);
-            tanhfunc();
-            p1.elem[i] = pop();
-        }
-        push(p1);
+        push(elementwise(p1, tanhfunc));
         return;
     }
 
     if (isdouble(p1)) {
         push(p1);
-        d = pop_double();
+        let d = pop_double();
         d = Math.tanh(d);
         push_double(d);
         return;
@@ -11100,33 +11060,32 @@ function
     push(p1);
     list(2);
 }
-function
-    eval_taylor(p1) {
-    var h, i, n, F, X, A, C;
+function eval_taylor(p1: unknown): void {
 
     push(cadr(p1));
     evalf();
-    F = pop();
+    let F = pop();
 
     push(caddr(p1));
     evalf();
-    X = pop();
+    const X = pop();
 
     push(cadddr(p1));
     evalf();
-    n = pop_integer();
+    const n = pop_integer();
 
     p1 = cddddr(p1);
 
     if (iscons(p1)) {
         push(car(p1));
         evalf();
-    } else
+    }
+    else
         push_integer(0); // default expansion point
 
-    A = pop();
+    const A = pop();
 
-    h = stack.length;
+    const h = stack.length;
 
     push(F);	// f(a)
     push(X);
@@ -11135,9 +11094,9 @@ function
     evalf();
 
     push_integer(1);
-    C = pop();
+    let C = pop();
 
-    for (i = 1; i <= n; i++) {
+    for (let i = 1; i <= n; i++) {
 
         push(F);	// f = f'
         push(X);
@@ -11170,13 +11129,12 @@ function
     add_terms(stack.length - h);
 }
 function eval_tensor(p1: Tensor) {
-    var i, n;
 
     p1 = copy_tensor(p1);
 
-    n = p1.elem.length;
+    const n = p1.elem.length;
 
-    for (i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
         push(p1.elem[i]);
         evalf();
         p1.elem[i] = pop();
@@ -11186,8 +11144,7 @@ function eval_tensor(p1: Tensor) {
 
     promote_tensor();
 }
-function
-    eval_test(p1) {
+function eval_test(p1: unknown): void {
     var p2;
     p1 = cdr(p1);
     while (iscons(p1)) {
