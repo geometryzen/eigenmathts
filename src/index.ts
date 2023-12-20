@@ -116,7 +116,13 @@ function bignum_issmallnum(u: number[]) {
     return u.length == 1 || (u.length == 2 && u[1] < 128);
 }
 
-function push_bignum(sign: number, a: number[], b: number[]) {
+/**
+ * Pushes a Rat onto the stack.
+ * @param sign 
+ * @param a 
+ * @param b 
+ */
+function push_bignum(sign: 1 | -1, a: number[], b: number[]): void {
     // normalize zero
 
     if (bignum_iszero(a)) {
@@ -125,7 +131,9 @@ function push_bignum(sign: number, a: number[], b: number[]) {
             b = bignum_int(1);
     }
 
-    push({ sign: sign, a: a, b: b });
+    const X: Rat = { sign: sign, a: a, b: b };
+
+    push(X);
 }
 function bignum_add(u: number[], v: number[]): number[] {
     let nw: number;
@@ -1353,7 +1361,7 @@ const EMIT_TABLE = 10;
 
 let emit_level: number;
 
-function display() {
+function display(): void {
 
     emit_level = 0;
 
@@ -3220,8 +3228,8 @@ function combine_terms_nib(i: number, j: number): 1 | 0 {
     if (isnum(p1) || isnum(p2))
         return 0; // cannot add number and something else
 
-    let coeff1 = one;
-    let coeff2 = one;
+    let coeff1: unknown = one;
+    let coeff2: unknown = one;
 
     let denorm = 0;
 
@@ -5055,7 +5063,7 @@ function denominator(): void {
         return;
     }
 
-    let p2 = one; // denominator
+    let p2: unknown = one; // denominator
 
     while (find_divisor(p1)) {
 
@@ -9283,7 +9291,7 @@ function rationalize(): void {
         return;
     }
 
-    let p2 = one;
+    let p2: unknown = one;
 
     while (find_divisor(p1)) {
         const p0 = pop();
@@ -13127,13 +13135,13 @@ function init(): void {
     usrfunc = {};
 
     push_integer(0);
-    zero = pop();
+    zero = pop() as Rat;
 
     push_integer(1);
-    one = pop();
+    one = pop() as Rat;
 
     push_integer(-1);
-    minusone = pop();
+    minusone = pop() as Rat;
 
     push_symbol(POWER);
     push_integer(-1);
@@ -14599,7 +14607,7 @@ function power_numbers(BASE: Num, EXPO: Num) {
 
     // combine numbers (leaves radicals on stack)
 
-    let p1 = one;
+    let p1: unknown = one;
 
     for (let i = h; i < stack.length; i++) {
         const p2 = stack[i];
@@ -14831,7 +14839,7 @@ function prefixform(p: unknown) {
     else
         outbuf += " ? ";
 }
-function print_infixform(p: unknown) {
+function print_infixform(p: unknown): void {
     outbuf = "";
     infixform_expr(p);
     infixform_write("\n");
@@ -14936,10 +14944,19 @@ function push(a: unknown): void {
 function push_double(d: number): void {
     push({ d: d });
 }
+/**
+ * Pushes a Rat onto the stack.
+ * @param n 
+ */
 function push_integer(n: number): void {
     push_rational(n, 1);
 }
-function push_rational(a: number, b: number) {
+/**
+ * Pushes a Rat onto the stack.
+ * @param a 
+ * @param b 
+ */
+function push_rational(a: number, b: number): void {
     let sign: 1 | -1;
 
     if (a < 0)
@@ -15088,16 +15105,20 @@ function restore_symbol(): void {
     const p1 = frame.pop() as Sym;
     set_symbol(p1, p2, p3);
 }
-/* exported run */
 
+/**
+ * Evaluates the script defined in the HTMLTextAreaElement with Id "stdin" and sends the output
+ * to the HTMLElement with Id "stdout".
+ */
 export function run(): void {
     try {
         run_nib();
     }
     catch (errmsg) {
         if ((errmsg as string).length > 0) {
-            if (trace1 < trace2 && inbuf[trace2 - 1] == '\n')
+            if (trace1 < trace2 && inbuf[trace2 - 1] == '\n') {
                 trace2--;
+            }
             printbuf(inbuf.substring(trace1, trace2) + "\nStop: " + errmsg, RED);
         }
     }
@@ -15864,21 +15885,20 @@ function static_reciprocate(): void {
 function stopf(errmsg: string): never {
     throw errmsg;
 }
-function
-    subtract() {
+function subtract(): void {
     negate();
     add();
 }
-function swap() {
+function swap(): void {
     const p2 = pop();
     const p1 = pop();
     push(p2);
     push(p1);
 }
-function symbol(s: string) {
+function symbol(s: string): Sym {
     return symtab[s];
 }
-function trace_input() {
+function trace_input(): void {
     const p1 = get_binding(symbol(TRACE));
     if (p1 != symbol(TRACE) && !iszero(p1)) {
         printbuf(instring.substring(trace1, trace2), BLUE);
@@ -15891,9 +15911,9 @@ let stack: unknown[];
 let frame: unknown[];
 let binding: { [printname: string]: unknown };
 let usrfunc: { [printname: string]: unknown };
-let zero: unknown;
-let one: unknown;
-let minusone: unknown;
+let zero: Rat;
+let one: Rat;
+let minusone: Rat;
 let imaginaryunit: unknown;
 let eval_level: number;
 let expanding: number;
