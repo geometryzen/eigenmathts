@@ -9893,12 +9893,10 @@ function rotate_z(PSI: Tensor, c: number, n: number): void {
 
 // quantum fourier transform
 
-function
-    rotate_q(PSI, n) {
-    var i, j, PHASE;
-    for (i = n; i >= 0; i--) {
+function rotate_q(PSI: Tensor, n: number): void {
+    for (let i = n; i >= 0; i--) {
         rotate_h(PSI, 0, i);
-        for (j = 0; j < i; j++) {
+        for (let j = 0; j < i; j++) {
             push_rational(1, 2);
             push_integer(i - j);
             power();
@@ -9907,23 +9905,21 @@ function
             evalf();
             multiply_factors(3);
             expfunc();
-            PHASE = pop();
+            const PHASE = pop();
             rotate_p(PSI, PHASE, 1 << j, i);
         }
     }
-    for (i = 0; i < (n + 1) / 2; i++)
+    for (let i = 0; i < (n + 1) / 2; i++)
         rotate_w(PSI, 0, i, n - i);
 }
 
 // inverse qft
 
-function
-    rotate_v(PSI, n) {
-    var i, j, PHASE;
-    for (i = 0; i < (n + 1) / 2; i++)
+function rotate_v(PSI: Tensor, n: number): void {
+    for (let i = 0; i < (n + 1) / 2; i++)
         rotate_w(PSI, 0, i, n - i);
-    for (i = 0; i <= n; i++) {
-        for (j = i - 1; j >= 0; j--) {
+    for (let i = 0; i <= n; i++) {
+        for (let j = i - 1; j >= 0; j--) {
             push_rational(1, 2);
             push_integer(i - j);
             power();
@@ -9933,13 +9929,13 @@ function
             multiply_factors(3);
             negate();
             expfunc();
-            PHASE = pop();
+            const PHASE = pop();
             rotate_p(PSI, PHASE, 1 << j, i);
         }
         rotate_h(PSI, 0, i);
     }
 }
-function eval_run(p1: unknwown): void {
+function eval_run(p1: unknown): void {
 
     push(cadr(p1));
     evalf();
@@ -9982,7 +9978,7 @@ function eval_run(p1: unknwown): void {
 
     push_symbol(NIL);
 }
-function eval_setq(p1): void {
+function eval_setq(p1: unknown): void {
 
     push_symbol(NIL); // return value
 
@@ -9996,14 +9992,15 @@ function eval_setq(p1): void {
         return;
     }
 
-    if (!isusersymbol(cadr(p1)))
+    const s = cadr(p1);
+    if (!(issymbol(s) && isusersymbol(s)))
         stopf("user symbol expected");
 
     push(caddr(p1));
     evalf();
     const p2 = pop();
 
-    set_symbol(cadr(p1), p2, symbol(NIL));
+    set_symbol(s, p2, symbol(NIL));
 }
 
 // Example: a[1] = b
@@ -10018,13 +10015,11 @@ function eval_setq(p1): void {
 // cadadr(p1) = a
 // caddr(p1) = b
 
-function
-    setq_indexed(p1) {
-    var h, LVAL, RVAL, S;
+function setq_indexed(p1: unknown): void {
 
-    S = cadadr(p1);
+    const S = cadadr(p1);
 
-    if (!isusersymbol(S))
+    if (!(issymbol(S) && isusersymbol(S)))
         stopf("user symbol expected");
 
     push(S);
@@ -10033,10 +10028,10 @@ function
     push(caddr(p1));
     evalf();
 
-    RVAL = pop();
-    LVAL = pop();
+    const RVAL = pop();
+    const LVAL = pop();
 
-    h = stack.length;
+    const h = stack.length;
 
     p1 = cddadr(p1);
 
@@ -10051,27 +10046,25 @@ function
     set_symbol(S, LVAL, symbol(NIL));
 }
 
-function
-    set_component(LVAL, RVAL, h) {
-    var i, k, m, n, t;
+function set_component(LVAL: unknown, RVAL: unknown, h: number): void {
 
     if (!istensor(LVAL))
         stopf("index error");
 
     // n is number of indices
 
-    n = stack.length - h;
+    const n = stack.length - h;
 
     if (n < 1 || n > LVAL.dim.length)
         stopf("index error");
 
     // k is combined index
 
-    k = 0;
+    let k = 0;
 
-    for (i = 0; i < n; i++) {
+    for (let i = 0; i < n; i++) {
         push(stack[h + i]);
-        t = pop_integer();
+        const t = pop_integer();
         if (t < 1 || t > LVAL.dim[i])
             stopf("index error");
         k = k * LVAL.dim[i] + t - 1;
@@ -10080,16 +10073,17 @@ function
     stack.splice(h); // pop all indices
 
     if (istensor(RVAL)) {
-        m = RVAL.dim.length;
+        let m = RVAL.dim.length;
         if (n + m != LVAL.dim.length)
             stopf("index error");
-        for (i = 0; i < m; i++)
+        for (let i = 0; i < m; i++)
             if (LVAL.dim[n + i] != RVAL.dim[i])
                 stopf("index error");
         m = RVAL.elem.length;
-        for (i = 0; i < m; i++)
+        for (let i = 0; i < m; i++)
             LVAL.elem[m * k + i] = RVAL.elem[i];
-    } else {
+    }
+    else {
         if (n != LVAL.dim.length)
             stopf("index error");
         LVAL.elem[k] = RVAL;
