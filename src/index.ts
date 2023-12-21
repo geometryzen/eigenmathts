@@ -13435,7 +13435,7 @@ function isdoublesomewhere(p: unknown) {
     return 0;
 }
 
-function isdoublez(p: unknown) {
+function isdoublez(p: unknown): 0 | 1 {
     if (car(p) == symbol(ADD)) {
 
         if (lengthf(p) != 3)
@@ -13557,11 +13557,11 @@ function isnumerator(p: unknown) {
     return 1;
 }
 
-function isoneoversqrttwo(p: unknown) {
+function isoneoversqrttwo(p: unknown): boolean {
     return car(p) == symbol(POWER) && isequaln(cadr(p), 2) && isequalq(caddr(p), -1, 2);
 }
 
-function isplusone(p: unknown) {
+function isplusone(p: unknown): boolean {
     return isequaln(p, 1);
 }
 
@@ -13584,14 +13584,14 @@ function isrational(p: unknown): p is Rat {
     return "a" in (p as unknown as Rat);
 }
 
-function issmallinteger(p: unknown) {
+function issmallinteger(p: unknown): boolean {
     if (isrational(p) && isinteger(p))
         return bignum_issmallnum(p.a);
 
     if (isdouble(p))
         return p.d == Math.floor(p.d) && Math.abs(p.d) <= 0x7fffffff;
 
-    return 0;
+    return false;
 }
 
 function issquarematrix(p: Tensor): boolean {
@@ -13614,7 +13614,7 @@ function isusersymbol(p: Sym): boolean {
     return issymbol(p) && p.func == eval_user_symbol;
 }
 
-function isusersymbolsomewhere(p: unknown) {
+function isusersymbolsomewhere(p: unknown): 0 | 1 {
     if (issymbol(p) && isusersymbol(p) && p != symbol(PI) && p != symbol(EXP1))
         return 1;
 
@@ -13630,7 +13630,7 @@ function isusersymbolsomewhere(p: unknown) {
     return 0;
 }
 
-function iszero(p: unknown) {
+function iszero(p: unknown): boolean {
 
     if (isrational(p))
         return bignum_iszero(p.a);
@@ -13642,12 +13642,12 @@ function iszero(p: unknown) {
         const n = p.elem.length;
         for (let i = 0; i < n; i++) {
             if (!iszero(p.elem[i]))
-                return 0;
+                return false;
         }
-        return 1;
+        return true;
     }
 
-    return 0;
+    return false;
 }
 
 function lengthf(p: unknown): number {
@@ -13659,17 +13659,17 @@ function lengthf(p: unknown): number {
     return n;
 }
 
-function lessp(p1: unknown, p2: unknown) {
+function lessp(p1: unknown, p2: unknown): boolean {
     return cmp(p1, p2) < 0;
 }
 
-function list(n: number) {
+function list(n: number): void {
     push_symbol(NIL);
     for (let i = 0; i < n; i++)
         cons();
 }
 
-function lookup(s: string) {
+function lookup(s: string): Sym {
     let p = symtab[s];
     if (p == undefined) {
         p = { printname: s, func: eval_user_symbol };
@@ -13734,7 +13734,7 @@ function multiply_numbers(p1: unknown, p2: unknown): void {
     push_double(a * b);
 }
 
-function multiply_rationals(p1: Rat, p2: Rat) {
+function multiply_rationals(p1: Rat, p2: Rat): void {
 
     if (iszero(p1) || iszero(p2)) {
         push_integer(0);
@@ -13847,7 +13847,7 @@ function negate(): void {
     multiply();
 }
 
-function normalize_polar(EXPO: unknown) {
+function normalize_polar(EXPO: unknown): void {
     if (car(EXPO) == symbol(ADD)) {
         const h = stack.length;
         let p1 = cdr(EXPO);
@@ -13869,7 +13869,7 @@ function normalize_polar(EXPO: unknown) {
         normalize_polar_term(EXPO);
 }
 
-function normalize_polar_term(EXPO: unknown) {
+function normalize_polar_term(EXPO: unknown): void {
 
     // exp(i pi) = -1
 
@@ -13886,7 +13886,7 @@ function normalize_polar_term(EXPO: unknown) {
         normalize_polar_term_double(R as Flt);
 }
 
-function normalize_polar_term_rational(R: unknown) {
+function normalize_polar_term_rational(R: unknown): void {
 
     // R = R mod 2
 
@@ -13995,7 +13995,7 @@ function normalize_polar_term_rational(R: unknown) {
     }
 }
 
-function normalize_polar_term_double(R: Flt) {
+function normalize_polar_term_double(R: Flt): void {
 
     let coeff = R.d;
 
@@ -14090,7 +14090,7 @@ function normalize_polar_term_double(R: Flt) {
     }
 }
 
-function normalize_power_factors(h: number) {
+function normalize_power_factors(h: number): void {
     const k = stack.length;
     for (let i = h; i < k; i++) {
         let p1 = stack[i];
@@ -14155,7 +14155,7 @@ function order_factor(p: unknown): 1 | 2 | 3 | 4 | 5 | 6 {
     return 4;
 }
 
-function partition_term() {
+function partition_term(): void {
 
     const X = pop();
     const F = pop();
@@ -14233,8 +14233,7 @@ function erfc(x: number): number {
     return 1.0 - erf(x);
 }
 
-function
-    pop() {
+function pop(): unknown {
     if (stack.length == 0)
         stopf("stack error");
     return stack.pop();
@@ -14282,7 +14281,7 @@ function pop_integer(): number {
     return n;
 }
 
-function power_complex_double(BASE: unknown, EXPO: unknown, X: unknown, Y: unknown): void {
+function power_complex_double(_BASE: unknown, EXPO: unknown, X: unknown, Y: unknown): void {
 
     push(X);
     let x = pop_double();
@@ -14371,7 +14370,7 @@ function power_complex_minus(X: unknown, Y: unknown, n: number): void {
     add();
 }
 
-function power_complex_number(BASE: unknown, EXPO: unknown) {
+function power_complex_number(BASE: unknown, EXPO: unknown): void {
     let X: unknown;
     let Y: unknown;
 
@@ -14428,7 +14427,7 @@ function power_complex_number(BASE: unknown, EXPO: unknown) {
         push_integer(1);
 }
 
-function power_complex_plus(X: unknown, Y: unknown, n: number) {
+function power_complex_plus(X: unknown, Y: unknown, n: number): void {
 
     let PX = X;
     let PY = Y;
@@ -14464,7 +14463,7 @@ function power_complex_plus(X: unknown, Y: unknown, n: number) {
     add();
 }
 
-function power_complex_rational(BASE: unknown, EXPO: unknown, X: unknown, Y: unknown) {
+function power_complex_rational(_BASE: unknown, EXPO: unknown, X: unknown, Y: unknown): void {
     // calculate sqrt(X^2 + Y^2) ^ (1/2 * EXPO)
 
     push(X);
@@ -14496,7 +14495,7 @@ function power_complex_rational(BASE: unknown, EXPO: unknown, X: unknown, Y: unk
     multiply();
 }
 
-function power_minusone(EXPO: unknown) {
+function power_minusone(EXPO: unknown): void {
     // optimization for i
 
     if (isequalq(EXPO, 1, 2)) {
@@ -14531,7 +14530,7 @@ function power_minusone(EXPO: unknown) {
     list(3);
 }
 
-function normalize_clock_rational(EXPO: unknown) {
+function normalize_clock_rational(EXPO: unknown): void {
 
     // R = EXPO mod 2
 
@@ -14624,7 +14623,7 @@ function normalize_clock_rational(EXPO: unknown) {
     }
 }
 
-function normalize_clock_double(EXPO: Flt) {
+function normalize_clock_double(EXPO: Flt): void {
 
     let expo = EXPO.d;
 
@@ -14699,7 +14698,7 @@ function normalize_clock_double(EXPO: Flt) {
     }
 }
 
-function power_natural_number(EXPO: unknown) {
+function power_natural_number(EXPO: unknown): void {
 
     // exp(x + i y) = exp(x) (cos(y) + i sin(y))
     let x: number;
