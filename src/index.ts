@@ -106,16 +106,18 @@ function bignum_float(u: number[]): number {
 // convert bignum to int32
 
 function bignum_smallnum(u: number[]): number {
-    if (u.length == 1)
+    if (u.length == 1) {
         return u[0];
+    }
 
-    if (u.length == 2 && u[1] < 128)
+    if (u.length == 2 && u[1] < 128) {
         return BIGM * u[1] + u[0];
+    }
 
-    return null;
+    stopf(`${u} cannot be converted to number`);
 }
 
-function bignum_issmallnum(u: number[]) {
+function bignum_issmallnum(u: number[]): boolean {
     return u.length == 1 || (u.length == 2 && u[1] < 128);
 }
 
@@ -516,7 +518,7 @@ function bignum_shr(u: number[]): void {
 }
 // returns null if not perfect root, otherwise returns u^(1/v)
 
-function bignum_root(u: number[], v: number[]): number[] {
+function bignum_root(u: number[], v: number[]): number[] | null {
 
     if (v.length > 1)
         return null; // v must be 24 bits or less
@@ -2116,7 +2118,7 @@ const symbol_italic_tab = [
 
 function emit_symbol_fragment(s: string, k: number): number {
     let i: number;
-    let t: string;
+    let t: string = "";
 
     const n = symbol_name_tab.length;
 
@@ -8442,14 +8444,18 @@ function minormatrix(row: number, col: number): void {
 
     let p2: Tensor;
 
-    if (n == 2)
+    if (n == 2) {
         p2 = alloc_vector(m - 1);
-
-    if (m == 2)
+    }
+    else if (m == 2) {
         p2 = alloc_vector(n - 1);
-
-    if (n > 2 && m > 2)
+    }
+    else if (n > 2 && m > 2) {
         p2 = alloc_matrix(n - 1, m - 1);
+    }
+    else {
+        stopf("minormatrix is undefined.");
+    }
 
     row--;
     col--;
@@ -8585,20 +8591,14 @@ function eval_nonstop(): void {
 }
 
 function eval_nonstop_nib(): void {
-    let save_tos: number;
-    let save_tof: number;
-    let save_eval_level: number;
-    let save_expanding: number;
+    const save_tos = stack.length - 1;
+    const save_tof = frame.length;
+
+    const save_eval_level = eval_level;
+    const save_expanding = expanding;
 
     try {
-        save_tos = stack.length - 1;
-        save_tof = frame.length;
-
-        save_eval_level = eval_level;
-        save_expanding = expanding;
-
         evalf();
-
     }
     catch (errmsg) {
 
@@ -14269,12 +14269,17 @@ function pop_integer(): number {
     let n: number;
 
     if (isrational(p)) {
-        n = bignum_smallnum(p.a);
-        if (isnegativenumber(p))
-            n = -n;
+        const n = bignum_smallnum(p.a);
+        if (isnegativenumber(p)) {
+            return -n;
+        }
+        else {
+            return n;
+        }
     }
-    else
-        n = (p as Flt).d;
+    else {
+        return (p as Flt).d;
+    }
 
     return n;
 }
@@ -15344,7 +15349,7 @@ function restore_symbol(): void {
  */
 export function run(): void {
     const scriptText = (document.getElementById("stdin") as HTMLTextAreaElement).value;
-    const stdout = document.getElementById("stdout");
+    const stdout = document.getElementById("stdout") as HTMLElement;
     stdout.innerHTML = "";
     try {
         executeScript(scriptText);
