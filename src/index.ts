@@ -26,17 +26,20 @@ export interface Tensor {
 function alloc_tensor(): Tensor {
     return { dim: [], elem: [] };
 }
+
 function alloc_matrix(nrow: number, ncol: number) {
     const p = alloc_tensor();
     p.dim[0] = nrow;
     p.dim[1] = ncol;
     return p;
 }
+
 function alloc_vector(n: number) {
     const p = alloc_tensor();
     p.dim[0] = n;
     return p;
 }
+
 function any_radical_factors(h: number): 0 | 1 {
     const n = stack.length;
     for (let i = h; i < n; i++)
@@ -135,6 +138,7 @@ function push_bignum(sign: 1 | -1, a: number[], b: number[]): void {
 
     push(X);
 }
+
 function bignum_add(u: number[], v: number[]): number[] {
     let nw: number;
     const w: number[] = [];
@@ -193,6 +197,7 @@ function bignum_atoi(s: string): number[] {
     }
     return a;
 }
+
 function bignum_cmp(u: number[], v: number[]): 0 | 1 | -1 {
     if (u.length < v.length)
         return -1; // u < v
@@ -301,6 +306,7 @@ function bignum_div(u: number[], v: number[]) {
 
     return q;
 }
+
 function bignum_gcd(u: number[], v: number[]): number[] {
 
     if (u.length == 1 && v.length == 1) {
@@ -322,6 +328,7 @@ function bignum_gcd(u: number[], v: number[]): number[] {
 
     return bignum_copy(u);
 }
+
 function bignum_itoa(u: number[]): string {
 
     if (u.length == 1)
@@ -431,6 +438,7 @@ function bignum_mod(u: number[], v: number[]): number[] {
 
     return u;
 }
+
 function bignum_mul(u: number[], v: number[]): number[] {
 
     const nu = u.length;
@@ -611,35 +619,44 @@ function bignum_sub(u: number[], v: number[]) {
 
     return w;
 }
+
 function caaddr(p: unknown) {
     return car(car(cdr(cdr(p))));
 }
+
 function caadr(p: unknown) {
     return car(car(cdr(p)));
 }
+
 function
     cadaddr(p: unknown) {
     return car(cdr(car(cdr(cdr(p)))));
 }
+
 function
     cadadr(p: unknown) {
     return car(cdr(car(cdr(p))));
 }
+
 function
     caddddr(p: unknown) {
     return car(cdr(cdr(cdr(cdr(p)))));
 }
+
 function
     cadddr(p: unknown) {
     return car(cdr(cdr(cdr(p))));
 }
+
 function
     caddr(p: unknown) {
     return car(cdr(cdr(p)));
 }
+
 function cadr(p: unknown) {
     return car(cdr(p));
 }
+
 function cancel_factor() {
 
     let p2 = pop();
@@ -662,6 +679,7 @@ function cancel_factor() {
     push(p2);
     multiply();
 }
+
 function car(p: unknown) {
     if ("car" in (p as Cons)) {
         return (p as Cons).car;
@@ -670,27 +688,34 @@ function car(p: unknown) {
         return symbol(NIL);
     }
 }
+
 function cdadr(p: unknown) {
     return cdr(car(cdr(p)));
 }
+
 function cddadr(p: unknown) {
     return cdr(cdr(car(cdr(p))));
 }
+
 function cddddr(p: unknown) {
     return cdr(cdr(cdr(cdr(p))));
 }
+
 function cdddr(p: unknown) {
     return cdr(cdr(cdr(p)));
 }
+
 function cddr(p: unknown) {
     return cdr(cdr(p));
 }
+
 function cdr(p: unknown) {
     if ("cdr" in (p as Cons))
         return (p as Cons).cdr;
     else
         return symbol(NIL);
 }
+
 function cmp(p1: unknown, p2: unknown): 1 | 0 | -1 {
 
     if (p1 == p2)
@@ -754,6 +779,7 @@ function cmp(p1: unknown, p2: unknown): 1 | 0 | -1 {
 
     return 0;
 }
+
 function cmp_factors(p1: unknown, p2: unknown): 0 | 1 | -1 {
 
     const a = order_factor(p1);
@@ -795,6 +821,7 @@ function cmp_factors(p1: unknown, p2: unknown): 0 | 1 | -1 {
 
     return c;
 }
+
 function cmp_factors_provisional(p1: unknown, p2: unknown) {
     if (car(p1) == symbol(POWER))
         p1 = cadr(p1); // p1 = base
@@ -804,6 +831,7 @@ function cmp_factors_provisional(p1: unknown, p2: unknown) {
 
     return cmp(p1, p2);
 }
+
 function cmp_numbers(p1: unknown, p2: unknown): 1 | 0 | -1 {
 
     if (isrational(p1) && isrational(p2))
@@ -855,6 +883,7 @@ function cmp_strings(s1: string, s2: string): 0 | 1 | -1 {
         return 1;
     return 0;
 }
+
 function cmp_tensors(p1: Tensor, p2: Tensor): 1 | 0 | -1 {
     const t = p1.dim.length - p2.dim.length;
 
@@ -904,6 +933,7 @@ function coeffs(P: unknown, X: unknown) {
         P = pop();
     }
 }
+
 function combine_factors(h: number): void {
     sort_factors_provisional(h);
     let n = stack.length;
@@ -915,6 +945,7 @@ function combine_factors(h: number): void {
         }
     }
 }
+
 function combine_factors_nib(i: number, j: number): 0 | 1 {
     let BASE1: unknown;
     let EXPO1: unknown;
@@ -959,6 +990,7 @@ function combine_factors_nib(i: number, j: number): 0 | 1 {
 
     return 1;
 }
+
 function combine_numerical_factors(h: number, COEFF: unknown) {
 
     let n = stack.length;
@@ -978,6 +1010,7 @@ function combine_numerical_factors(h: number, COEFF: unknown) {
 
     return COEFF;
 }
+
 function compatible_dimensions(p1: unknown, p2: unknown): 0 | 1 {
 
     if (!istensor(p1) && !istensor(p2))
@@ -997,6 +1030,7 @@ function compatible_dimensions(p1: unknown, p2: unknown): 0 | 1 {
 
     return 1;
 }
+
 function complexity(p: unknown): number {
     let n = 1;
     while (iscons(p)) {
@@ -1005,6 +1039,7 @@ function complexity(p: unknown): number {
     }
     return n;
 }
+
 function cons(): void {
     const p2 = pop();
     const p1 = pop();
@@ -1155,6 +1190,7 @@ function copy_tensor(p1: Tensor) {
 
     return p2;
 }
+
 function count_denominators(p: unknown): number {
     let n = 0;
     p = cdr(p);
@@ -1165,6 +1201,7 @@ function count_denominators(p: unknown): number {
     }
     return n;
 }
+
 function count_numerators(p: unknown): number {
     let n = 0;
     p = cdr(p);
@@ -2495,11 +2532,13 @@ function val1(p: unknown) {
 function val2(p: unknown) {
     return (cadr(p) as Flt).d;
 }
+
 function
     divide() {
     reciprocate();
     multiply();
 }
+
 function draw_formula(x: number, y: number, p: unknown): void {
     // var char_num, d, dx, dy, font_num, h, k, w;
 
@@ -2791,6 +2830,7 @@ function draw_table(x: number, y: number, p: unknown): void {
         d = cdr(d);
     }
 }
+
 function draw_line(x1: number, y1: number, x2: number, y2: number, t: number): void {
     x1 += DRAW_LEFT_PAD;
     x2 += DRAW_LEFT_PAD;
@@ -2806,12 +2846,14 @@ function draw_line(x1: number, y1: number, x2: number, y2: number, t: number): v
 
     outbuf += "<line " + x1eq + y1eq + x2eq + y2eq + "style='stroke:black;stroke-width:" + t + "'/>\n";
 }
+
 function draw_pass1(F: unknown, T: unknown): void {
     for (let i = 0; i <= DRAW_WIDTH; i++) {
         const t = tmin + (tmax - tmin) * i / DRAW_WIDTH;
         sample(F, T, t);
     }
 }
+
 function draw_pass2(F: unknown, T: unknown): void {
     // var dt, dx, dy, i, j, m, n, t, t1, t2, x1, x2, y1, y2;
 
@@ -2872,6 +2914,7 @@ function dupl(): void {
     push(p1);
     push(p1);
 }
+
 function emit_axes(): void {
 
     const x = 0;
@@ -2886,6 +2929,7 @@ function emit_axes(): void {
     if (dy > 0 && dy < DRAW_HEIGHT)
         draw_line(0, dy, DRAW_WIDTH, dy, 0.5); // horizontal axis
 }
+
 function emit_box(): void {
     const x1 = 0;
     const x2 = DRAW_WIDTH;
@@ -2899,6 +2943,7 @@ function emit_box(): void {
     draw_line(x1, y1, x1, y2, 0.5); // left line
     draw_line(x2, y1, x2, y2, 0.5); // right line
 }
+
 function emit_graph(): void {
 
     const h = DRAW_TOP_PAD + DRAW_HEIGHT + DRAW_BOTTOM_PAD;
@@ -2918,6 +2963,7 @@ function emit_graph(): void {
 
     outputs.push(outbuf);
 }
+
 function emit_labels(): void {
 
     push_double(ymax);
@@ -2956,6 +3002,7 @@ function emit_labels(): void {
     y = DRAW_TOP_PAD + DRAW_HEIGHT + DRAW_XLABEL_BASELINE;
     draw_formula(x, y, p);
 }
+
 function emit_points(): void {
 
     const n = draw_array.length;
@@ -2977,9 +3024,11 @@ function emit_points(): void {
         outbuf += "<circle " + xeq + yeq + "r='1.5' style='stroke:black;fill:black'/>\n";
     }
 }
+
 function equal(p1: unknown, p2: unknown): boolean {
     return cmp(p1, p2) == 0;
 }
+
 function eval_abs(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -3065,6 +3114,7 @@ function absfunc(): void {
     push(p1);
     list(2);
 }
+
 function eval_add(p1: unknown): void {
     const h = stack.length;
     expanding--; // undo expanding++ in evalf
@@ -3519,6 +3569,7 @@ function add_integers(p1: Rat, p2: Rat): void {
 
     push_bignum(sign, a, b);
 }
+
 function eval_adj(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -3577,6 +3628,7 @@ function adj(): void {
 
     push(p2);
 }
+
 function eval_and(p1: unknown): void {
     p1 = cdr(p1);
     while (iscons(p1)) {
@@ -3591,6 +3643,7 @@ function eval_and(p1: unknown): void {
     }
     push_integer(1);
 }
+
 function eval_and_print_result(): void {
     const p1 = pop();
     push(p1);
@@ -3604,6 +3657,7 @@ function eval_and_print_result(): void {
     if (p2 != symbol(NIL))
         set_symbol(symbol(LAST), p2, symbol(NIL));
 }
+
 function eval_arccos(p1: unknown) {
     push(cadr(p1));
     evalf();
@@ -3719,6 +3773,7 @@ function arccos(): void {
     push(p1);
     list(2);
 }
+
 function eval_arccosh(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -3780,6 +3835,7 @@ function arccosh(): void {
     push(p1);
     list(2);
 }
+
 function eval_arcsin(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -3880,6 +3936,7 @@ function arcsin(): void {
     push(p1);
     list(2);
 }
+
 function eval_arcsinh(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -3949,6 +4006,7 @@ function arcsinh(): void {
     push(p1);
     list(2);
 }
+
 function eval_arctan(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -4126,6 +4184,7 @@ function arctan_numbers(X: Num, Y: Num): void {
     push_symbol(PI);
     multiply();
 }
+
 function eval_arctanh(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -4206,6 +4265,7 @@ function arctanh(): void {
     push(p1);
     list(2);
 }
+
 function eval_arg(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -4315,10 +4375,12 @@ function arg1(): void {
 
     push_integer(0); // p1 is real
 }
+
 function eval_binding(p1: unknown): void {
     const sym = cadr(p1) as Sym;
     push(get_binding(sym));
 }
+
 function eval_ceiling(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -4371,6 +4433,7 @@ function ceilingfunc(): void {
     push(p1);
     list(2);
 }
+
 function eval_check(p1: unknown): void {
     push(cadr(p1));
     evalp();
@@ -4379,6 +4442,7 @@ function eval_check(p1: unknown): void {
         stopf("check");
     push_symbol(NIL); // no result is printed
 }
+
 function eval_circexp(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -4471,6 +4535,7 @@ function circexp_subst(): void {
 
     push(p1);
 }
+
 function eval_clear() {
     save_symbol(symbol(TRACE));
     save_symbol(symbol(TTY));
@@ -4485,6 +4550,7 @@ function eval_clear() {
 
     push_symbol(NIL); // result
 }
+
 function eval_clock(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -4520,6 +4586,7 @@ function clockfunc(): void {
 
     multiply();
 }
+
 function eval_cofactor(p1: unknown): void {
 
     push(cadr(p1));
@@ -4549,6 +4616,7 @@ function eval_cofactor(p1: unknown): void {
     if ((i + j) % 2)
         negate();
 }
+
 function eval_conj(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -4602,6 +4670,7 @@ function conjfunc_subst(): void {
 
     push(p1);
 }
+
 function eval_contract(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -4707,6 +4776,7 @@ function contract(): void {
 
     push(T);
 }
+
 function eval_cos(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -4934,6 +5004,7 @@ function cosfunc_sum(p1: unknown): void {
     push(p1);
     list(2);
 }
+
 function eval_cosh(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -5001,6 +5072,7 @@ function coshfunc(): void {
     push(p1);
     list(2);
 }
+
 function eval_defint(p1: unknown): void {
 
     push(cadr(p1));
@@ -5048,6 +5120,7 @@ function eval_defint(p1: unknown): void {
 
     push(F);
 }
+
 function eval_denominator(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -5082,6 +5155,7 @@ function denominator(): void {
 
     push(p2);
 }
+
 function eval_derivative(p1: unknown): void {
 
     push(cadr(p1));
@@ -5687,6 +5761,7 @@ function d_tensor_scalar(p1: Tensor, p2: unknown): void {
 
     push(p3);
 }
+
 function eval_det(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -5781,6 +5856,7 @@ function det(): void {
     else
         add_terms(s);
 }
+
 function eval_dim(p1: unknown): void {
 
     push(cadr(p1));
@@ -5807,6 +5883,7 @@ function eval_dim(p1: unknown): void {
 
     push_integer(p2.dim[k - 1]);
 }
+
 function eval_do(p1: unknown): void {
     push_symbol(NIL);
     p1 = cdr(p1);
@@ -5817,9 +5894,11 @@ function eval_do(p1: unknown): void {
         p1 = cdr(p1);
     }
 }
+
 function eval_dot(p1: unknown): void {
     eval_inner(p1);
 }
+
 function eval_draw(p1: unknown): void {
 
     if (drawing) {
@@ -5856,6 +5935,7 @@ function eval_draw(p1: unknown): void {
 
     drawing = 0;
 }
+
 function eval_eigenvec(punk: unknown): void {
     const D: number[] = [];
     const Q: number[] = [];
@@ -5999,6 +6079,7 @@ function eigenvec_step_nib(D: number[], Q: number[], n: number, p: number, q: nu
     D[n * p + q] = 0.0;
     D[n * q + p] = 0.0;
 }
+
 function eval_erf(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -6047,6 +6128,7 @@ function erffunc(): void {
     push(p1);
     list(2);
 }
+
 function eval_erfc(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -6086,6 +6168,7 @@ function erfcfunc(): void {
     push(p1);
     list(2);
 }
+
 function eval_eval(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -6100,9 +6183,11 @@ function eval_eval(p1: unknown): void {
     }
     evalf();
 }
+
 function eval_exit(): void {
     push_symbol(NIL);
 }
+
 function eval_exp(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -6114,6 +6199,7 @@ function expfunc(): void {
     swap();
     power();
 }
+
 function eval_expcos(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -6140,6 +6226,7 @@ function expcos(): void {
 
     add();
 }
+
 function eval_expcosh(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -6157,6 +6244,7 @@ function expcosh(): void {
     push_rational(1, 2);
     multiply();
 }
+
 function eval_expsin(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -6187,6 +6275,7 @@ function expsin(): void {
 
     subtract();
 }
+
 function eval_expsinh(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -6233,6 +6322,7 @@ function exptan(): void {
 
     divide();
 }
+
 function eval_exptanh(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -6252,6 +6342,7 @@ function exptanh(): void {
     add();
     divide();
 }
+
 function eval_factorial(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -6287,6 +6378,7 @@ function factorial(): void {
     push(p1);
     list(2);
 }
+
 function eval_float(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -6374,6 +6466,7 @@ function floatfunc_subst(): void {
 
     push(p1);
 }
+
 function eval_floor(p1: unknown) {
     push(cadr(p1));
     evalf();
@@ -6426,6 +6519,7 @@ function floorfunc(): void {
     push(p1);
     list(2);
 }
+
 function eval_for(p1: unknown): void {
 
     const p2 = cadr(p1);
@@ -6467,6 +6561,7 @@ function eval_for(p1: unknown): void {
 
     push_symbol(NIL); // return value
 }
+
 function eval_hadamard(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -6513,6 +6608,7 @@ function hadamard(): void {
 
     push(p1);
 }
+
 function eval_imag(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -6545,6 +6641,7 @@ function imag(): void {
     subtract();
     multiply_factors(3);
 }
+
 function eval_index(p1: unknown): void {
 
     let T = cadr(p1);
@@ -6630,6 +6727,7 @@ function indexfunc(T: Tensor, h: number): void {
 
     push(p1);
 }
+
 function eval_infixform(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -6640,6 +6738,7 @@ function eval_infixform(p1: unknown): void {
 
     push_string(outbuf);
 }
+
 function eval_inner(p1: unknown): void {
     const h = stack.length;
 
@@ -7931,6 +8030,7 @@ function integral_search_nib(h: number, F: unknown, I: unknown, C: unknown): 0 |
 
     return 0;					// no
 }
+
 function eval_inv(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -7958,6 +8058,7 @@ function inv(): void {
 
     divide();
 }
+
 function eval_kronecker(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -8016,6 +8117,7 @@ function kronecker(): void {
 
     push(p3);
 }
+
 function eval_log(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -8149,6 +8251,7 @@ function logfunc(): void {
     push(p1);
     list(2);
 }
+
 function eval_mag(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -8261,6 +8364,7 @@ function mag_nib(): void {
 
     push(p1);
 }
+
 function eval_minor(p1: unknown): void {
 
     push(cadr(p1));
@@ -8287,6 +8391,7 @@ function eval_minor(p1: unknown): void {
 
     det();
 }
+
 function eval_minormatrix(p1: unknown): void {
 
     push(cadr(p1));
@@ -8367,6 +8472,7 @@ function minormatrix(row: number, col: number): void {
 
     push(p2);
 }
+
 function eval_mod(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -8438,6 +8544,7 @@ function mod_integers(p1: Rat, p2: Rat): void {
     const b = bignum_int(1);
     push_bignum(p1.sign, a, b);
 }
+
 function eval_multiply(p1: unknown): void {
     const h = stack.length;
     expanding--; // undo expanding++ in evalf
@@ -8450,10 +8557,12 @@ function eval_multiply(p1: unknown): void {
     multiply_factors(stack.length - h);
     expanding++;
 }
+
 function
     eval_nil() {
     push_symbol(NIL);
 }
+
 function eval_noexpand(p1: unknown): void {
     const t = expanding;
     expanding = 0;
@@ -8463,6 +8572,7 @@ function eval_noexpand(p1: unknown): void {
 
     expanding = t;
 }
+
 function eval_nonstop(): void {
     if (nonstop) {
         pop();
@@ -8502,6 +8612,7 @@ function eval_nonstop_nib() {
         push_symbol(NIL); // return value
     }
 }
+
 function eval_not(p1: unknown): void {
     push(cadr(p1));
     evalp();
@@ -8793,6 +8904,7 @@ function zabs(r: number, i: number): number {
 function urandom(): number {
     return 4.0 * Math.random() - 2.0;
 }
+
 function eval_number(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -8803,6 +8915,7 @@ function eval_number(p1: unknown): void {
     else
         push_integer(0);
 }
+
 function eval_numerator(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -8826,6 +8939,7 @@ function numerator(): void {
 
     push(p1);
 }
+
 function eval_or(p1: unknown): void {
     p1 = cdr(p1);
     while (iscons(p1)) {
@@ -8840,6 +8954,7 @@ function eval_or(p1: unknown): void {
     }
     push_integer(0);
 }
+
 function eval_outer(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -8895,6 +9010,7 @@ function outer() {
 
     push(p3);
 }
+
 function eval_polar(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -8928,6 +9044,7 @@ function polar(): void {
     expfunc();
     multiply();
 }
+
 function eval_power(p1: unknown) {
 
     expanding--;
@@ -9148,6 +9265,7 @@ function power(): void {
     push(EXPO);
     list(3);
 }
+
 function eval_prefixform(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -9156,6 +9274,7 @@ function eval_prefixform(p1: unknown): void {
     prefixform(p1);
     push_string(outbuf);
 }
+
 function eval_print(p1: unknown): void {
     p1 = cdr(p1);
     while (iscons(p1)) {
@@ -9211,6 +9330,7 @@ function annotate_result(p1: unknown, p2: unknown): 0 | 1 {
 
     return 1;
 }
+
 function eval_product(p1: unknown): void {
 
     if (lengthf(p1) == 2) {
@@ -9264,9 +9384,11 @@ function eval_product(p1: unknown): void {
 
     restore_symbol();
 }
+
 function eval_quote(p1: unknown): void {
     push(cadr(p1)); // not evaluated
 }
+
 function eval_rank(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -9276,6 +9398,7 @@ function eval_rank(p1: unknown): void {
     else
         push_integer(0);
 }
+
 function eval_rationalize(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -9310,6 +9433,7 @@ function rationalize(): void {
     reciprocate();
     multiply_noexpand();
 }
+
 function eval_real(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -9335,6 +9459,7 @@ function real(): void {
     push_rational(1, 2);
     multiply();
 }
+
 function eval_rect(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -9420,6 +9545,7 @@ function rect(): void {
 
     multiply();
 }
+
 function eval_roots(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -9691,6 +9817,7 @@ function reduce(h: number, n: number, A: unknown): void {
     for (let i = 0; i < n - 1; i++)
         stack[h + i] = stack[h + i + 1];
 }
+
 function eval_rotate(p1: unknown): void {
 
     push(cadr(p1));
@@ -9946,6 +10073,7 @@ function rotate_v(PSI: Tensor, n: number): void {
         rotate_h(PSI, 0, i);
     }
 }
+
 function eval_run(p1: unknown): void {
 
     push(cadr(p1));
@@ -9989,6 +10117,7 @@ function eval_run(p1: unknown): void {
 
     push_symbol(NIL);
 }
+
 function eval_setq(p1: unknown): void {
 
     push_symbol(NIL); // return value
@@ -10219,6 +10348,7 @@ function convert_body(A: unknown): void {
     push_symbol(ARG9);
     subst();
 }
+
 function eval_sgn(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -10251,6 +10381,7 @@ function sgn() {
     else
         push_integer(1);
 }
+
 function eval_simplify(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -10442,6 +10573,7 @@ function simplify_pass3(): void {
 
     push(p1);
 }
+
 function eval_sin(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -10665,6 +10797,7 @@ function sinfunc_sum(p1: unknown): void {
     push(p1);
     list(2);
 }
+
 function eval_sinh(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -10726,6 +10859,7 @@ function sinhfunc(): void {
     push(p1);
     list(2);
 }
+
 function eval_sqrt(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -10736,12 +10870,15 @@ function sqrtfunc(): void {
     push_rational(1, 2);
     power();
 }
+
 function eval_status(): void {
     push_symbol(NIL);
 }
+
 function eval_stop(): never {
     stopf("stop");
 }
+
 function eval_subst(p1: unknown): void {
     push(cadddr(p1));
     evalf();
@@ -10797,6 +10934,7 @@ function subst(): void {
 
     push(p1);
 }
+
 function eval_sum(p1: unknown): void {
 
     if (lengthf(p1) == 2) {
@@ -10850,6 +10988,7 @@ function eval_sum(p1: unknown): void {
 
     restore_symbol();
 }
+
 function eval_tan(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -11015,6 +11154,7 @@ function tanfunc_sum(p1: unknown): void {
     push(p1);
     list(2);
 }
+
 function eval_tanh(p1: unknown): void {
     push(cadr(p1));
     evalf();
@@ -11071,6 +11211,7 @@ function tanhfunc(): void {
     push(p1);
     list(2);
 }
+
 function eval_taylor(p1: unknown): void {
 
     push(cadr(p1));
@@ -11139,6 +11280,7 @@ function eval_taylor(p1: unknown): void {
 
     add_terms(stack.length - h);
 }
+
 function eval_tensor(p1: Tensor) {
 
     p1 = copy_tensor(p1);
@@ -11155,6 +11297,7 @@ function eval_tensor(p1: Tensor) {
 
     promote_tensor();
 }
+
 function eval_test(p1: unknown): void {
     p1 = cdr(p1);
     while (iscons(p1)) {
@@ -11236,6 +11379,7 @@ function cmp_args(p1: unknown): 0 | 1 | -1 {
     else
         return 1;
 }
+
 function eval_transpose(p1: unknown): void {
 
     push(cadr(p1));
@@ -11319,6 +11463,7 @@ function transpose(n: number, m: number): void {
 
     push(p2);
 }
+
 function eval_unit(p1: unknown): void {
 
     push(cadr(p1));
@@ -11345,6 +11490,7 @@ function eval_unit(p1: unknown): void {
 
     push(M);
 }
+
 function eval_user_function(p1: unknown): void {
 
     const FUNC_NAME = car(p1) as Sym;
@@ -11414,6 +11560,7 @@ function eval_user_function(p1: unknown): void {
     restore_symbol();
     restore_symbol();
 }
+
 function eval_user_symbol(p1: unknown): void {
     const p2 = get_binding(p1 as Sym);
     if (p1 == p2)
@@ -11423,6 +11570,7 @@ function eval_user_symbol(p1: unknown): void {
         evalf();
     }
 }
+
 function eval_zero(p1: unknown): void {
 
     p1 = cdr(p1);
@@ -11459,6 +11607,7 @@ function eval_zero(p1: unknown): void {
 
     push(T);
 }
+
 function evalf(): void {
     eval_level++;
     evalf_nib();
@@ -11505,6 +11654,7 @@ function evalf_nib(): void {
 
     push(p1); // rational, double, or string
 }
+
 function evalp(): void {
     const p1 = pop();
     if (car(p1) == symbol(SETQ))
@@ -11514,6 +11664,7 @@ function evalp(): void {
         evalf();
     }
 }
+
 function expand_sum_factors(h: number): void {
 
     let n = stack.length;
@@ -12305,6 +12456,7 @@ function factor_int(n: number): void {
     push_integer(n);
     push_integer(1);
 }
+
 function find_denominator(p: unknown): 0 | 1 {
     p = cdr(p);
     while (iscons(p)) {
@@ -12402,6 +12554,7 @@ function findf(p: unknown, q: unknown): 0 | 1 {
 
     return 0;
 }
+
 function flatten_factors(h: number): void {
     const n = stack.length;
     for (let i = h; i < n; i++) {
@@ -12417,6 +12570,7 @@ function flatten_factors(h: number): void {
         }
     }
 }
+
 function fmtnum(n: number): string {
     n = Math.abs(n);
 
@@ -12626,6 +12780,7 @@ function get_xheight(font_num: number): number {
 function get_operator_height(font_num: number): number {
     return get_cap_height(font_num) / 2;
 }
+
 function get_binding(p1: Sym): unknown {
     if (!isusersymbol(p1))
         stopf("symbol error");
@@ -12634,6 +12789,7 @@ function get_binding(p1: Sym): unknown {
         p2 = p1; // symbol binds to itself
     return p2;
 }
+
 function get_usrfunc(p: Sym): unknown {
     if (!isusersymbol(p))
         stopf("symbol error");
@@ -12642,6 +12798,7 @@ function get_usrfunc(p: Sym): unknown {
         f = symbol(NIL);
     return f;
 }
+
 function infixform_subexpr(p: unknown): void {
     infixform_write("(");
     infixform_expr(p);
@@ -13122,6 +13279,7 @@ function infixform_tensor_nib(p: Tensor, d: number, k: number): void {
 function infixform_write(s: unknown): void {
     outbuf += s;
 }
+
 function init(): void {
     eval_level = 0;
     expanding = 1;
@@ -13173,25 +13331,31 @@ function initscript(): void {
         pop();
     }
 }
+
 function inrange(x: number, y: number): boolean {
     return x > -0.5 && x < DRAW_WIDTH + 0.5 && y > -0.5 && y < DRAW_HEIGHT + 0.5;
 }
+
 function isalnum(s: string): boolean {
     return isalpha(s) || isdigit(s);
 }
+
 function isalpha(s: string): boolean {
     const c = s.charCodeAt(0);
     return (c >= 65 && c <= 90) || (c >= 97 && c <= 122);
 }
+
 function iscomplexnumber(p: unknown): boolean {
     return isimaginarynumber(p) || (lengthf(p) == 3 && car(p) == symbol(ADD) && isnum(cadr(p)) && isimaginarynumber(caddr(p)));
 }
+
 function iscons(p: unknown) {
     if ("car" in (p as Cons))
         return 1;
     else
         return 0;
 }
+
 function isdenominator(p: unknown) {
     if (car(p) == symbol(POWER)) {
         const expo = caddr(p);
@@ -13205,6 +13369,7 @@ function isdenominator(p: unknown) {
 
     return 0;
 }
+
 function isdenormalpolar(p: unknown) {
     if (car(p) == symbol(ADD)) {
         p = cdr(p);
@@ -13244,13 +13409,16 @@ function isdenormalpolarterm(p: unknown) {
 
     return 0;
 }
+
 function isdigit(s: string): boolean {
     const c = s.charCodeAt(0);
     return c >= 48 && c <= 57;
 }
+
 function isdouble(p: unknown): p is Flt {
     return "d" in (p as Flt);
 }
+
 function isdoublesomewhere(p: unknown) {
     if (isdouble(p))
         return 1;
@@ -13266,6 +13434,7 @@ function isdoublesomewhere(p: unknown) {
 
     return 0;
 }
+
 function isdoublez(p: unknown) {
     if (car(p) == symbol(ADD)) {
 
@@ -13300,9 +13469,11 @@ function isdoublez(p: unknown) {
 
     return 1;
 }
+
 function isequaln(p: unknown, n: number): boolean {
     return isequalq(p, n, 1);
 }
+
 function isequalq(p: unknown, a: number, b: number): boolean {
     if (isrational(p)) {
         if (isnegativenumber(p) && a >= 0)
@@ -13318,33 +13489,43 @@ function isequalq(p: unknown, a: number, b: number): boolean {
 
     return false;
 }
+
 function isfraction(p: Rat): boolean {
     return isrational(p) && !isinteger(p);
 }
+
 function isimaginarynumber(p: unknown): boolean {
     return isimaginaryunit(p) || (lengthf(p) == 3 && car(p) == symbol(MULTIPLY) && isnum(cadr(p)) && isimaginaryunit(caddr(p)));
 }
+
 function isimaginaryunit(p: unknown): boolean {
     return car(p) == symbol(POWER) && isminusone(cadr(p)) && isequalq(caddr(p), 1, 2);
 }
+
 function isinteger(p: Rat): boolean {
     return isrational(p) && bignum_equal(p.b, 1);
 }
+
 function isinteger1(p: Rat) {
     return isinteger(p) && isplusone(p);
 }
+
 function iskeyword(p: Sym): boolean {
     return issymbol(p) && p.func != eval_user_symbol;
 }
+
 function isminusone(p: unknown): boolean {
     return isequaln(p, -1);
 }
+
 function isminusoneoversqrttwo(p: unknown) {
     return lengthf(p) == 3 && car(p) == symbol(MULTIPLY) && isminusone(cadr(p)) && isoneoversqrttwo(caddr(p));
 }
+
 function isnegativenumber(p: Num): boolean {
     return (isrational(p) && p.sign == -1) || (isdouble(p) && p.d < 0);
 }
+
 function isnegativeterm(p: unknown): boolean {
     if (isnum(p) && isnegativenumber(p)) {
         return true;
@@ -13357,9 +13538,11 @@ function isnegativeterm(p: unknown): boolean {
         return false;
     }
 }
+
 function isnum(p: unknown): p is Num {
     return isrational(p) || isdouble(p);
 }
+
 function isnumerator(p: unknown) {
     if (car(p) == symbol(POWER)) {
         const expo = caddr(p);
@@ -13373,15 +13556,19 @@ function isnumerator(p: unknown) {
 
     return 1;
 }
+
 function isoneoversqrttwo(p: unknown) {
     return car(p) == symbol(POWER) && isequaln(cadr(p), 2) && isequalq(caddr(p), -1, 2);
 }
+
 function isplusone(p: unknown) {
     return isequaln(p, 1);
 }
+
 function isposint(p: Rat): boolean {
     return isinteger(p) && !isnegativenumber(p);
 }
+
 function isradical(p: unknown): boolean {
     if (car(p) == symbol(POWER)) {
         const base = cadr(p);
@@ -13392,9 +13579,11 @@ function isradical(p: unknown): boolean {
         return false;
     }
 }
+
 function isrational(p: unknown): p is Rat {
     return "a" in (p as unknown as Rat);
 }
+
 function issmallinteger(p: unknown) {
     if (isrational(p) && isinteger(p))
         return bignum_issmallnum(p.a);
@@ -13404,21 +13593,27 @@ function issmallinteger(p: unknown) {
 
     return 0;
 }
+
 function issquarematrix(p: Tensor): boolean {
     return istensor(p) && p.dim.length == 2 && p.dim[0] == p.dim[1];
 }
+
 function isstring(p: unknown): p is Str {
     return "string" in (p as unknown as Str);
 }
+
 function issymbol(p: unknown): p is Sym {
     return "func" in (p as unknown as Sym);
 }
+
 function istensor(p: unknown): p is Tensor {
     return "elem" in (p as unknown as Tensor);
 }
+
 function isusersymbol(p: Sym): boolean {
     return issymbol(p) && p.func == eval_user_symbol;
 }
+
 function isusersymbolsomewhere(p: unknown) {
     if (issymbol(p) && isusersymbol(p) && p != symbol(PI) && p != symbol(EXP1))
         return 1;
@@ -13434,6 +13629,7 @@ function isusersymbolsomewhere(p: unknown) {
 
     return 0;
 }
+
 function iszero(p: unknown) {
 
     if (isrational(p))
@@ -13453,6 +13649,7 @@ function iszero(p: unknown) {
 
     return 0;
 }
+
 function lengthf(p: unknown): number {
     let n = 0;
     while (iscons(p)) {
@@ -13461,14 +13658,17 @@ function lengthf(p: unknown): number {
     }
     return n;
 }
+
 function lessp(p1: unknown, p2: unknown) {
     return cmp(p1, p2) < 0;
 }
+
 function list(n: number) {
     push_symbol(NIL);
     for (let i = 0; i < n; i++)
         cons();
 }
+
 function lookup(s: string) {
     let p = symtab[s];
     if (p == undefined) {
@@ -13477,9 +13677,11 @@ function lookup(s: string) {
     }
     return p;
 }
+
 function multiply(): void {
     multiply_factors(2);
 }
+
 function multiply_expand(): void {
     const t = expanding;
     expanding = 1;
@@ -13508,12 +13710,14 @@ function multiply_factors(n: number): void {
         inner();
     }
 }
+
 function multiply_noexpand(): void {
     const t = expanding;
     expanding = 0;
     multiply();
     expanding = t;
 }
+
 function multiply_numbers(p1: unknown, p2: unknown): void {
 
     if (isrational(p1) && isrational(p2)) {
@@ -13563,6 +13767,7 @@ function multiply_rationals(p1: Rat, p2: Rat) {
 
     push_bignum(sign, a, b);
 }
+
 function multiply_scalar_factors(h: number): void {
 
     let COEFF = combine_numerical_factors(h, one);
@@ -13614,6 +13819,7 @@ function multiply_scalar_factors(h: number): void {
             break;
     }
 }
+
 function multiply_tensor_factors(h: number) {
     let T: unknown = symbol(NIL);
     let n = stack.length;
@@ -13635,10 +13841,12 @@ function multiply_tensor_factors(h: number) {
     }
     return T;
 }
+
 function negate(): void {
     push_integer(-1);
     multiply();
 }
+
 function normalize_polar(EXPO: unknown) {
     if (car(EXPO) == symbol(ADD)) {
         const h = stack.length;
@@ -13881,6 +14089,7 @@ function normalize_polar_term_double(R: Flt) {
             break;
     }
 }
+
 function normalize_power_factors(h: number) {
     const k = stack.length;
     for (let i = h; i < k; i++) {
@@ -13945,6 +14154,7 @@ function order_factor(p: unknown): 1 | 2 | 3 | 4 | 5 | 6 {
 
     return 4;
 }
+
 function partition_term() {
 
     const X = pop();
@@ -14022,12 +14232,14 @@ function erf(x: number): number {
 function erfc(x: number): number {
     return 1.0 - erf(x);
 }
+
 function
     pop() {
     if (stack.length == 0)
         stopf("stack error");
     return stack.pop();
 }
+
 function pop_double(): number {
 
     const p = pop();
@@ -14049,6 +14261,7 @@ function pop_double(): number {
 
     return d;
 }
+
 function pop_integer(): number {
 
     const p = pop();
@@ -14068,6 +14281,7 @@ function pop_integer(): number {
 
     return n;
 }
+
 function power_complex_double(BASE: unknown, EXPO: unknown, X: unknown, Y: unknown): void {
 
     push(X);
@@ -14094,6 +14308,7 @@ function power_complex_double(BASE: unknown, EXPO: unknown, X: unknown, Y: unkno
     multiply();
     add();
 }
+
 function power_complex_minus(X: unknown, Y: unknown, n: number): void {
 
     // R = X^2 + Y^2
@@ -14155,6 +14370,7 @@ function power_complex_minus(X: unknown, Y: unknown, n: number): void {
     multiply();
     add();
 }
+
 function power_complex_number(BASE: unknown, EXPO: unknown) {
     let X: unknown;
     let Y: unknown;
@@ -14211,6 +14427,7 @@ function power_complex_number(BASE: unknown, EXPO: unknown) {
     else
         push_integer(1);
 }
+
 function power_complex_plus(X: unknown, Y: unknown, n: number) {
 
     let PX = X;
@@ -14246,6 +14463,7 @@ function power_complex_plus(X: unknown, Y: unknown, n: number) {
     multiply();
     add();
 }
+
 function power_complex_rational(BASE: unknown, EXPO: unknown, X: unknown, Y: unknown) {
     // calculate sqrt(X^2 + Y^2) ^ (1/2 * EXPO)
 
@@ -14277,6 +14495,7 @@ function power_complex_rational(BASE: unknown, EXPO: unknown, X: unknown, Y: unk
 
     multiply();
 }
+
 function power_minusone(EXPO: unknown) {
     // optimization for i
 
@@ -14479,6 +14698,7 @@ function normalize_clock_double(EXPO: Flt) {
             break;
     }
 }
+
 function power_natural_number(EXPO: unknown) {
 
     // exp(x + i y) = exp(x) (cos(y) + i sin(y))
@@ -14802,6 +15022,7 @@ function power_sum(BASE: unknown, EXPO: unknown): void {
         multiply();
     }
 }
+
 function prefixform(p: unknown) {
     if (iscons(p)) {
         outbuf += "(";
@@ -14841,6 +15062,7 @@ function prefixform(p: unknown) {
     else
         outbuf += " ? ";
 }
+
 function print_infixform(p: unknown): void {
     outbuf = "";
     infixform_expr(p);
@@ -14878,12 +15100,14 @@ function printbuf(s: string, color: 1 | 2 | 3): void {
 
     outputs.push(s);
 }
+
 function printname(p: Sym) {
     if ("printname" in p)
         return p.printname;
     else
         return "?";
 }
+
 function promote_tensor(): void {
 
     const p1 = pop();
@@ -14940,9 +15164,11 @@ function promote_tensor(): void {
 
     push(p3);
 }
+
 function push(a: unknown): void {
     stack.push(a);
 }
+
 function push_double(d: number): void {
     push({ d: d });
 }
@@ -14973,17 +15199,21 @@ function push_rational(a: number, b: number): void {
 
     push_bignum(sign, A, B);
 }
+
 function push_string(s: string) {
     push({ string: s });
 }
+
 function push_symbol(p: string): void {
     push(symbol(p));
 }
+
 function
     reciprocate() {
     push_integer(-1);
     power();
 }
+
 function reduce_radical_double(h: number, COEFF: Flt) {
 
     let c = COEFF.d;
@@ -15016,6 +15246,7 @@ function reduce_radical_double(h: number, COEFF: Flt) {
 
     return C;
 }
+
 function reduce_radical_factors(h: number, COEFF: unknown) {
     if (!any_radical_factors(h))
         return COEFF;
@@ -15025,6 +15256,7 @@ function reduce_radical_factors(h: number, COEFF: unknown) {
     else
         return reduce_radical_double(h, COEFF as Flt);
 }
+
 function reduce_radical_rational(h: number, COEFF: Rat) {
 
     if (isplusone(COEFF) || isminusone(COEFF))
@@ -15101,6 +15333,7 @@ function reduce_radical_rational(h: number, COEFF: Rat) {
 
     return COEFF;
 }
+
 function restore_symbol(): void {
     const p3 = frame.pop();
     const p2 = frame.pop();
@@ -15163,6 +15396,7 @@ export function executeScript(scriptText: string): string[] {
         return x;
     });
 }
+
 function sample(F: unknown, T: unknown, t: number) {
     let X: unknown;
     let Y: unknown;
@@ -15203,6 +15437,7 @@ function sample(F: unknown, T: unknown, t: number) {
 
     draw_array.push({ t: t, x: x, y: y });
 }
+
 function save_symbol(p: Sym) {
     frame.push(p);
     frame.push(get_binding(p));
@@ -15528,15 +15763,13 @@ function scan_subexpr(): void {
         vector(h);
 }
 
-function
-    get_token_skip_newlines() {
+function get_token_skip_newlines(): void {
     scan_level++;
     get_token();
     scan_level--;
 }
 
-function
-    get_token() {
+function get_token(): void {
     get_token_nib();
 
     if (scan_level)
@@ -15544,7 +15777,7 @@ function
             get_token_nib(); // skip over newlines
 }
 
-function get_token_nib() {
+function get_token_nib(): void {
     let c: string;
 
     // skip spaces
@@ -15677,7 +15910,7 @@ function get_token_nib() {
     token = c;
 }
 
-function update_token_buf(j: number, k: number) {
+function update_token_buf(j: number, k: number): void {
     token_buf = instring.substring(j, k);
 }
 
@@ -15696,10 +15929,10 @@ function scan_error(s: string): never {
     stopf("");
 }
 
-function
-    inchar() {
+function inchar(): string {
     return instring.charAt(scan_index); // returns empty string if index out of range
 }
+
 function scan_inbuf(k: number): number {
     trace1 = k;
     k = scan(inbuf, k);
@@ -15709,13 +15942,15 @@ function scan_inbuf(k: number): number {
     }
     return k;
 }
+
 function set_symbol(p1: Sym, p2: unknown, p3: unknown): void {
     if (!isusersymbol(p1))
         stopf("symbol error");
     binding[p1.printname] = p2;
     usrfunc[p1.printname] = p3;
 }
-function setup_final(F: unknown, T: Sym) {
+
+function setup_final(F: unknown, T: Sym): void {
 
     push_double(tmin);
     let p1 = pop();
@@ -15730,7 +15965,8 @@ function setup_final(F: unknown, T: Sym) {
         tmax = xmax;
     }
 }
-function setup_trange() {
+
+function setup_trange(): void {
 
     tmin = -Math.PI;
     tmax = Math.PI;
@@ -15756,6 +15992,7 @@ function setup_trange() {
     push(p3);
     tmax = pop_double();
 }
+
 function setup_xrange(): void {
 
     xmin = -10;
@@ -15782,6 +16019,7 @@ function setup_xrange(): void {
     push(p3);
     xmax = pop_double();
 }
+
 function setup_yrange(): void {
 
     ymin = -10;
@@ -15808,19 +16046,23 @@ function setup_yrange(): void {
     push(p3);
     ymax = pop_double();
 }
+
 function sort(n: number): void {
     const t = stack.splice(stack.length - n).sort(cmp);
     stack = stack.concat(t);
 }
+
 function sort_factors(h: number): void {
     const t = stack.splice(h).sort(cmp_factors);
     stack = stack.concat(t);
 }
+
 function sort_factors_provisional(h: number): void {
     const t = stack.splice(h).sort(cmp_factors_provisional);
     stack = stack.concat(t);
 }
-function static_negate() {
+
+function static_negate(): void {
     const p1 = pop();
 
     if (isnum(p1)) {
@@ -15850,6 +16092,7 @@ function static_negate() {
     push(p1);
     list(3);
 }
+
 function static_reciprocate(): void {
     const p2 = pop();
     const p1 = pop();
@@ -15900,28 +16143,34 @@ function static_reciprocate(): void {
     push_integer(-1);
     list(3);
 }
+
 function stopf(errmsg: string): never {
     throw errmsg;
 }
+
 function subtract(): void {
     negate();
     add();
 }
+
 function swap(): void {
     const p2 = pop();
     const p1 = pop();
     push(p2);
     push(p1);
 }
+
 function symbol(s: string): Sym {
     return symtab[s];
 }
+
 function trace_input(): void {
     const p1 = get_binding(symbol(TRACE));
     if (p1 != symbol(TRACE) && !iszero(p1)) {
         printbuf(instring.substring(trace1, trace2), BLUE);
     }
 }
+
 let inbuf: string;
 let outbuf: string;
 const outputs: string[] = [];

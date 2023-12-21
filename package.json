@@ -1,7 +1,7 @@
 {
     "name": "@geometryzen/eigenmathts",
     "version": "0.9.40",
-    "description": "My Library",
+    "description": "Eigenmath in TypeScript with EcmaScript modules",
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
@@ -20,8 +20,8 @@
         "dist/system/index.min.js.map"
     ],
     "keywords": [
-        "my",
-        "lib"
+        "eigenmath",
+        "typescript"
     ],
     "publishConfig": {
         "access": "public"

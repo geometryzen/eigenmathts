@@ -1,6 +1,6 @@
 # eigenmathts
 
-A port of eigenmath to TypeScript and EcmaScript modules
+Eigenmath in TypeScript with EcmaScript modules
 
 [![version](https://img.shields.io/npm/v/@geometryzen/eigenmathts.svg)](https://www.npmjs.com/package/@geometryzen/eigenmathts) 
 
