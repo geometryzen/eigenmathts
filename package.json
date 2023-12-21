@@ -1,6 +1,6 @@
 {
     "name": "@geometryzen/eigenmathts",
-    "version": "0.9.42",
+    "version": "0.9.43",
     "description": "Eigenmath in TypeScript with EcmaScript modules",
     "exports": {
         ".": {
