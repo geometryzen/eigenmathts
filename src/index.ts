@@ -8558,8 +8558,7 @@ function eval_multiply(p1: unknown): void {
     expanding++;
 }
 
-function
-    eval_nil() {
+function eval_nil(): void {
     push_symbol(NIL);
 }
 
@@ -8585,7 +8584,7 @@ function eval_nonstop(): void {
     nonstop = 0;
 }
 
-function eval_nonstop_nib() {
+function eval_nonstop_nib(): void {
     let save_tos: number;
     let save_tof: number;
     let save_eval_level: number;
@@ -8641,7 +8640,7 @@ function eval_nroots(p1: unknown): void {
     nroots();
 }
 
-function nroots() {
+function nroots(): void {
     const cr: number[] = [];
     const ci: number[] = [];
     const tr: number[] = [];
@@ -8967,7 +8966,7 @@ function eval_outer(p1: unknown): void {
     }
 }
 
-function outer() {
+function outer(): void {
 
     const p2 = pop();
     const p1 = pop();
@@ -9951,8 +9950,7 @@ function rotate_h(PSI: Tensor, c: number, n: number): void {
 
 // phase
 
-function
-    rotate_p(PSI: Tensor, PHASE: unknown, c: number, n: number): void {
+function rotate_p(PSI: Tensor, PHASE: unknown, c: number, n: number): void {
     n = 1 << n;
     for (let i = 0; i < PSI.elem.length; i++) {
         if ((i & c) != c)
@@ -10355,7 +10353,7 @@ function eval_sgn(p1: unknown): void {
     sgn();
 }
 
-function sgn() {
+function sgn(): void {
 
     const p1 = pop();
 
@@ -11281,7 +11279,7 @@ function eval_taylor(p1: unknown): void {
     add_terms(stack.length - h);
 }
 
-function eval_tensor(p1: Tensor) {
+function eval_tensor(p1: Tensor): void {
 
     p1 = copy_tensor(p1);
 
