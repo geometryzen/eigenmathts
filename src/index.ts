@@ -42,9 +42,7 @@ function alloc_vector(n: number) {
 
 function any_radical_factors(h: number): 0 | 1 {
     const n = stack.length;
-    for (let i = h; i < n; i++)
-        if (isradical(stack[i]))
-            return 1;
+    for (let i = h; i < n; i++) if (isradical(stack[i])) return 1;
     return 0;
 }
 const BIGM = 0x1000000; // 24 bits
@@ -52,8 +50,7 @@ const BIGM = 0x1000000; // 24 bits
 function bignum_int(n: number): number[] {
     const u: number[] = [];
 
-    if (n < BIGM)
-        u[0] = n;
+    if (n < BIGM) u[0] = n;
     else {
         u[0] = n % BIGM;
         u[1] = Math.floor(n / BIGM);
@@ -91,14 +88,11 @@ function bignum_odd(u: number[]) {
 }
 
 function bignum_float(u: number[]): number {
-
     let d = 0;
 
-    for (let i = u.length - 1; i >= 0; i--)
-        d = BIGM * d + u[i];
+    for (let i = u.length - 1; i >= 0; i--) d = BIGM * d + u[i];
 
-    if (!isFinite(d))
-        stopf("floating point nan or infinity");
+    if (!isFinite(d)) stopf("floating point nan or infinity");
 
     return d;
 }
@@ -123,17 +117,16 @@ function bignum_issmallnum(u: number[]): boolean {
 
 /**
  * Pushes a Rat onto the stack.
- * @param sign 
- * @param a 
- * @param b 
+ * @param sign
+ * @param a
+ * @param b
  */
 function push_bignum(sign: 1 | -1, a: number[], b: number[]): void {
     // normalize zero
 
     if (bignum_iszero(a)) {
         sign = 1;
-        if (!bignum_equal(b, 1))
-            b = bignum_int(1);
+        if (!bignum_equal(b, 1)) b = bignum_int(1);
     }
 
     const X: Rat = { sign: sign, a: a, b: b };
@@ -148,16 +141,12 @@ function bignum_add(u: number[], v: number[]): number[] {
     const nu = u.length;
     const nv = v.length;
 
-    if (nu > nv)
-        nw = nu + 1;
-    else
-        nw = nv + 1;
+    if (nu > nv) nw = nu + 1;
+    else nw = nv + 1;
 
-    for (let i = 0; i < nu; i++)
-        w[i] = u[i];
+    for (let i = 0; i < nu; i++) w[i] = u[i];
 
-    for (let i = nu; i < nw; i++)
-        w[i] = 0;
+    for (let i = nu; i < nw; i++) w[i] = 0;
 
     let t = 0;
 
@@ -181,14 +170,11 @@ function bignum_add(u: number[], v: number[]): number[] {
 
 function bignum_atoi(s: string): number[] {
     let a = bignum_int(0);
-    if (s.length == 0)
-        return a;
+    if (s.length == 0) return a;
     let k = s.length % 7;
-    if (k == 0)
-        k = 7;
+    if (k == 0) k = 7;
     a[0] = Number(s.substr(0, k));
-    if (k == s.length)
-        return a;
+    if (k == s.length) return a;
     const b = bignum_int(0);
     while (k < s.length) {
         b[0] = 10000000; // 10^7
@@ -201,17 +187,13 @@ function bignum_atoi(s: string): number[] {
 }
 
 function bignum_cmp(u: number[], v: number[]): 0 | 1 | -1 {
-    if (u.length < v.length)
-        return -1; // u < v
+    if (u.length < v.length) return -1; // u < v
 
-    if (u.length > v.length)
-        return 1; // u > v
+    if (u.length > v.length) return 1; // u > v
 
     for (let i = u.length - 1; i >= 0; i--) {
-        if (u[i] < v[i])
-            return -1; // u < v
-        if (u[i] > v[i])
-            return 1; // u > v
+        if (u[i] < v[i]) return -1; // u < v
+        if (u[i] > v[i]) return 1; // u > v
     }
 
     return 0; // u = v
@@ -219,20 +201,16 @@ function bignum_cmp(u: number[], v: number[]): 0 | 1 | -1 {
 // floor(u / v)
 
 function bignum_div(u: number[], v: number[]) {
-
     let nu = u.length;
     const nv = v.length;
 
-    if (nv == 1 && v[0] == 0)
-        stopf("divide by zero");
+    if (nv == 1 && v[0] == 0) stopf("divide by zero");
 
-    if (nu == 1 && nv == 1)
-        return bignum_int(Math.floor(u[0] / v[0]));
+    if (nu == 1 && nv == 1) return bignum_int(Math.floor(u[0] / v[0]));
 
     let k = nu - nv;
 
-    if (k < 0)
-        return bignum_int(0); // u < v
+    if (k < 0) return bignum_int(0); // u < v
 
     u = bignum_copy(u);
 
@@ -245,21 +223,17 @@ function bignum_div(u: number[], v: number[]) {
         q[k] = 0;
 
         while (nu >= nv + k) {
-
             // estimate partial quotient
 
             let a = u[nu - 1];
 
-            if (nu > nv + k)
-                a = BIGM * a + u[nu - 2];
+            if (nu > nv + k) a = BIGM * a + u[nu - 2];
 
-            if (a < b)
-                break;
+            if (a < b) break;
 
             let qhat = Math.floor(a / (b + 1)) % BIGM;
 
-            if (qhat == 0)
-                qhat = 1;
+            if (qhat == 0) qhat = 1;
 
             // w = qhat * v
 
@@ -280,8 +254,7 @@ function bignum_div(u: number[], v: number[]) {
             for (let i = k; i < nu; i++) {
                 t += u[i] - w[i - k];
                 u[i] = t % BIGM;
-                if (u[i] < 0)
-                    u[i] += BIGM;
+                if (u[i] < 0) u[i] += BIGM;
                 t = Math.floor(t / BIGM);
             }
 
@@ -301,7 +274,6 @@ function bignum_div(u: number[], v: number[]) {
 
             q[k] += qhat;
         }
-
     } while (--k >= 0);
 
     bignum_norm(q);
@@ -310,7 +282,6 @@ function bignum_div(u: number[], v: number[]) {
 }
 
 function bignum_gcd(u: number[], v: number[]): number[] {
-
     if (u.length == 1 && v.length == 1) {
         let p = u[0];
         let q = v[0];
@@ -332,23 +303,19 @@ function bignum_gcd(u: number[], v: number[]): number[] {
 }
 
 function bignum_itoa(u: number[]): string {
-
-    if (u.length == 1)
-        return String(u[0]);
+    if (u.length == 1) return String(u[0]);
 
     const d = bignum_int(10000000); // d = 10^7
 
     let s = "";
 
     while (u.length > 1 || u[0] >= 10000000) {
-
         const r = bignum_mod(u, d);
         u = bignum_div(u, d);
 
         s = String(r[0]).concat(s);
 
-        while (s.length % 7)
-            s = "0".concat(s); // add leading zeroes
+        while (s.length % 7) s = "0".concat(s); // add leading zeroes
     }
 
     s = String(u[0]).concat(s);
@@ -358,22 +325,18 @@ function bignum_itoa(u: number[]): string {
 // u mod v
 
 function bignum_mod(u: number[], v: number[]): number[] {
-
     let nu = u.length;
     const nv = v.length;
 
-    if (nv == 1 && v[0] == 0)
-        stopf("divide by zero");
+    if (nv == 1 && v[0] == 0) stopf("divide by zero");
 
-    if (nu == 1 && nv == 1)
-        return bignum_int(u[0] % v[0]);
+    if (nu == 1 && nv == 1) return bignum_int(u[0] % v[0]);
 
     u = bignum_copy(u);
 
     let k = nu - nv;
 
-    if (k < 0)
-        return u; // u < v
+    if (k < 0) return u; // u < v
 
     const b = v[nv - 1];
 
@@ -381,21 +344,17 @@ function bignum_mod(u: number[], v: number[]): number[] {
 
     do {
         while (nu >= nv + k) {
-
             // estimate partial quotient
 
             let a = u[nu - 1];
 
-            if (nu > nv + k)
-                a = BIGM * a + u[nu - 2];
+            if (nu > nv + k) a = BIGM * a + u[nu - 2];
 
-            if (a < b)
-                break;
+            if (a < b) break;
 
             let qhat = Math.floor(a / (b + 1)) % BIGM;
 
-            if (qhat == 0)
-                qhat = 1;
+            if (qhat == 0) qhat = 1;
 
             // w = qhat * v
 
@@ -416,8 +375,7 @@ function bignum_mod(u: number[], v: number[]): number[] {
             for (let i = k; i < nu; i++) {
                 t += u[i] - w[i - k];
                 u[i] = t % BIGM;
-                if (u[i] < 0)
-                    u[i] += BIGM;
+                if (u[i] < 0) u[i] += BIGM;
                 t = Math.floor(t / BIGM);
             }
 
@@ -435,14 +393,12 @@ function bignum_mod(u: number[], v: number[]): number[] {
             bignum_norm(u);
             nu = u.length;
         }
-
     } while (--k >= 0);
 
     return u;
 }
 
 function bignum_mul(u: number[], v: number[]): number[] {
-
     const nu = u.length;
     const nv = v.length;
 
@@ -450,8 +406,7 @@ function bignum_mul(u: number[], v: number[]): number[] {
 
     const w: number[] = [];
 
-    for (let i = 0; i < nw; i++)
-        w[i] = 0;
+    for (let i = 0; i < nw; i++) w[i] = 0;
 
     for (let i = 0; i < nu; i++) {
         let t = 0;
@@ -471,32 +426,24 @@ function bignum_mul(u: number[], v: number[]): number[] {
 // u ^ v
 
 function bignum_pow(u: number[], v: number[]): number[] {
+    if (v.length == 1 && v[0] == 0) return bignum_int(1); // v = 0
 
-    if (v.length == 1 && v[0] == 0)
-        return bignum_int(1); // v = 0
+    if (u.length == 1 && u[0] == 1) return bignum_int(1); // u = 1
 
-    if (u.length == 1 && u[0] == 1)
-        return bignum_int(1); // u = 1
+    if (u.length == 1 && u[0] == 0) return bignum_int(0); // u = 0
 
-    if (u.length == 1 && u[0] == 0)
-        return bignum_int(0); // u = 0
-
-    if (v.length == 1 && v[0] == 1)
-        return bignum_copy(u); // v = 1
+    if (v.length == 1 && v[0] == 1) return bignum_copy(u); // v = 1
 
     v = bignum_copy(v);
 
     let w = bignum_int(1);
 
-    for (; ;) {
-
-        if (v[0] % 2)
-            w = bignum_mul(w, u);
+    for (;;) {
+        if (v[0] % 2) w = bignum_mul(w, u);
 
         bignum_shr(v);
 
-        if (v.length == 1 && v[0] == 0)
-            break; // v = 0
+        if (v.length == 1 && v[0] == 0) break; // v = 0
 
         u = bignum_mul(u, u);
     }
@@ -510,8 +457,7 @@ function bignum_shr(u: number[]): void {
     let i: number;
     for (i = 0; i < u.length - 1; i++) {
         u[i] = Math.floor(u[i] / 2);
-        if (u[i + 1] % 2)
-            u[i] += 0x800000;
+        if (u[i + 1] % 2) u[i] += 0x800000;
     }
     u[i] = Math.floor(u[i] / 2);
     bignum_norm(u);
@@ -519,12 +465,9 @@ function bignum_shr(u: number[]): void {
 // returns null if not perfect root, otherwise returns u^(1/v)
 
 function bignum_root(u: number[], v: number[]): number[] | null {
+    if (v.length > 1) return null; // v must be 24 bits or less
 
-    if (v.length > 1)
-        return null; // v must be 24 bits or less
-
-    if (v[0] == 0)
-        return null; // divide by zero
+    if (v[0] == 0) return null; // divide by zero
 
     // k is bit length of u
 
@@ -537,8 +480,7 @@ function bignum_root(u: number[], v: number[]): number[] | null {
         k++;
     }
 
-    if (k == 0)
-        return bignum_int(0); // u = 0
+    if (k == 0) return bignum_int(0); // u = 0
 
     // initial guess of index of ms bit in result
 
@@ -548,11 +490,9 @@ function bignum_root(u: number[], v: number[]): number[] | null {
 
     const r: number[] = [];
 
-    for (let i = 0; i < j; i++)
-        r[i] = 0;
+    for (let i = 0; i < j; i++) r[i] = 0;
 
     while (k >= 0) {
-
         const i = Math.floor(k / 24);
         m = Math.pow(2, k % 24);
 
@@ -580,40 +520,33 @@ function bignum_root(u: number[], v: number[]): number[] | null {
 // u is greater than or equal to v
 
 function bignum_sub(u: number[], v: number[]) {
-
     const nu = u.length;
     const nv = v.length;
 
     let nw: number;
 
-    if (nu > nv)
-        nw = nu;
-    else
-        nw = nv;
+    if (nu > nv) nw = nu;
+    else nw = nv;
 
     const w: number[] = [];
 
-    for (let i = 0; i < nu; i++)
-        w[i] = u[i];
+    for (let i = 0; i < nu; i++) w[i] = u[i];
 
-    for (let i = nu; i < nw; i++)
-        w[i] = 0;
+    for (let i = nu; i < nw; i++) w[i] = 0;
 
     let t = 0;
 
     for (let i = 0; i < nv; i++) {
         t += w[i] - v[i];
         w[i] = t % BIGM;
-        if (w[i] < 0)
-            w[i] += BIGM;
+        if (w[i] < 0) w[i] += BIGM;
         t = Math.floor(t / BIGM);
     }
 
     for (let i = nv; i < nw; i++) {
         t += w[i];
         w[i] = t % BIGM;
-        if (w[i] < 0)
-            w[i] += BIGM;
+        if (w[i] < 0) w[i] += BIGM;
         t = Math.floor(t / BIGM);
     }
 
@@ -630,28 +563,23 @@ function caadr(p: unknown) {
     return car(car(cdr(p)));
 }
 
-function
-    cadaddr(p: unknown) {
+function cadaddr(p: unknown) {
     return car(cdr(car(cdr(cdr(p)))));
 }
 
-function
-    cadadr(p: unknown) {
+function cadadr(p: unknown) {
     return car(cdr(car(cdr(p))));
 }
 
-function
-    caddddr(p: unknown) {
+function caddddr(p: unknown) {
     return car(cdr(cdr(cdr(cdr(p)))));
 }
 
-function
-    cadddr(p: unknown) {
+function cadddr(p: unknown) {
     return car(cdr(cdr(cdr(p))));
 }
 
-function
-    caddr(p: unknown) {
+function caddr(p: unknown) {
     return car(cdr(cdr(p)));
 }
 
@@ -660,7 +588,6 @@ function cadr(p: unknown) {
 }
 
 function cancel_factor() {
-
     let p2 = pop();
     const p1 = pop();
 
@@ -685,8 +612,7 @@ function cancel_factor() {
 function car(p: unknown) {
     if ("car" in (p as Cons)) {
         return (p as Cons).car;
-    }
-    else {
+    } else {
         return symbol(NIL);
     }
 }
@@ -712,86 +638,62 @@ function cddr(p: unknown) {
 }
 
 function cdr(p: unknown) {
-    if ("cdr" in (p as Cons))
-        return (p as Cons).cdr;
-    else
-        return symbol(NIL);
+    if ("cdr" in (p as Cons)) return (p as Cons).cdr;
+    else return symbol(NIL);
 }
 
 function cmp(p1: unknown, p2: unknown): 1 | 0 | -1 {
+    if (p1 == p2) return 0;
 
-    if (p1 == p2)
-        return 0;
+    if (p1 == symbol(NIL)) return -1;
 
-    if (p1 == symbol(NIL))
-        return -1;
+    if (p2 == symbol(NIL)) return 1;
 
-    if (p2 == symbol(NIL))
-        return 1;
+    if (isnum(p1) && isnum(p2)) return cmp_numbers(p1, p2);
 
-    if (isnum(p1) && isnum(p2))
-        return cmp_numbers(p1, p2);
+    if (isnum(p1)) return -1;
 
-    if (isnum(p1))
-        return -1;
+    if (isnum(p2)) return 1;
 
-    if (isnum(p2))
-        return 1;
+    if (isstring(p1) && isstring(p2)) return cmp_strings(p1.string, p2.string);
 
-    if (isstring(p1) && isstring(p2))
-        return cmp_strings(p1.string, p2.string);
+    if (isstring(p1)) return -1;
 
-    if (isstring(p1))
-        return -1;
+    if (isstring(p2)) return 1;
 
-    if (isstring(p2))
-        return 1;
+    if (issymbol(p1) && issymbol(p2)) return cmp_strings(printname(p1), printname(p2));
 
-    if (issymbol(p1) && issymbol(p2))
-        return cmp_strings(printname(p1), printname(p2));
+    if (issymbol(p1)) return -1;
 
-    if (issymbol(p1))
-        return -1;
+    if (issymbol(p2)) return 1;
 
-    if (issymbol(p2))
-        return 1;
+    if (istensor(p1) && istensor(p2)) return cmp_tensors(p1, p2);
 
-    if (istensor(p1) && istensor(p2))
-        return cmp_tensors(p1, p2);
+    if (istensor(p1)) return -1;
 
-    if (istensor(p1))
-        return -1;
-
-    if (istensor(p2))
-        return 1;
+    if (istensor(p2)) return 1;
 
     while (iscons(p1) && iscons(p2)) {
         const t = cmp(car(p1), car(p2));
-        if (t)
-            return t;
+        if (t) return t;
         p1 = cdr(p1);
         p2 = cdr(p2);
     }
 
-    if (iscons(p2))
-        return -1; // lengthf(p1) < lengthf(p2)
+    if (iscons(p2)) return -1; // lengthf(p1) < lengthf(p2)
 
-    if (iscons(p1))
-        return 1; // lengthf(p1) > lengthf(p2)
+    if (iscons(p1)) return 1; // lengthf(p1) > lengthf(p2)
 
     return 0;
 }
 
 function cmp_factors(p1: unknown, p2: unknown): 0 | 1 | -1 {
-
     const a = order_factor(p1);
     const b = order_factor(p2);
 
-    if (a < b)
-        return -1;
+    if (a < b) return -1;
 
-    if (a > b)
-        return 1;
+    if (a > b) return 1;
 
     let base1: unknown;
     let base2: unknown;
@@ -801,8 +703,7 @@ function cmp_factors(p1: unknown, p2: unknown): 0 | 1 | -1 {
     if (car(p1) == symbol(POWER)) {
         base1 = cadr(p1);
         expo1 = caddr(p1);
-    }
-    else {
+    } else {
         base1 = p1;
         expo1 = one;
     }
@@ -810,34 +711,28 @@ function cmp_factors(p1: unknown, p2: unknown): 0 | 1 | -1 {
     if (car(p2) == symbol(POWER)) {
         base2 = cadr(p2);
         expo2 = caddr(p2);
-    }
-    else {
+    } else {
         base2 = p2;
         expo2 = one;
     }
 
     let c = cmp(base1, base2);
 
-    if (c == 0)
-        c = cmp(expo2, expo1); // swapped to reverse sort order
+    if (c == 0) c = cmp(expo2, expo1); // swapped to reverse sort order
 
     return c;
 }
 
 function cmp_factors_provisional(p1: unknown, p2: unknown) {
-    if (car(p1) == symbol(POWER))
-        p1 = cadr(p1); // p1 = base
+    if (car(p1) == symbol(POWER)) p1 = cadr(p1); // p1 = base
 
-    if (car(p2) == symbol(POWER))
-        p2 = cadr(p2); // p2 = base
+    if (car(p2) == symbol(POWER)) p2 = cadr(p2); // p2 = base
 
     return cmp(p1, p2);
 }
 
 function cmp_numbers(p1: unknown, p2: unknown): 1 | 0 | -1 {
-
-    if (isrational(p1) && isrational(p2))
-        return cmp_rationals(p1, p2);
+    if (isrational(p1) && isrational(p2)) return cmp_rationals(p1, p2);
 
     push(p1);
     const d1 = pop_double();
@@ -845,63 +740,49 @@ function cmp_numbers(p1: unknown, p2: unknown): 1 | 0 | -1 {
     push(p2);
     const d2 = pop_double();
 
-    if (d1 < d2)
-        return -1;
+    if (d1 < d2) return -1;
 
-    if (d1 > d2)
-        return 1;
+    if (d1 > d2) return 1;
 
     return 0;
 }
 
 function cmp_rationals(p1: Rat, p2: Rat): 0 | 1 | -1 {
+    if (isnegativenumber(p1) && !isnegativenumber(p2)) return -1;
 
-    if (isnegativenumber(p1) && !isnegativenumber(p2))
-        return -1;
-
-    if (!isnegativenumber(p1) && isnegativenumber(p2))
-        return 1;
+    if (!isnegativenumber(p1) && isnegativenumber(p2)) return 1;
 
     if (isinteger(p1) && isinteger(p2))
-        if (isnegativenumber(p1))
-            return bignum_cmp(p2.a, p1.a);
-        else
-            return bignum_cmp(p1.a, p2.a);
+        if (isnegativenumber(p1)) return bignum_cmp(p2.a, p1.a);
+        else return bignum_cmp(p1.a, p2.a);
 
     const a = bignum_mul(p1.a, p2.b);
     const b = bignum_mul(p1.b, p2.a);
 
-    if (isnegativenumber(p1))
-        return bignum_cmp(b, a);
-    else
-        return bignum_cmp(a, b);
+    if (isnegativenumber(p1)) return bignum_cmp(b, a);
+    else return bignum_cmp(a, b);
 }
 // this way matches strcmp (localeCompare differs from strcmp)
 
 function cmp_strings(s1: string, s2: string): 0 | 1 | -1 {
-    if (s1 < s2)
-        return -1;
-    if (s1 > s2)
-        return 1;
+    if (s1 < s2) return -1;
+    if (s1 > s2) return 1;
     return 0;
 }
 
 function cmp_tensors(p1: Tensor, p2: Tensor): 1 | 0 | -1 {
     const t = p1.dim.length - p2.dim.length;
 
-    if (t)
-        return t > 0 ? 1 : t < 0 ? -1 : 0;
+    if (t) return t > 0 ? 1 : t < 0 ? -1 : 0;
 
     for (let i = 0; i < p1.dim.length; i++) {
         const t = p1.dim[i] - p2.dim[i];
-        if (t)
-            return t > 0 ? 1 : t < 0 ? -1 : 0;
+        if (t) return t > 0 ? 1 : t < 0 ? -1 : 0;
     }
 
     for (let i = 0; i < p1.elem.length; i++) {
         const t = cmp(p1.elem[i], p2.elem[i]);
-        if (t)
-            return t;
+        if (t) return t;
     }
 
     return 0;
@@ -909,9 +790,7 @@ function cmp_tensors(p1: Tensor, p2: Tensor): 1 | 0 | -1 {
 // push coefficients of polynomial P(X) on stack
 
 function coeffs(P: unknown, X: unknown) {
-
-    for (; ;) {
-
+    for (;;) {
         push(P);
         push(X);
         push_integer(0);
@@ -926,8 +805,7 @@ function coeffs(P: unknown, X: unknown) {
         subtract();
         P = pop();
 
-        if (iszero(P))
-            break;
+        if (iszero(P)) break;
 
         push(P);
         push(X);
@@ -960,8 +838,7 @@ function combine_factors_nib(i: number, j: number): 0 | 1 {
     if (car(p1) == symbol(POWER)) {
         BASE1 = cadr(p1);
         EXPO1 = caddr(p1);
-    }
-    else {
+    } else {
         BASE1 = p1;
         EXPO1 = one;
     }
@@ -969,17 +846,14 @@ function combine_factors_nib(i: number, j: number): 0 | 1 {
     if (car(p2) == symbol(POWER)) {
         BASE2 = cadr(p2);
         EXPO2 = caddr(p2);
-    }
-    else {
+    } else {
         BASE2 = p2;
         EXPO2 = one;
     }
 
-    if (!equal(BASE1, BASE2))
-        return 0;
+    if (!equal(BASE1, BASE2)) return 0;
 
-    if (isdouble(BASE2))
-        BASE1 = BASE2; // if mixed rational and double, use double
+    if (isdouble(BASE2)) BASE1 = BASE2; // if mixed rational and double, use double
 
     push_symbol(POWER);
     push(BASE1);
@@ -994,11 +868,9 @@ function combine_factors_nib(i: number, j: number): 0 | 1 {
 }
 
 function combine_numerical_factors(h: number, COEFF: unknown) {
-
     let n = stack.length;
 
     for (let i = h; i < n; i++) {
-
         const p1 = stack[i];
 
         if (isnum(p1)) {
@@ -1014,21 +886,15 @@ function combine_numerical_factors(h: number, COEFF: unknown) {
 }
 
 function compatible_dimensions(p1: unknown, p2: unknown): 0 | 1 {
+    if (!istensor(p1) && !istensor(p2)) return 1; // both are scalars
 
-    if (!istensor(p1) && !istensor(p2))
-        return 1; // both are scalars
-
-    if (!istensor(p1) || !istensor(p2))
-        return 0; // scalar and tensor
+    if (!istensor(p1) || !istensor(p2)) return 0; // scalar and tensor
 
     const n = p1.dim.length;
 
-    if (n != p2.dim.length)
-        return 0;
+    if (n != p2.dim.length) return 0;
 
-    for (let i = 0; i < n; i++)
-        if (p1.dim[i] != p2.dim[i])
-            return 0;
+    for (let i = 0; i < n; i++) if (p1.dim[i] != p2.dim[i]) return 0;
 
     return 1;
 }
@@ -1177,18 +1043,15 @@ const ARG7 = "$7";
 const ARG8 = "$8";
 const ARG9 = "$9";
 function copy_tensor(p1: Tensor) {
-
     const p2 = alloc_tensor();
 
     let n = p1.dim.length;
 
-    for (let i = 0; i < n; i++)
-        p2.dim[i] = p1.dim[i];
+    for (let i = 0; i < n; i++) p2.dim[i] = p1.dim[i];
 
     n = p1.elem.length;
 
-    for (let i = 0; i < n; i++)
-        p2.elem[i] = p1.elem[i];
+    for (let i = 0; i < n; i++) p2.elem[i] = p1.elem[i];
 
     return p2;
 }
@@ -1197,8 +1060,7 @@ function count_denominators(p: unknown): number {
     let n = 0;
     p = cdr(p);
     while (iscons(p)) {
-        if (isdenominator(car(p)))
-            n++;
+        if (isdenominator(car(p))) n++;
         p = cdr(p);
     }
     return n;
@@ -1208,8 +1070,7 @@ function count_numerators(p: unknown): number {
     let n = 0;
     p = cdr(p);
     while (iscons(p)) {
-        if (isnumerator(car(p)))
-            n++;
+        if (isnumerator(car(p))) n++;
         p = cdr(p);
     }
     return n;
@@ -1217,7 +1078,6 @@ function count_numerators(p: unknown): number {
 // push const coeffs
 
 function decomp() {
-
     const X = pop();
     const F = pop();
 
@@ -1254,7 +1114,6 @@ function decomp() {
 }
 
 function decomp_sum(F: unknown, X: unknown) {
-
     let p2: unknown;
 
     let h = stack.length;
@@ -1269,11 +1128,10 @@ function decomp_sum(F: unknown, X: unknown) {
             if (car(p2) == symbol(MULTIPLY)) {
                 push(p2);
                 push(X);
-                partition_term();	// push const part then push var part
-            }
-            else {
-                push_integer(1);	// const part
-                push(p2);		// var part
+                partition_term(); // push const part then push var part
+            } else {
+                push_integer(1); // const part
+                push(p2); // var part
             }
         }
         p1 = cdr(p1);
@@ -1285,14 +1143,12 @@ function decomp_sum(F: unknown, X: unknown) {
 
     for (let i = 0; i < n - 2; i += 2)
         for (let j = i + 2; j < n; j += 2) {
-            if (!equal(stack[h + i + 1], stack[h + j + 1]))
-                continue;
+            if (!equal(stack[h + i + 1], stack[h + j + 1])) continue;
             push(stack[h + i]); // add const parts
             push(stack[h + j]);
             add();
             stack[h + i] = pop();
-            for (let k = j; k < n - 2; k++)
-                stack[h + k] = stack[h + k + 2];
+            for (let k = j; k < n - 2; k++) stack[h + k] = stack[h + k + 2];
             j -= 2; // use same j again
             n -= 2;
             stack.splice(stack.length - 2); // pop
@@ -1316,8 +1172,7 @@ function decomp_sum(F: unknown, X: unknown) {
     h = stack.length;
     p1 = cdr(F);
     while (iscons(p1)) {
-        if (!findf(car(p1), X))
-            push(car(p1));
+        if (!findf(car(p1), X)) push(car(p1));
         p1 = cdr(p1);
     }
 
@@ -1332,7 +1187,6 @@ function decomp_sum(F: unknown, X: unknown) {
 }
 
 function decomp_product(F: unknown, X: unknown) {
-
     // decomp factors involving x
 
     let p1 = cdr(F);
@@ -1350,8 +1204,7 @@ function decomp_product(F: unknown, X: unknown) {
     const h = stack.length;
     p1 = cdr(F);
     while (iscons(p1)) {
-        if (!findf(car(p1), X))
-            push(car(p1));
+        if (!findf(car(p1), X)) push(car(p1));
         p1 = cdr(p1);
     }
 
@@ -1401,7 +1254,6 @@ const EMIT_TABLE = 10;
 let emit_level: number;
 
 function display(): void {
-
     emit_level = 0;
 
     let p1 = pop();
@@ -1436,7 +1288,6 @@ function display(): void {
 }
 
 function emit_args(p: unknown): void {
-
     p = cdr(p);
 
     if (!iscons(p)) {
@@ -1464,28 +1315,22 @@ function emit_args(p: unknown): void {
 }
 
 function emit_base(p: unknown): void {
-    if (isnum(p) && isnegativenumber(p) || (isrational(p) && isfraction(p)) || isdouble(p) || car(p) == symbol(ADD) || car(p) == symbol(MULTIPLY) || car(p) == symbol(POWER))
-        emit_subexpr(p);
-    else
-        emit_expr(p);
+    if ((isnum(p) && isnegativenumber(p)) || (isrational(p) && isfraction(p)) || isdouble(p) || car(p) == symbol(ADD) || car(p) == symbol(MULTIPLY) || car(p) == symbol(POWER)) emit_subexpr(p);
+    else emit_expr(p);
 }
 
 function emit_denominators(p: unknown) {
-
     const t = stack.length;
     const n = count_denominators(p);
     p = cdr(p);
 
     while (iscons(p)) {
-
         let q = car(p);
         p = cdr(p);
 
-        if (!isdenominator(q))
-            continue;
+        if (!isdenominator(q)) continue;
 
-        if (stack.length > t)
-            emit_medium_space();
+        if (stack.length > t) emit_medium_space();
 
         if (isrational(q)) {
             const s = bignum_itoa(q.b);
@@ -1497,10 +1342,8 @@ function emit_denominators(p: unknown) {
             q = cadr(q);
             if (car(q) == symbol(ADD) && n == 1)
                 emit_expr(q); // parens not needed
-            else
-                emit_factor(q);
-        }
-        else {
+            else emit_factor(q);
+        } else {
             emit_base(cadr(q));
             emit_numeric_exponent(caddr(q) as Num); // sign is not emitted
         }
@@ -1517,31 +1360,25 @@ function emit_double(p: Flt): void {
 
     let k = 0;
 
-    while (k < s.length && s.charAt(k) != "." && s.charAt(k) != "E" && s.charAt(k) != "e")
-        k++;
+    while (k < s.length && s.charAt(k) != "." && s.charAt(k) != "E" && s.charAt(k) != "e") k++;
 
     emit_roman_string(s.substring(0, k));
 
     // handle trailing zeroes
 
     if (s.charAt(k) == ".") {
-
         i = k++;
 
-        while (k < s.length && s.charAt(k) != "E" && s.charAt(k) != "e")
-            k++;
+        while (k < s.length && s.charAt(k) != "E" && s.charAt(k) != "e") k++;
 
         j = k;
 
-        while (s.charAt(j - 1) == "0")
-            j--;
+        while (s.charAt(j - 1) == "0") j--;
 
-        if (j - i > 1)
-            emit_roman_string(s.substring(i, j));
+        if (j - i > 1) emit_roman_string(s.substring(i, j));
     }
 
-    if (s.charAt(k) != "E" && s.charAt(k) != "e")
-        return;
+    if (s.charAt(k) != "E" && s.charAt(k) != "e") return;
 
     k++;
 
@@ -1557,8 +1394,7 @@ function emit_double(p: Flt): void {
 
     // sign of exponent
 
-    if (s.charAt(k) == "+")
-        k++;
+    if (s.charAt(k) == "+") k++;
     else if (s.charAt(k) == "-") {
         emit_roman_char(MINUS_SIGN);
         emit_thin_space();
@@ -1567,8 +1403,7 @@ function emit_double(p: Flt): void {
 
     // skip leading zeroes in exponent
 
-    while (s.charAt(k) == "0")
-        k++;
+    while (s.charAt(k) == "0") k++;
 
     emit_roman_string(s.substring(k));
 
@@ -1598,10 +1433,8 @@ function emit_expr(p: unknown): void {
         emit_thin_space();
     }
 
-    if (car(p) == symbol(ADD))
-        emit_expr_nib(p);
-    else
-        emit_term(p);
+    if (car(p) == symbol(ADD)) emit_expr_nib(p);
+    else emit_term(p);
 }
 
 function emit_expr_nib(p: unknown): void {
@@ -1609,10 +1442,8 @@ function emit_expr_nib(p: unknown): void {
     emit_term(car(p));
     p = cdr(p);
     while (iscons(p)) {
-        if (isnegativeterm(car(p)))
-            emit_infix_operator(MINUS_SIGN);
-        else
-            emit_infix_operator(PLUS_SIGN);
+        if (isnegativeterm(car(p))) emit_infix_operator(MINUS_SIGN);
+        else emit_infix_operator(PLUS_SIGN);
         emit_term(car(p));
         p = cdr(p);
     }
@@ -1645,12 +1476,9 @@ function emit_factor(p: unknown) {
     }
 
     if (iscons(p)) {
-        if (car(p) == symbol(POWER))
-            emit_power(p);
-        else if (car(p) == symbol(ADD) || car(p) == symbol(MULTIPLY))
-            emit_subexpr(p);
-        else
-            emit_function(p);
+        if (car(p) == symbol(POWER)) emit_power(p);
+        else if (car(p) == symbol(ADD) || car(p) == symbol(MULTIPLY)) emit_subexpr(p);
+        else emit_function(p);
         return;
     }
 }
@@ -1674,10 +1502,8 @@ function emit_function(p: unknown): void {
 
     if (car(p) == symbol(FACTORIAL)) {
         p = cadr(p);
-        if (isrational(p) && isposint(p) || issymbol(p))
-            emit_expr(p);
-        else
-            emit_subexpr(p);
+        if ((isrational(p) && isposint(p)) || issymbol(p)) emit_expr(p);
+        else emit_subexpr(p);
         emit_roman_string("!");
         return;
     }
@@ -1687,10 +1513,8 @@ function emit_function(p: unknown): void {
     if (car(p) == symbol(INDEX)) {
         p = cdr(p);
         const leading = car(p);
-        if (issymbol(leading))
-            emit_symbol(leading);
-        else
-            emit_subexpr(leading);
+        if (issymbol(leading)) emit_symbol(leading);
+        else emit_subexpr(leading);
         emit_indices(p);
         return;
     }
@@ -1733,10 +1557,8 @@ function emit_function(p: unknown): void {
     // default
 
     const leading = car(p);
-    if (issymbol(leading))
-        emit_symbol(leading);
-    else
-        emit_subexpr(leading);
+    if (issymbol(leading)) emit_symbol(leading);
+    else emit_subexpr(leading);
 
     emit_args(p);
 }
@@ -1769,10 +1591,8 @@ function emit_infix_operator(char_num: number): void {
 function emit_italic_char(char_num: number): void {
     let font_num: number;
 
-    if (emit_level == 0)
-        font_num = ITALIC_FONT;
-    else
-        font_num = SMALL_ITALIC_FONT;
+    if (emit_level == 0) font_num = ITALIC_FONT;
+    else font_num = SMALL_ITALIC_FONT;
 
     const h = get_cap_height(font_num);
     const d = get_char_depth(font_num, char_num);
@@ -1787,13 +1607,11 @@ function emit_italic_char(char_num: number): void {
 
     list(6);
 
-    if (char_num == LOWER_F)
-        emit_thin_space();
+    if (char_num == LOWER_F) emit_thin_space();
 }
 
 function emit_italic_string(s: string): void {
-    for (let i = 0; i < s.length; i++)
-        emit_italic_char(s.charCodeAt(i));
+    for (let i = 0; i < s.length; i++) emit_italic_char(s.charCodeAt(i));
 }
 
 function emit_list(p: unknown): void {
@@ -1803,7 +1621,6 @@ function emit_list(p: unknown): void {
 }
 
 function emit_matrix(p: Tensor, d: number, k: number): void {
-
     if (d == p.dim.length) {
         emit_list(p.elem[k]);
         return;
@@ -1815,15 +1632,12 @@ function emit_matrix(p: Tensor, d: number, k: number): void {
 
     let n = p.dim.length;
 
-    for (let i = d + 2; i < n; i++)
-        span *= p.dim[i];
+    for (let i = d + 2; i < n; i++) span *= p.dim[i];
 
-    n = p.dim[d];		// number of rows
-    const m = p.dim[d + 1];	// number of columns
+    n = p.dim[d]; // number of rows
+    const m = p.dim[d + 1]; // number of columns
 
-    for (let i = 0; i < n; i++)
-        for (let j = 0; j < m; j++)
-            emit_matrix(p, d + 2, k + (i * m + j) * span);
+    for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) emit_matrix(p, d + 2, k + (i * m + j) * span);
 
     emit_update_table(n, m);
 }
@@ -1831,10 +1645,8 @@ function emit_matrix(p: Tensor, d: number, k: number): void {
 function emit_medium_space(): void {
     let w: number;
 
-    if (emit_level == 0)
-        w = 0.5 * get_char_width(ROMAN_FONT, LOWER_N);
-    else
-        w = 0.5 * get_char_width(SMALL_ROMAN_FONT, LOWER_N);
+    if (emit_level == 0) w = 0.5 * get_char_width(ROMAN_FONT, LOWER_N);
+    else w = 0.5 * get_char_width(SMALL_ROMAN_FONT, LOWER_N);
 
     push_double(EMIT_SPACE);
     push_double(0.0);
@@ -1845,21 +1657,17 @@ function emit_medium_space(): void {
 }
 
 function emit_numerators(p: unknown): void {
-
     const t = stack.length;
     const n = count_numerators(p);
     p = cdr(p);
 
     while (iscons(p)) {
-
         const q = car(p);
         p = cdr(p);
 
-        if (!isnumerator(q))
-            continue;
+        if (!isnumerator(q)) continue;
 
-        if (stack.length > t)
-            emit_medium_space();
+        if (stack.length > t) emit_medium_space();
 
         if (isrational(q)) {
             const s = bignum_itoa(q.a);
@@ -1869,12 +1677,10 @@ function emit_numerators(p: unknown): void {
 
         if (car(q) == symbol(ADD) && n == 1)
             emit_expr(q); // parens not needed
-        else
-            emit_factor(q);
+        else emit_factor(q);
     }
 
-    if (stack.length == t)
-        emit_roman_string("1"); // no numerators
+    if (stack.length == t) emit_roman_string("1"); // no numerators
 
     emit_update_list(t);
 }
@@ -1882,7 +1688,6 @@ function emit_numerators(p: unknown): void {
 // p is rational or double, sign is not emitted
 
 function emit_numeric_exponent(p: Num) {
-
     emit_level++;
 
     const t = stack.length;
@@ -1895,8 +1700,7 @@ function emit_numeric_exponent(p: Num) {
             s = bignum_itoa(p.b);
             emit_roman_string(s);
         }
-    }
-    else {
+    } else {
         emit_double(p);
     }
 
@@ -1936,7 +1740,6 @@ function emit_power(p: unknown): void {
 }
 
 function emit_rational(p: Rat): void {
-
     if (isinteger(p)) {
         const s = bignum_itoa(p.a);
         emit_roman_string(s);
@@ -1963,13 +1766,11 @@ function emit_rational(p: Rat): void {
 // p = y^x where x is a negative number
 
 function emit_reciprocal(p: unknown): void {
-
     emit_roman_string("1"); // numerator
 
     const t = stack.length;
 
-    if (isminusone(caddr(p)))
-        emit_expr(cadr(p));
+    if (isminusone(caddr(p))) emit_expr(cadr(p));
     else {
         emit_base(cadr(p));
         emit_numeric_exponent(caddr(p) as Num); // sign is not emitted
@@ -1983,10 +1784,8 @@ function emit_reciprocal(p: unknown): void {
 function emit_roman_char(char_num: number): void {
     let font_num: number;
 
-    if (emit_level == 0)
-        font_num = ROMAN_FONT;
-    else
-        font_num = SMALL_ROMAN_FONT;
+    if (emit_level == 0) font_num = ROMAN_FONT;
+    else font_num = SMALL_ROMAN_FONT;
 
     const h = get_cap_height(font_num);
     const d = get_char_depth(font_num, char_num);
@@ -2003,8 +1802,7 @@ function emit_roman_char(char_num: number): void {
 }
 
 function emit_roman_string(s: string): void {
-    for (let i = 0; i < s.length; i++)
-        emit_roman_char(s.charCodeAt(i));
+    for (let i = 0; i < s.length; i++) emit_roman_char(s.charCodeAt(i));
 }
 
 function emit_string(p: Str): void {
@@ -2017,7 +1815,6 @@ function emit_subexpr(p: unknown): void {
 }
 
 function emit_symbol(p: Sym): void {
-
     if (p == symbol(EXP1)) {
         emit_roman_string("exp(1)");
         return;
@@ -2032,8 +1829,7 @@ function emit_symbol(p: Sym): void {
 
     let k = emit_symbol_fragment(s, 0);
 
-    if (k == s.length)
-        return;
+    if (k == s.length) return;
 
     // emit subscript
 
@@ -2041,8 +1837,7 @@ function emit_symbol(p: Sym): void {
 
     const t = stack.length;
 
-    while (k < s.length)
-        k = emit_symbol_fragment(s, k);
+    while (k < s.length) k = emit_symbol_fragment(s, k);
 
     emit_update_list(t);
 
@@ -2052,7 +1847,6 @@ function emit_symbol(p: Sym): void {
 }
 
 const symbol_name_tab = [
-
     "Alpha",
     "Beta",
     "Gamma",
@@ -2103,18 +1897,10 @@ const symbol_name_tab = [
     "psi",
     "omega",
 
-    "hbar",
+    "hbar"
 ];
 
-const symbol_italic_tab = [
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1,
-    0,
-];
+const symbol_italic_tab = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0];
 
 function emit_symbol_fragment(s: string, k: number): number {
     let i: number;
@@ -2124,24 +1910,19 @@ function emit_symbol_fragment(s: string, k: number): number {
 
     for (i = 0; i < n; i++) {
         t = symbol_name_tab[i];
-        if (s.startsWith(t, k))
-            break;
+        if (s.startsWith(t, k)) break;
     }
 
     if (i == n) {
-        if (isdigit(s.charAt(k)))
-            emit_roman_char(s.charCodeAt(k));
-        else
-            emit_italic_char(s.charCodeAt(k));
+        if (isdigit(s.charAt(k))) emit_roman_char(s.charCodeAt(k));
+        else emit_italic_char(s.charCodeAt(k));
         return k + 1;
     }
 
     const char_num = i + 128;
 
-    if (symbol_italic_tab[i])
-        emit_italic_char(char_num);
-    else
-        emit_roman_char(char_num);
+    if (symbol_italic_tab[i]) emit_italic_char(char_num);
+    else emit_roman_char(char_num);
 
     return k + t.length;
 }
@@ -2149,15 +1930,12 @@ function emit_symbol_fragment(s: string, k: number): number {
 function emit_tensor(p: Tensor): void {
     if (p.dim.length % 2 == 1)
         emit_vector(p); // odd rank
-    else
-        emit_matrix(p, 0, 0); // even rank
+    else emit_matrix(p, 0, 0); // even rank
 }
 
 function emit_term(p: unknown): void {
-    if (car(p) == symbol(MULTIPLY))
-        emit_term_nib(p);
-    else
-        emit_factor(p);
+    if (car(p) == symbol(MULTIPLY)) emit_term_nib(p);
+    else emit_factor(p);
 }
 
 function emit_term_nib(p: unknown): void {
@@ -2170,8 +1948,7 @@ function emit_term_nib(p: unknown): void {
 
     p = cdr(p);
 
-    if (isminusone(car(p)) && !isdouble(car(p)))
-        p = cdr(p); // sign already emitted
+    if (isminusone(car(p)) && !isdouble(car(p))) p = cdr(p); // sign already emitted
 
     emit_factor(car(p));
 
@@ -2187,10 +1964,8 @@ function emit_term_nib(p: unknown): void {
 function emit_thick_space(): void {
     let w: number;
 
-    if (emit_level == 0)
-        w = get_char_width(ROMAN_FONT, LOWER_N);
-    else
-        w = get_char_width(SMALL_ROMAN_FONT, LOWER_N);
+    if (emit_level == 0) w = get_char_width(ROMAN_FONT, LOWER_N);
+    else w = get_char_width(SMALL_ROMAN_FONT, LOWER_N);
 
     push_double(EMIT_SPACE);
     push_double(0.0);
@@ -2203,10 +1978,8 @@ function emit_thick_space(): void {
 function emit_thin_space(): void {
     let w: number;
 
-    if (emit_level == 0)
-        w = 0.25 * get_char_width(ROMAN_FONT, LOWER_N);
-    else
-        w = 0.25 * get_char_width(SMALL_ROMAN_FONT, LOWER_N);
+    if (emit_level == 0) w = 0.25 * get_char_width(ROMAN_FONT, LOWER_N);
+    else w = 0.25 * get_char_width(SMALL_ROMAN_FONT, LOWER_N);
 
     push_double(EMIT_SPACE);
     push_double(0.0);
@@ -2217,7 +1990,6 @@ function emit_thin_space(): void {
 }
 
 function emit_update_fraction(): void {
-
     const p2 = pop(); // denominator
     const p1 = pop(); // numerator
 
@@ -2231,8 +2003,7 @@ function emit_update_fraction(): void {
     if (emit_level == 0) {
         opcode = EMIT_FRACTION;
         font_num = ROMAN_FONT;
-    }
-    else {
+    } else {
         opcode = EMIT_SMALL_FRACTION;
         font_num = SMALL_ROMAN_FONT;
     }
@@ -2257,9 +2028,7 @@ function emit_update_fraction(): void {
 }
 
 function emit_update_list(t: number): void {
-
-    if (stack.length - t == 1)
-        return;
+    if (stack.length - t == 1) return;
 
     let h = 0;
     let d = 0;
@@ -2287,7 +2056,6 @@ function emit_update_list(t: number): void {
 }
 
 function emit_update_subexpr(): void {
-
     const p1 = pop();
 
     let h = height(p1);
@@ -2300,8 +2068,7 @@ function emit_update_subexpr(): void {
     if (emit_level == 0) {
         opcode = EMIT_SUBEXPR;
         font_num = ROMAN_FONT;
-    }
-    else {
+    } else {
         opcode = EMIT_SMALL_SUBEXPR;
         font_num = SMALL_ROMAN_FONT;
     }
@@ -2329,15 +2096,12 @@ function emit_update_subexpr(): void {
 }
 
 function emit_update_subscript(): void {
-
     const p1 = pop();
 
     let font_num: number;
 
-    if (emit_level == 0)
-        font_num = ROMAN_FONT;
-    else
-        font_num = SMALL_ROMAN_FONT;
+    if (emit_level == 0) font_num = ROMAN_FONT;
+    else font_num = SMALL_ROMAN_FONT;
 
     const t = get_char_width(font_num, LOWER_N) / 6;
 
@@ -2362,16 +2126,13 @@ function emit_update_subscript(): void {
 }
 
 function emit_update_superscript(): void {
-
     const p2 = pop(); // exponent
     const p1 = pop(); // base
 
     let font_num: number;
 
-    if (emit_level == 0)
-        font_num = ROMAN_FONT;
-    else
-        font_num = SMALL_ROMAN_FONT;
+    if (emit_level == 0) font_num = ROMAN_FONT;
+    else font_num = SMALL_ROMAN_FONT;
 
     const t = get_char_width(font_num, LOWER_N) / 6;
 
@@ -2414,7 +2175,6 @@ function emit_update_superscript(): void {
 }
 
 function emit_update_table(n: number, m: number): void {
-
     let total_height = 0;
     let total_width = 0;
 
@@ -2422,9 +2182,11 @@ function emit_update_table(n: number, m: number): void {
 
     // max height for each row
 
-    for (let i = 0; i < n; i++) { // for each row
+    for (let i = 0; i < n; i++) {
+        // for each row
         let h = 0;
-        for (let j = 0; j < m; j++) { // for each column
+        for (let j = 0; j < m; j++) {
+            // for each column
             const p1 = stack[t + i * m + j];
             h = Math.max(h, height(p1));
         }
@@ -2437,9 +2199,11 @@ function emit_update_table(n: number, m: number): void {
 
     // max depth for each row
 
-    for (let i = 0; i < n; i++) { // for each row
+    for (let i = 0; i < n; i++) {
+        // for each row
         let d = 0;
-        for (let j = 0; j < m; j++) { // for each column
+        for (let j = 0; j < m; j++) {
+            // for each column
             const p1 = stack[t + i * m + j];
             d = Math.max(d, depth(p1));
         }
@@ -2452,9 +2216,11 @@ function emit_update_table(n: number, m: number): void {
 
     // max width for each column
 
-    for (let j = 0; j < m; j++) { // for each column
+    for (let j = 0; j < m; j++) {
+        // for each column
         let w = 0;
-        for (let i = 0; i < n; i++) { // for each row
+        for (let i = 0; i < n; i++) {
+            // for each row
             const p1 = stack[t + i * m + j];
             w = Math.max(w, width(p1));
         }
@@ -2500,13 +2266,11 @@ function emit_vector(p: Tensor): void {
 
     let n = p.dim.length;
 
-    for (let i = 1; i < n; i++)
-        span *= p.dim[i];
+    for (let i = 1; i < n; i++) span *= p.dim[i];
 
     n = p.dim[0]; // number of rows
 
-    for (let i = 0; i < n; i++)
-        emit_matrix(p, 1, i * span);
+    for (let i = 0; i < n; i++) emit_matrix(p, 1, i * span);
 
     emit_update_table(n, 1); // n rows, 1 column
 }
@@ -2535,8 +2299,7 @@ function val2(p: unknown) {
     return (cadr(p) as Flt).d;
 }
 
-function
-    divide() {
+function divide() {
     reciprocate();
     multiply();
 }
@@ -2555,7 +2318,6 @@ function draw_formula(x: number, y: number, p: unknown): void {
     let char_num: number;
 
     switch (k) {
-
         case EMIT_SPACE:
             break;
 
@@ -2612,7 +2374,6 @@ function draw_formula(x: number, y: number, p: unknown): void {
 }
 
 const html_name_tab = [
-
     "&Alpha;",
     "&Beta;",
     "&Gamma;",
@@ -2663,35 +2424,28 @@ const html_name_tab = [
     "&psi;",
     "&omega;",
 
-    "&hbar;",	// 176
+    "&hbar;", // 176
 
-    "&plus;",	// 177
-    "&minus;",	// 178
-    "&times;",	// 179
-    "&ge;",		// 180
-    "&le;",		// 181
+    "&plus;", // 177
+    "&minus;", // 178
+    "&times;", // 179
+    "&ge;", // 180
+    "&le;" // 181
 ];
 
 function draw_char(x: number, y: number, font_num: number, char_num: number): void {
     let s: string;
     let t: string;
 
-    if (char_num < 32 || char_num > 181)
-        s = "?";
-    else if (char_num == 34)
-        s = "&quot;";
-    else if (char_num == 38)
-        s = "&amp;";
-    else if (char_num == 60)
-        s = "&lt;";
-    else if (char_num == 62)
-        s = "&gt;";
-    else if (char_num < 128)
-        s = String.fromCharCode(char_num);
-    else
-        s = html_name_tab[char_num - 128];
+    if (char_num < 32 || char_num > 181) s = "?";
+    else if (char_num == 34) s = "&quot;";
+    else if (char_num == 38) s = "&amp;";
+    else if (char_num == 60) s = "&lt;";
+    else if (char_num == 62) s = "&gt;";
+    else if (char_num < 128) s = String.fromCharCode(char_num);
+    else s = html_name_tab[char_num - 128];
 
-    t = "<text style='font-family:\"Times New Roman\";";
+    t = '<text style=\'font-family:"Times New Roman";';
 
     switch (font_num) {
         case ROMAN_FONT:
@@ -2717,7 +2471,6 @@ function draw_char(x: number, y: number, font_num: number, char_num: number): vo
 }
 
 function draw_delims(x: number, y: number, h: number, d: number, w: number, stroke_width: number, font_num: number): void {
-
     const ch = get_cap_height(font_num);
     const cd = get_char_depth(font_num, LEFT_PAREN);
     const cw = get_char_width(font_num, LEFT_PAREN);
@@ -2725,15 +2478,13 @@ function draw_delims(x: number, y: number, h: number, d: number, w: number, stro
     if (h > ch || d > cd) {
         draw_left_delim(x, y, h, d, cw, stroke_width);
         draw_right_delim(x + w - cw, y, h, d, cw, stroke_width);
-    }
-    else {
+    } else {
         draw_char(x, y, font_num, LEFT_PAREN);
         draw_char(x + w - cw, y, font_num, RIGHT_PAREN);
     }
 }
 
 function draw_left_delim(x: number, y: number, h: number, d: number, w: number, stroke_width: number): void {
-
     const x1 = Math.round(x + 0.5 * w);
     const x2 = x1 + Math.round(0.5 * w);
 
@@ -2746,7 +2497,6 @@ function draw_left_delim(x: number, y: number, h: number, d: number, w: number, 
 }
 
 function draw_right_delim(x: number, y: number, h: number, d: number, w: number, stroke_width: number): void {
-
     const x1 = Math.round(x + 0.5 * w);
     const x2 = x1 - Math.round(0.5 * w);
 
@@ -2759,7 +2509,6 @@ function draw_right_delim(x: number, y: number, h: number, d: number, w: number,
 }
 
 function draw_stroke(x1: number, y1: number, x2: number, y2: number, stroke_width: number): void {
-
     const x1eq = "x1='" + x1 + "'";
     const x2eq = "x2='" + x2 + "'";
 
@@ -2772,7 +2521,6 @@ function draw_stroke(x1: number, y1: number, x2: number, y2: number, stroke_widt
 }
 
 function draw_fraction(x: number, y: number, h: number, d: number, w: number, stroke_width: number, font_num: number, p: unknown): void {
-
     // horizontal line
 
     let dy = get_operator_height(font_num);
@@ -2794,7 +2542,6 @@ function draw_fraction(x: number, y: number, h: number, d: number, w: number, st
 }
 
 function draw_table(x: number, y: number, p: unknown): void {
-
     const n = val1(p);
     const m = val2(p);
 
@@ -2804,7 +2551,8 @@ function draw_table(x: number, y: number, p: unknown): void {
     let h = cadr(p);
     let d = caddr(p);
 
-    for (let i = 0; i < n; i++) { // for each row
+    for (let i = 0; i < n; i++) {
+        // for each row
 
         const row_height = val1(h);
         const row_depth = val1(d);
@@ -2815,7 +2563,8 @@ function draw_table(x: number, y: number, p: unknown): void {
 
         let w = cadddr(p);
 
-        for (let j = 0; j < m; j++) { // for each column
+        for (let j = 0; j < m; j++) {
+            // for each column
 
             const column_width = val1(w);
             const elem_width = width(car(table));
@@ -2851,7 +2600,7 @@ function draw_line(x1: number, y1: number, x2: number, y2: number, t: number): v
 
 function draw_pass1(F: unknown, T: unknown): void {
     for (let i = 0; i <= DRAW_WIDTH; i++) {
-        const t = tmin + (tmax - tmin) * i / DRAW_WIDTH;
+        const t = tmin + ((tmax - tmin) * i) / DRAW_WIDTH;
         sample(F, T, t);
     }
 }
@@ -2862,7 +2611,6 @@ function draw_pass2(F: unknown, T: unknown): void {
     const n = draw_array.length - 1;
 
     for (let i = 0; i < n; i++) {
-
         const t1 = draw_array[i].t;
         const t2 = draw_array[i + 1].t;
 
@@ -2872,8 +2620,7 @@ function draw_pass2(F: unknown, T: unknown): void {
         const y1 = draw_array[i].y;
         const y2 = draw_array[i + 1].y;
 
-        if (!inrange(x1, y1) && !inrange(x2, y2))
-            continue;
+        if (!inrange(x1, y1) && !inrange(x2, y2)) continue;
 
         const dt = t2 - t1;
         const dx = x2 - x1;
@@ -2884,7 +2631,7 @@ function draw_pass2(F: unknown, T: unknown): void {
         m = Math.floor(m);
 
         for (let j = 1; j < m; j++) {
-            const t = t1 + dt * j / m;
+            const t = t1 + (dt * j) / m;
             sample(F, T, t);
         }
     }
@@ -2918,18 +2665,15 @@ function dupl(): void {
 }
 
 function emit_axes(): void {
-
     const x = 0;
     const y = 0;
 
-    const dx = DRAW_WIDTH * (x - xmin) / (xmax - xmin);
-    const dy = DRAW_HEIGHT - DRAW_HEIGHT * (y - ymin) / (ymax - ymin);
+    const dx = (DRAW_WIDTH * (x - xmin)) / (xmax - xmin);
+    const dy = DRAW_HEIGHT - (DRAW_HEIGHT * (y - ymin)) / (ymax - ymin);
 
-    if (dx > 0 && dx < DRAW_WIDTH)
-        draw_line(dx, 0, dx, DRAW_HEIGHT, 0.5); // vertical axis
+    if (dx > 0 && dx < DRAW_WIDTH) draw_line(dx, 0, dx, DRAW_HEIGHT, 0.5); // vertical axis
 
-    if (dy > 0 && dy < DRAW_HEIGHT)
-        draw_line(0, dy, DRAW_WIDTH, dy, 0.5); // horizontal axis
+    if (dy > 0 && dy < DRAW_HEIGHT) draw_line(0, dy, DRAW_WIDTH, dy, 0.5); // horizontal axis
 }
 
 function emit_box(): void {
@@ -2947,7 +2691,6 @@ function emit_box(): void {
 }
 
 function emit_graph(): void {
-
     const h = DRAW_TOP_PAD + DRAW_HEIGHT + DRAW_BOTTOM_PAD;
     const w = DRAW_LEFT_PAD + DRAW_WIDTH + DRAW_RIGHT_PAD;
 
@@ -2967,7 +2710,6 @@ function emit_graph(): void {
 }
 
 function emit_labels(): void {
-
     push_double(ymax);
     let p = pop();
     emit_level = 1; // small font
@@ -3006,16 +2748,13 @@ function emit_labels(): void {
 }
 
 function emit_points(): void {
-
     const n = draw_array.length;
 
     for (let i = 0; i < n; i++) {
-
         let x = draw_array[i].x;
         let y = draw_array[i].y;
 
-        if (!inrange(x, y))
-            continue;
+        if (!inrange(x, y)) continue;
 
         x += DRAW_LEFT_PAD;
         y = DRAW_HEIGHT - y + DRAW_TOP_PAD;
@@ -3038,13 +2777,11 @@ function eval_abs(p1: unknown): void {
 }
 
 function absfunc(): void {
-
     let p1 = pop();
 
     if (isnum(p1)) {
         push(p1);
-        if (isnegativenumber(p1))
-            negate();
+        if (isnegativenumber(p1)) negate();
         return;
     }
 
@@ -3077,8 +2814,7 @@ function absfunc(): void {
     const p3 = pop();
     if (isdouble(p3)) {
         push(p2);
-        if (isnegativenumber(p3))
-            negate();
+        if (isnegativenumber(p3)) negate();
         return;
     }
 
@@ -3135,9 +2871,7 @@ function add(): void {
 }
 
 function add_terms(n: number): void {
-
-    if (n < 2)
-        return;
+    if (n < 2) return;
 
     const h = stack.length - n;
 
@@ -3147,16 +2881,13 @@ function add_terms(n: number): void {
 
     combine_terms(h);
 
-    if (simplify_terms(h))
-        combine_terms(h);
+    if (simplify_terms(h)) combine_terms(h);
 
     n = stack.length - h;
 
     if (n == 0) {
-        if (istensor(T))
-            push(T);
-        else
-            push_integer(0);
+        if (istensor(T)) push(T);
+        else push_integer(0);
         return;
     }
 
@@ -3167,8 +2898,7 @@ function add_terms(n: number): void {
         cons(); // prepend ADD to list
     }
 
-    if (!istensor(T))
-        return;
+    if (!istensor(T)) return;
 
     const p1 = pop();
 
@@ -3211,9 +2941,7 @@ function combine_tensors(h: number): Tensor {
                 push(p1);
                 add_tensors();
                 T = pop();
-            }
-            else
-                T = p1;
+            } else T = p1;
             stack.splice(i, 1);
             i--; // use same index again
         }
@@ -3222,12 +2950,10 @@ function combine_tensors(h: number): Tensor {
 }
 
 function add_tensors(): void {
-
     const p2 = pop() as Tensor;
     let p1 = pop() as Tensor;
 
-    if (!compatible_dimensions(p1, p2))
-        stopf("incompatible tensor arithmetic");
+    if (!compatible_dimensions(p1, p2)) stopf("incompatible tensor arithmetic");
 
     p1 = copy_tensor(p1);
 
@@ -3249,22 +2975,18 @@ function combine_terms(h: number): void {
         if (combine_terms_nib(i, i + 1)) {
             if (iszero(stack[i]))
                 stack.splice(i, 2); // remove 2 terms
-            else
-                stack.splice(i + 1, 1); // remove 1 term
+            else stack.splice(i + 1, 1); // remove 1 term
             i--; // use same index again
         }
     }
-    if (h < stack.length && iszero(stack[stack.length - 1]))
-        stack.pop();
+    if (h < stack.length && iszero(stack[stack.length - 1])) stack.pop();
 }
 
 function combine_terms_nib(i: number, j: number): 1 | 0 {
-
     let p1 = stack[i];
     let p2 = stack[j];
 
-    if (iszero(p2))
-        return 1;
+    if (iszero(p2)) return 1;
 
     if (iszero(p1)) {
         stack[i] = p2;
@@ -3277,8 +2999,7 @@ function combine_terms_nib(i: number, j: number): 1 | 0 {
         return 1;
     }
 
-    if (isnum(p1) || isnum(p2))
-        return 0; // cannot add number and something else
+    if (isnum(p1) || isnum(p2)) return 0; // cannot add number and something else
 
     let coeff1: unknown = one;
     let coeff2: unknown = one;
@@ -3303,13 +3024,11 @@ function combine_terms_nib(i: number, j: number): 1 | 0 {
         if (isnum(car(p2))) {
             coeff2 = car(p2);
             p2 = cdr(p2);
-            if (cdr(p2) == symbol(NIL))
-                p2 = car(p2);
+            if (cdr(p2) == symbol(NIL)) p2 = car(p2);
         }
     }
 
-    if (!equal(p1, p2))
-        return 0;
+    if (!equal(p1, p2)) return 0;
 
     add_numbers(coeff1, coeff2);
 
@@ -3325,19 +3044,15 @@ function combine_terms_nib(i: number, j: number): 1 | 0 {
             push_symbol(MULTIPLY);
             push(p1); // p1 is a list, not an atom
             cons(); // prepend MULTIPLY
-        }
-        else
-            push(p1);
-    }
-    else {
+        } else push(p1);
+    } else {
         if (denorm) {
             push_symbol(MULTIPLY);
             push(coeff1);
             push(p1); // p1 is a list, not an atom
             cons(); // prepend coeff1
             cons(); // prepend MULTIPLY
-        }
-        else {
+        } else {
             push_symbol(MULTIPLY);
             push(coeff1);
             push(p1);
@@ -3356,28 +3071,22 @@ function sort_terms(h: number): void {
 }
 
 function cmp_terms(p1: unknown, p2: unknown): 0 | 1 | -1 {
-
     // 1st level: imaginary terms on the right
 
     let a = isimaginaryterm(p1);
     let b = isimaginaryterm(p2);
 
-    if (a == 0 && b == 1)
-        return -1; // ok
+    if (a == 0 && b == 1) return -1; // ok
 
-    if (a == 1 && b == 0)
-        return 1; // out of order
+    if (a == 1 && b == 0) return 1; // out of order
 
     // 2nd level: numericals on the right
 
-    if (isnum(p1) && isnum(p2))
-        return 0; // don't care about order, save time, don't compare
+    if (isnum(p1) && isnum(p2)) return 0; // don't care about order, save time, don't compare
 
-    if (isnum(p1))
-        return 1; // out of order
+    if (isnum(p1)) return 1; // out of order
 
-    if (isnum(p2))
-        return -1; // ok
+    if (isnum(p2)) return -1; // ok
 
     // 3rd level: sort by factors
 
@@ -3410,36 +3119,30 @@ function cmp_terms(p1: unknown, p2: unknown): 0 | 1 | -1 {
         }
     }
 
-    if (a == 0 && b == 0)
-        return cmp_factors(p1, p2);
+    if (a == 0 && b == 0) return cmp_factors(p1, p2);
 
     if (a == 0 && b == 1) {
         let c = cmp_factors(p1, car(p2));
-        if (c == 0)
-            c = -1; // lengthf(p1) < lengthf(p2)
+        if (c == 0) c = -1; // lengthf(p1) < lengthf(p2)
         return c;
     }
 
     if (a == 1 && b == 0) {
         let c = cmp_factors(car(p1), p2);
-        if (c == 0)
-            c = 1; // lengthf(p1) > lengthf(p2)
+        if (c == 0) c = 1; // lengthf(p1) > lengthf(p2)
         return c;
     }
 
     while (iscons(p1) && iscons(p2)) {
         const c = cmp_factors(car(p1), car(p2));
-        if (c)
-            return c;
+        if (c) return c;
         p1 = cdr(p1);
         p2 = cdr(p2);
     }
 
-    if (iscons(p1))
-        return 1; // lengthf(p1) > lengthf(p2)
+    if (iscons(p1)) return 1; // lengthf(p1) > lengthf(p2)
 
-    if (iscons(p2))
-        return -1; // lengthf(p1) < lengthf(p2)
+    if (iscons(p2)) return -1; // lengthf(p1) < lengthf(p2)
 
     return 0;
 }
@@ -3466,13 +3169,11 @@ function isradicalterm(p: unknown): boolean {
 }
 
 function isimaginaryterm(p: unknown): 0 | 1 {
-    if (isimaginaryfactor(p))
-        return 1;
+    if (isimaginaryfactor(p)) return 1;
     if (car(p) == symbol(MULTIPLY)) {
         p = cdr(p);
         while (iscons(p)) {
-            if (isimaginaryfactor(car(p)))
-                return 1;
+            if (isimaginaryfactor(car(p))) return 1;
             p = cdr(p);
         }
     }
@@ -3485,7 +3186,6 @@ function isimaginaryfactor(p: unknown): boolean | 0 {
 }
 
 function add_numbers(p1: unknown, p2: unknown): void {
-
     if (isrational(p1) && isrational(p2)) {
         add_rationals(p1, p2);
         return;
@@ -3501,7 +3201,6 @@ function add_numbers(p1: unknown, p2: unknown): void {
 }
 
 function add_rationals(p1: Rat, p2: Rat): void {
-
     if (isinteger(p1) && isinteger(p2)) {
         add_integers(p1, p2);
         return;
@@ -3516,8 +3215,7 @@ function add_rationals(p1: Rat, p2: Rat): void {
     if (p1.sign == p2.sign) {
         a = bignum_add(ab, ba);
         sign = p1.sign;
-    }
-    else {
+    } else {
         switch (bignum_cmp(ab, ba)) {
             case 1:
                 a = bignum_sub(ab, ba);
@@ -3550,8 +3248,7 @@ function add_integers(p1: Rat, p2: Rat): void {
     if (p1.sign == p2.sign) {
         a = bignum_add(p1.a, p2.a);
         sign = p1.sign;
-    }
-    else {
+    } else {
         switch (bignum_cmp(p1.a, p2.a)) {
             case 1:
                 a = bignum_sub(p1.a, p2.a);
@@ -3579,7 +3276,6 @@ function eval_adj(p1: unknown): void {
 }
 
 function adj(): void {
-
     const p1 = pop();
 
     if (!istensor(p1)) {
@@ -3587,8 +3283,7 @@ function adj(): void {
         return;
     }
 
-    if (!issquarematrix(p1))
-        stopf("adj: square matrix expected");
+    if (!issquarematrix(p1)) stopf("adj: square matrix expected");
 
     const n = p1.dim[0];
 
@@ -3616,14 +3311,10 @@ function adj(): void {
     for (let row = 0; row < n; row++) {
         for (let col = 0; col < n; col++) {
             let k = 0;
-            for (let i = 0; i < n; i++)
-                for (let j = 0; j < n; j++)
-                    if (i != row && j != col)
-                        p3.elem[k++] = p1.elem[n * i + j];
+            for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) if (i != row && j != col) p3.elem[k++] = p1.elem[n * i + j];
             push(p3);
             det();
-            if ((row + col) % 2)
-                negate();
+            if ((row + col) % 2) negate();
             p2.elem[n * col + row] = pop(); // transpose
         }
     }
@@ -3656,8 +3347,7 @@ function eval_and_print_result(): void {
     push(p2);
     print_result();
 
-    if (p2 != symbol(NIL))
-        set_symbol(symbol(LAST), p2, symbol(NIL));
+    if (p2 != symbol(NIL)) set_symbol(symbol(LAST), p2, symbol(NIL));
 }
 
 function eval_arccos(p1: unknown) {
@@ -3667,7 +3357,6 @@ function eval_arccos(p1: unknown) {
 }
 
 function arccos(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -3783,7 +3472,6 @@ function eval_arccosh(p1: unknown): void {
 }
 
 function arccosh(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -3845,7 +3533,6 @@ function eval_arcsin(p1: unknown): void {
 }
 
 function arcsin(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -3946,7 +3633,6 @@ function eval_arcsinh(p1: unknown): void {
 }
 
 function arcsinh(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -4015,14 +3701,11 @@ function eval_arctan(p1: unknown): void {
     if (iscons(cddr(p1))) {
         push(caddr(p1));
         evalf();
-    }
-    else
-        push_integer(1);
+    } else push_integer(1);
     arctan();
 }
 
 function arctan(): void {
-
     const X = pop();
     const Y = pop();
 
@@ -4089,7 +3772,6 @@ function arctan(): void {
 }
 
 function arctan_numbers(X: Num, Y: Num): void {
-
     if (iszero(X) && iszero(Y)) {
         push_symbol(ARCTAN);
         push_integer(0);
@@ -4110,18 +3792,14 @@ function arctan_numbers(X: Num, Y: Num): void {
     // X and Y are rational numbers
 
     if (iszero(Y)) {
-        if (isnegativenumber(X))
-            push_symbol(PI);
-        else
-            push_integer(0);
+        if (isnegativenumber(X)) push_symbol(PI);
+        else push_integer(0);
         return;
     }
 
     if (iszero(X)) {
-        if (isnegativenumber(Y))
-            push_rational(-1, 2);
-        else
-            push_rational(1, 2);
+        if (isnegativenumber(Y)) push_rational(-1, 2);
+        else push_rational(1, 2);
         push_symbol(PI);
         multiply();
         return;
@@ -4137,14 +3815,12 @@ function arctan_numbers(X: Num, Y: Num): void {
 
     push(T);
     numerator();
-    if (isnegativenumber(Y))
-        negate();
+    if (isnegativenumber(Y)) negate();
     const Ynum = pop() as Rat;
 
     push(T);
     denominator();
-    if (isnegativenumber(X))
-        negate();
+    if (isnegativenumber(X)) negate();
     const Xnum = pop() as Rat;
 
     // compare numerators and denominators, ignore signs
@@ -4158,8 +3834,7 @@ function arctan_numbers(X: Num, Y: Num): void {
             push(Xnum);
             list(3);
             negate();
-        }
-        else {
+        } else {
             push_symbol(ARCTAN);
             push(Ynum);
             push(Xnum);
@@ -4171,16 +3846,11 @@ function arctan_numbers(X: Num, Y: Num): void {
     // X = Y modulo sign
 
     if (isnegativenumber(Xnum)) {
-        if (isnegativenumber(Ynum))
-            push_rational(-3, 4);
-        else
-            push_rational(3, 4);
-    }
-    else {
-        if (isnegativenumber(Ynum))
-            push_rational(-1, 4);
-        else
-            push_rational(1, 4);
+        if (isnegativenumber(Ynum)) push_rational(-3, 4);
+        else push_rational(3, 4);
+    } else {
+        if (isnegativenumber(Ynum)) push_rational(-1, 4);
+        else push_rational(1, 4);
     }
 
     push_symbol(PI);
@@ -4194,7 +3864,6 @@ function eval_arctanh(p1: unknown): void {
 }
 
 function arctanh(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -4277,7 +3946,6 @@ function eval_arg(p1: unknown): void {
 // use numerator and denominator to handle (a + i b) / (c + i d)
 
 function arg(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -4304,29 +3972,23 @@ function arg(): void {
 
     subtract();
 
-    if (t)
-        floatfunc();
+    if (t) floatfunc();
 }
 
 function arg1(): void {
-
     let p1 = pop();
 
     if (isrational(p1)) {
         if (isnegativenumber(p1)) {
             push_symbol(PI);
             negate();
-        }
-        else
-            push_integer(0);
+        } else push_integer(0);
         return;
     }
 
     if (isdouble(p1)) {
-        if (isnegativenumber(p1))
-            push_double(-Math.PI);
-        else
-            push_double(0.0);
+        if (isnegativenumber(p1)) push_double(-Math.PI);
+        else push_double(0.0);
         return;
     }
 
@@ -4390,7 +4052,6 @@ function eval_ceiling(p1: unknown): void {
 }
 
 function ceilingfunc(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -4413,8 +4074,7 @@ function ceilingfunc(): void {
     if (isrational(p1)) {
         const a = bignum_div(p1.a, p1.b);
         const b = bignum_int(1);
-        if (isnegativenumber(p1))
-            push_bignum(-1, a, b);
+        if (isnegativenumber(p1)) push_bignum(-1, a, b);
         else {
             push_bignum(1, a, b);
             push_integer(1);
@@ -4440,8 +4100,7 @@ function eval_check(p1: unknown): void {
     push(cadr(p1));
     evalp();
     p1 = pop();
-    if (iszero(p1))
-        stopf("check");
+    if (iszero(p1)) stopf("check");
     push_symbol(NIL); // no result is printed
 }
 
@@ -4457,7 +4116,6 @@ function circexp(): void {
 }
 
 function circexp_subst(): void {
-
     let p1 = pop();
 
     if (istensor(p1)) {
@@ -4590,7 +4248,6 @@ function clockfunc(): void {
 }
 
 function eval_cofactor(p1: unknown): void {
-
     push(cadr(p1));
     evalf();
     const p2 = pop() as Tensor;
@@ -4603,11 +4260,9 @@ function eval_cofactor(p1: unknown): void {
     evalf();
     const j = pop_integer();
 
-    if (!issquarematrix(p2))
-        stopf("cofactor: square matrix expected");
+    if (!issquarematrix(p2)) stopf("cofactor: square matrix expected");
 
-    if (i < 1 || i > p2.dim[0] || j < 0 || j > p2.dim[1])
-        stopf("cofactor: index err");
+    if (i < 1 || i > p2.dim[0] || j < 0 || j > p2.dim[1]) stopf("cofactor: index err");
 
     push(p2);
 
@@ -4615,8 +4270,7 @@ function eval_cofactor(p1: unknown): void {
 
     det();
 
-    if ((i + j) % 2)
-        negate();
+    if ((i + j) % 2) negate();
 }
 
 function eval_conj(p1: unknown): void {
@@ -4631,7 +4285,6 @@ function conjfunc(): void {
 }
 
 function conjfunc_subst(): void {
-
     let p1 = pop();
 
     if (istensor(p1)) {
@@ -4716,8 +4369,7 @@ function contract(): void {
     push(p3);
     let m = pop_integer();
 
-    if (n < 1 || n > ndim || m < 1 || m > ndim || n == m)
-        stopf("contract: index error");
+    if (n < 1 || n > ndim || m < 1 || m > ndim || n == m) stopf("contract: index error");
 
     n--; // make zero based
     m--;
@@ -4725,8 +4377,7 @@ function contract(): void {
     const ncol = p1.dim[n];
     const nrow = p1.dim[m];
 
-    if (ncol != nrow)
-        stopf("contract: unequal tensor dimensions");
+    if (ncol != nrow) stopf("contract: unequal tensor dimensions");
 
     // nelem is the number of elements in result
 
@@ -4734,17 +4385,14 @@ function contract(): void {
 
     const T = alloc_tensor();
 
-    for (let i = 0; i < ndim; i++)
-        index[i] = 0;
+    for (let i = 0; i < ndim; i++) index[i] = 0;
 
     for (let i = 0; i < nelem; i++) {
-
         for (let j = 0; j < ncol; j++) {
             index[n] = j;
             index[m] = j;
             let k = index[0];
-            for (let h = 1; h < ndim; h++)
-                k = k * p1.dim[h] + index[h];
+            for (let h = 1; h < ndim; h++) k = k * p1.dim[h] + index[h];
             push(p1.elem[k]);
         }
 
@@ -4755,10 +4403,8 @@ function contract(): void {
         // increment index
 
         for (let j = ndim - 1; j >= 0; j--) {
-            if (j == n || j == m)
-                continue;
-            if (++index[j] < p1.dim[j])
-                break;
+            if (j == n || j == m) continue;
+            if (++index[j] < p1.dim[j]) break;
             index[j] = 0;
         }
     }
@@ -4772,9 +4418,7 @@ function contract(): void {
 
     let k = 0;
 
-    for (let i = 0; i < ndim; i++)
-        if (i != n && i != m)
-            T.dim[k++] = p1.dim[i];
+    for (let i = 0; i < ndim; i++) if (i != n && i != m) T.dim[k++] = p1.dim[i];
 
     push(T);
 }
@@ -4786,7 +4430,6 @@ function eval_cos(p1: unknown): void {
 }
 
 function cosfunc(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -5014,7 +4657,6 @@ function eval_cosh(p1: unknown): void {
 }
 
 function coshfunc(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -5076,7 +4718,6 @@ function coshfunc(): void {
 }
 
 function eval_defint(p1: unknown): void {
-
     push(cadr(p1));
     evalf();
     let F = pop();
@@ -5084,7 +4725,6 @@ function eval_defint(p1: unknown): void {
     p1 = cddr(p1);
 
     while (iscons(p1)) {
-
         push(car(p1));
         evalf();
         const X = pop();
@@ -5130,7 +4770,6 @@ function eval_denominator(p1: unknown): void {
 }
 
 function denominator(): void {
-
     let p1 = pop();
 
     if (isrational(p1)) {
@@ -5141,7 +4780,6 @@ function denominator(): void {
     let p2: unknown = one; // denominator
 
     while (find_divisor(p1)) {
-
         const p0 = pop(); // p0 is a denominator
 
         push(p0); // cancel in orig expr
@@ -5159,7 +4797,6 @@ function denominator(): void {
 }
 
 function eval_derivative(p1: unknown): void {
-
     push(cadr(p1));
     evalf();
     p1 = cddr(p1);
@@ -5175,12 +4812,10 @@ function eval_derivative(p1: unknown): void {
     let Y: unknown;
 
     while (iscons(p1) || flag) {
-
         if (flag) {
             X = Y;
             flag = 0;
-        }
-        else {
+        } else {
             push(car(p1));
             evalf();
             X = pop();
@@ -5200,7 +4835,6 @@ function eval_derivative(p1: unknown): void {
         }
 
         if (iscons(p1)) {
-
             push(car(p1));
             evalf();
             Y = pop();
@@ -5225,27 +4859,20 @@ function eval_derivative(p1: unknown): void {
 }
 
 function derivative(): void {
-
     const X = pop();
     const F = pop();
 
     if (istensor(F)) {
-        if (istensor(X))
-            d_tensor_tensor(F, X);
-        else
-            d_tensor_scalar(F, X);
-    }
-    else {
-        if (istensor(X))
-            d_scalar_tensor(F, X);
-        else
-            d_scalar_scalar(F, X);
+        if (istensor(X)) d_tensor_tensor(F, X);
+        else d_tensor_scalar(F, X);
+    } else {
+        if (istensor(X)) d_scalar_tensor(F, X);
+        else d_scalar_scalar(F, X);
     }
 }
 
 function d_scalar_scalar(F: unknown, X: unknown): void {
-    if (!(issymbol(X) && isusersymbol(X)))
-        stopf("derivative: symbol expected");
+    if (!(issymbol(X) && isusersymbol(X))) stopf("derivative: symbol expected");
 
     // d(x,x)?
 
@@ -5412,20 +5039,20 @@ function dpower(F: unknown, X: unknown): void {
         return;
     }
 
-    push(caddr(F));		// v/u
+    push(caddr(F)); // v/u
     push(cadr(F));
     divide();
 
-    push(cadr(F));		// du/dx
+    push(cadr(F)); // du/dx
     push(X);
     derivative();
 
     multiply();
 
-    push(cadr(F));		// log u
+    push(cadr(F)); // log u
     logfunc();
 
-    push(caddr(F));		// dv/dx
+    push(caddr(F)); // dv/dx
     push(X);
     derivative();
 
@@ -5433,7 +5060,7 @@ function dpower(F: unknown, X: unknown): void {
 
     add();
 
-    push(F);		// u^v
+    push(F); // u^v
 
     multiply();
 }
@@ -5468,7 +5095,6 @@ function dd(p1: unknown, p2: unknown): void {
     const p3 = pop();
 
     if (car(p3) == symbol(DERIVATIVE)) {
-
         // sort dx terms
 
         push_symbol(DERIVATIVE);
@@ -5479,17 +5105,14 @@ function dd(p1: unknown, p2: unknown): void {
             push(caddr(p3));
             list(3);
             push(caddr(p1));
-        }
-        else {
+        } else {
             push(caddr(p1));
             list(3);
             push(caddr(p3));
         }
 
         list(3);
-
-    }
-    else {
+    } else {
         push(p3);
         push(caddr(p1));
         derivative();
@@ -5499,7 +5122,6 @@ function dd(p1: unknown, p2: unknown): void {
 // derivative of a generic function
 
 function dfunction(p1: unknown, p2: unknown): void {
-
     const p3 = cdr(p1); // p3 is the argument list for the function
 
     if (p3 == symbol(NIL) || findf(p3, p2)) {
@@ -5507,9 +5129,7 @@ function dfunction(p1: unknown, p2: unknown): void {
         push(p1);
         push(p2);
         list(3);
-    }
-    else
-        push_integer(0);
+    } else push_integer(0);
 }
 
 function dsin(p1: unknown, p2: unknown): void {
@@ -5673,7 +5293,6 @@ function derf(p1: unknown, p2: unknown): void {
     multiply();
 }
 
-
 function derfc(p1: unknown, p2: unknown): void {
     push(cadr(p1));
     push_integer(2);
@@ -5696,7 +5315,6 @@ function derfc(p1: unknown, p2: unknown): void {
 // gradient of tensor p1 wrt tensor p2
 
 function d_tensor_tensor(p1: Tensor, p2: Tensor): void {
-
     let n = p1.elem.length;
     const m = p2.elem.length;
 
@@ -5717,13 +5335,11 @@ function d_tensor_tensor(p1: Tensor, p2: Tensor): void {
 
     n = p1.dim.length;
 
-    for (let i = 0; i < n; i++)
-        p3.dim[k++] = p1.dim[i];
+    for (let i = 0; i < n; i++) p3.dim[k++] = p1.dim[i];
 
     n = p2.dim.length;
 
-    for (let i = 0; i < n; i++)
-        p3.dim[k++] = p2.dim[i];
+    for (let i = 0; i < n; i++) p3.dim[k++] = p2.dim[i];
 
     push(p3);
 }
@@ -5731,7 +5347,6 @@ function d_tensor_tensor(p1: Tensor, p2: Tensor): void {
 // gradient of scalar p1 wrt tensor p2
 
 function d_scalar_tensor(p1: unknown, p2: Tensor): void {
-
     const p3 = copy_tensor(p2);
 
     const n = p2.elem.length;
@@ -5749,7 +5364,6 @@ function d_scalar_tensor(p1: unknown, p2: Tensor): void {
 // derivative of tensor p1 wrt scalar p2
 
 function d_tensor_scalar(p1: Tensor, p2: unknown): void {
-
     const p3 = copy_tensor(p1);
 
     const n = p1.elem.length;
@@ -5771,7 +5385,6 @@ function eval_det(p1: unknown): void {
 }
 
 function det(): void {
-
     const p1 = pop();
 
     if (!istensor(p1)) {
@@ -5779,8 +5392,7 @@ function det(): void {
         return;
     }
 
-    if (!issquarematrix(p1))
-        stopf("det: square matrix expected");
+    if (!issquarematrix(p1)) stopf("det: square matrix expected");
 
     const n = p1.dim[0];
 
@@ -5836,31 +5448,23 @@ function det(): void {
     const h = stack.length;
 
     for (let m = 0; m < n; m++) {
-        if (iszero(p1.elem[m]))
-            continue;
+        if (iszero(p1.elem[m])) continue;
         let k = 0;
-        for (let i = 1; i < n; i++)
-            for (let j = 0; j < n; j++)
-                if (j != m)
-                    p2.elem[k++] = p1.elem[n * i + j];
+        for (let i = 1; i < n; i++) for (let j = 0; j < n; j++) if (j != m) p2.elem[k++] = p1.elem[n * i + j];
         push(p2);
         det();
         push(p1.elem[m]);
         multiply();
-        if (m % 2)
-            negate();
+        if (m % 2) negate();
     }
 
     const s = stack.length - h;
 
-    if (s == 0)
-        push_integer(0);
-    else
-        add_terms(s);
+    if (s == 0) push_integer(0);
+    else add_terms(s);
 }
 
 function eval_dim(p1: unknown): void {
-
     push(cadr(p1));
     evalf();
     const p2 = pop();
@@ -5872,16 +5476,14 @@ function eval_dim(p1: unknown): void {
 
     let k: number;
 
-    if (lengthf(p1) == 2)
-        k = 1;
+    if (lengthf(p1) == 2) k = 1;
     else {
         push(caddr(p1));
         evalf();
         k = pop_integer();
     }
 
-    if (k < 1 || k > p2.dim.length)
-        stopf("dim 2nd arg: error");
+    if (k < 1 || k > p2.dim.length) stopf("dim 2nd arg: error");
 
     push_integer(p2.dim[k - 1]);
 }
@@ -5902,7 +5504,6 @@ function eval_dot(p1: unknown): void {
 }
 
 function eval_draw(p1: unknown): void {
-
     if (drawing) {
         push_symbol(NIL); // return value
         return;
@@ -5913,8 +5514,7 @@ function eval_draw(p1: unknown): void {
     const F = cadr(p1);
     let T = caddr(p1);
 
-    if (!(issymbol(T) && isusersymbol(T)))
-        T = symbol(X_LOWER);
+    if (!(issymbol(T) && isusersymbol(T))) T = symbol(X_LOWER);
 
     save_symbol(T as Sym);
 
@@ -5947,15 +5547,11 @@ function eval_eigenvec(punk: unknown): void {
     floatfunc();
     let T = pop() as Tensor;
 
-    if (!issquarematrix(T))
-        stopf("eigenvec: square matrix expected");
+    if (!issquarematrix(T)) stopf("eigenvec: square matrix expected");
 
     const n = T.dim[0];
 
-    for (let i = 0; i < n; i++)
-        for (let j = 0; j < n; j++)
-            if (!isdouble(T.elem[n * i + j]))
-                stopf("eigenvec: numerical matrix expected");
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) if (!isdouble(T.elem[n * i + j])) stopf("eigenvec: numerical matrix expected");
 
     for (let i = 0; i < n - 1; i++) {
         for (let j = i + 1; j < n; j++) {
@@ -6002,16 +5598,12 @@ function eval_eigenvec(punk: unknown): void {
 }
 
 function eigenvec(D: number[], Q: number[], n: number): void {
-
-    for (let i = 0; i < 100; i++)
-        if (eigenvec_step(D, Q, n) == 0)
-            return;
+    for (let i = 0; i < 100; i++) if (eigenvec_step(D, Q, n) == 0) return;
 
     stopf("eigenvec: convergence error");
 }
 
 function eigenvec_step(D: number[], Q: number[], n: number) {
-
     let count = 0;
 
     // for each upper triangle "off-diagonal" component do step_nib
@@ -6029,17 +5621,15 @@ function eigenvec_step(D: number[], Q: number[], n: number) {
 }
 
 function eigenvec_step_nib(D: number[], Q: number[], n: number, p: number, q: number): void {
-
     // compute c and s
 
     // from Numerical Recipes (except they have a_qq - a_pp)
 
-    const theta = 0.5 * (D[n * p + p] - D[n * q + q]) / D[n * p + q];
+    const theta = (0.5 * (D[n * p + p] - D[n * q + q])) / D[n * p + q];
 
     let t = 1.0 / (Math.abs(theta) + Math.sqrt(theta * theta + 1.0));
 
-    if (theta < 0.0)
-        t = -t;
+    if (theta < 0.0) t = -t;
 
     const c = 1.0 / Math.sqrt(t * t + 1.0);
 
@@ -6089,7 +5679,6 @@ function eval_erf(p1: unknown): void {
 }
 
 function erffunc(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -6138,7 +5727,6 @@ function eval_erfc(p1: unknown): void {
 }
 
 function erfcfunc(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -6304,7 +5892,6 @@ function eval_exptan(p1: unknown): void {
 }
 
 function exptan(): void {
-
     push_integer(2);
     push(imaginaryunit);
     multiply_factors(3);
@@ -6352,7 +5939,6 @@ function eval_factorial(p1: unknown): void {
 }
 
 function factorial(): void {
-
     const p1 = pop();
 
     if (isrational(p1) && isposint(p1)) {
@@ -6370,8 +5956,7 @@ function factorial(): void {
         push(p1);
         const n = pop_integer();
         let m = 1.0;
-        for (let i = 2; i <= n; i++)
-            m *= i;
+        for (let i = 2; i <= n; i++) m *= i;
         push_double(m);
         return;
     }
@@ -6422,8 +6007,7 @@ function floatfunc_subst(): void {
     if (isrational(p1)) {
         let a = bignum_float(p1.a);
         const b = bignum_float(p1.b);
-        if (isnegativenumber(p1))
-            a = -a;
+        if (isnegativenumber(p1)) a = -a;
         push_double(a / b);
         return;
     }
@@ -6476,7 +6060,6 @@ function eval_floor(p1: unknown) {
 }
 
 function floorfunc(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -6503,9 +6086,7 @@ function floorfunc(): void {
             push_bignum(-1, a, b);
             push_integer(-1);
             add();
-        }
-        else
-            push_bignum(1, a, b);
+        } else push_bignum(1, a, b);
         return;
     }
 
@@ -6523,10 +6104,8 @@ function floorfunc(): void {
 }
 
 function eval_for(p1: unknown): void {
-
     const p2 = cadr(p1);
-    if (!(issymbol(p2) && isusersymbol(p2)))
-        stopf("for: symbol error");
+    if (!(issymbol(p2) && isusersymbol(p2))) stopf("for: symbol error");
 
     push(caddr(p1));
     evalf();
@@ -6540,7 +6119,7 @@ function eval_for(p1: unknown): void {
 
     save_symbol(p2);
 
-    for (; ;) {
+    for (;;) {
         push_integer(j);
         let p3 = pop();
         set_symbol(p2, p3, symbol(NIL));
@@ -6551,12 +6130,9 @@ function eval_for(p1: unknown): void {
             pop();
             p3 = cdr(p3);
         }
-        if (j == k)
-            break;
-        if (j < k)
-            j++;
-        else
-            j--;
+        if (j == k) break;
+        if (j < k) j++;
+        else j--;
     }
 
     restore_symbol();
@@ -6577,7 +6153,6 @@ function eval_hadamard(p1: unknown): void {
 }
 
 function hadamard(): void {
-
     const p2 = pop();
     const p1 = pop();
 
@@ -6588,14 +6163,11 @@ function hadamard(): void {
         return;
     }
 
-    if (p1.dim.length != p2.dim.length)
-        stopf("hadamard");
+    if (p1.dim.length != p2.dim.length) stopf("hadamard");
 
     let n = p1.dim.length;
 
-    for (let i = 0; i < n; i++)
-        if (p1.dim[i] != p2.dim[i])
-            stopf("hadamard");
+    for (let i = 0; i < n; i++) if (p1.dim[i] != p2.dim[i]) stopf("hadamard");
 
     const T = copy_tensor(p1);
 
@@ -6645,7 +6217,6 @@ function imag(): void {
 }
 
 function eval_index(p1: unknown): void {
-
     let T = cadr(p1);
 
     p1 = cddr(p1);
@@ -6685,23 +6256,20 @@ function eval_index(p1: unknown): void {
 }
 
 function indexfunc(T: Tensor, h: number): void {
-
     const m = T.dim.length;
 
     const n = stack.length - h;
 
     const r = m - n; // rank of result
 
-    if (r < 0)
-        stopf("index error");
+    if (r < 0) stopf("index error");
 
     let k = 0;
 
     for (let i = 0; i < n; i++) {
         push(stack[h + i]);
         const t = pop_integer();
-        if (t < 1 || t > T.dim[i])
-            stopf("index error");
+        if (t < 1 || t > T.dim[i]) stopf("index error");
         k = k * T.dim[i] + t - 1;
     }
 
@@ -6714,18 +6282,15 @@ function indexfunc(T: Tensor, h: number): void {
 
     let w = 1;
 
-    for (let i = n; i < m; i++)
-        w *= T.dim[i];
+    for (let i = n; i < m; i++) w *= T.dim[i];
 
     k *= w;
 
     const p1 = alloc_tensor();
 
-    for (let i = 0; i < w; i++)
-        p1.elem[i] = T.elem[k + i];
+    for (let i = 0; i < w; i++) p1.elem[i] = T.elem[k + i];
 
-    for (let i = 0; i < r; i++)
-        p1.dim[i] = T.dim[n + i];
+    for (let i = 0; i < r; i++) p1.dim[i] = T.dim[n + i];
 
     push(p1);
 }
@@ -6753,8 +6318,7 @@ function eval_inner(p1: unknown): void {
         p1 = cdr(p1);
     }
 
-    if (h == stack.length)
-        stopf("inner: no args");
+    if (h == stack.length) stopf("inner: no args");
 
     evalf();
 
@@ -6767,7 +6331,6 @@ function eval_inner(p1: unknown): void {
 }
 
 function inner(): void {
-
     let p2 = pop();
     let p1 = pop();
     let p3: Tensor;
@@ -6800,8 +6363,7 @@ function inner(): void {
 
     if (istensor(p1) && istensor(p2)) {
         // Do nothing
-    }
-    else {
+    } else {
         throw new Error();
     }
 
@@ -6810,8 +6372,7 @@ function inner(): void {
     const ncol = p1.dim[k];
     const mrow = p2.dim[0];
 
-    if (ncol != mrow)
-        stopf("inner: dimension err");
+    if (ncol != mrow) stopf("inner: dimension err");
 
     const ndim = p1.dim.length + p2.dim.length - 2;
 
@@ -6855,18 +6416,15 @@ function inner(): void {
 
     let n = p1.dim.length - 1;
 
-    for (let i = 0; i < n; i++)
-        p3.dim[k++] = p1.dim[i];
+    for (let i = 0; i < n; i++) p3.dim[k++] = p1.dim[i];
 
     n = p2.dim.length;
 
-    for (let i = 1; i < n; i++)
-        p3.dim[k++] = p2.dim[i];
+    for (let i = 1; i < n; i++) p3.dim[k++] = p2.dim[i];
 
     push(p3);
 }
 const integral_tab_exp: string[] = [
-
     // x^n exp(a x + b)
 
     "exp(a x)",
@@ -7103,13 +6661,12 @@ const integral_tab_exp: string[] = [
 
     "x^9 exp(a x^2 + b)",
     "x^8 exp(a x^2 + b) / (2 a) - 2 x^6 exp(a x^2 + b) / a^2 + 6 x^4 exp(a x^2 + b) / a^3 - 12 x^2 exp(a x^2 + b) / a^4 + 12 exp(a x^2 + b) / a^5",
-    "1",
+    "1"
 ];
 
 // log(a x) is transformed to log(a) + log(x)
 
 const integral_tab_log: string[] = [
-
     "log(x)",
     "x log(x) - x",
     "1",
@@ -7152,11 +6709,10 @@ const integral_tab_log: string[] = [
 
     "1 / (x (a + log(x)))",
     "log(a + log(x))",
-    "1",
+    "1"
 ];
 
 const integral_tab_trig: string[] = [
-
     "sin(a x)",
     "-cos(a x) / a",
     "1",
@@ -7411,11 +6967,10 @@ const integral_tab_trig: string[] = [
 
     "cos(a x)^6 / sin(a x)",
     "cos(a x)^5 / (5 a) - 2 cos(a x)^3 / (3 a) + 2 cos(a x) / a - cos(a x) sin(a x)^2 / a + log(tan(1/2 a x)) / a",
-    "1",
+    "1"
 ];
 
 const integral_tab_power: string[] = [
-
     "a", // for forms c^d where both c and d are constant expressions
     "a x",
     "1",
@@ -7424,9 +6979,9 @@ const integral_tab_power: string[] = [
     "log(x)",
     "1",
 
-    "x^a",			// integrand
-    "x^(a + 1) / (a + 1)",	// answer
-    "not(a = -1)",		// condition
+    "x^a", // integrand
+    "x^(a + 1) / (a + 1)", // answer
+    "not(a = -1)", // condition
 
     "a^x",
     "a^x / log(a)",
@@ -7490,28 +7045,28 @@ const integral_tab_power: string[] = [
     // 74
     "1 / (a x^3 + b)",
     "-log(a^(2/3) x^2 - a^(1/3) b^(1/3) x + b^(2/3))/(6 a^(1/3) b^(2/3))" +
-    " + log(a^(1/3) x + b^(1/3))/(3 a^(1/3) b^(2/3))" +
-    " - (i log(1 - (i (1 - (2 a^(1/3) x)/b^(1/3)))/sqrt(3)))/(2 sqrt(3) a^(1/3) b^(2/3))" +
-    " + (i log(1 + (i (1 - (2 a^(1/3) x)/b^(1/3)))/sqrt(3)))/(2 sqrt(3) a^(1/3) b^(2/3))", // from Wolfram Alpha
+        " + log(a^(1/3) x + b^(1/3))/(3 a^(1/3) b^(2/3))" +
+        " - (i log(1 - (i (1 - (2 a^(1/3) x)/b^(1/3)))/sqrt(3)))/(2 sqrt(3) a^(1/3) b^(2/3))" +
+        " + (i log(1 + (i (1 - (2 a^(1/3) x)/b^(1/3)))/sqrt(3)))/(2 sqrt(3) a^(1/3) b^(2/3))", // from Wolfram Alpha
     "1",
     // 77 78
     "1 / (a x^4 + b)",
     "-log(-sqrt(2) a^(1/4) b^(1/4) x + sqrt(a) x^2 + sqrt(b))/(4 sqrt(2) a^(1/4) b^(3/4))" +
-    " + log(sqrt(2) a^(1/4) b^(1/4) x + sqrt(a) x^2 + sqrt(b))/(4 sqrt(2) a^(1/4) b^(3/4))" +
-    " - (i log(1 - i (1 - (sqrt(2) a^(1/4) x)/b^(1/4))))/(4 sqrt(2) a^(1/4) b^(3/4))" +
-    " + (i log(1 + i (1 - (sqrt(2) a^(1/4) x)/b^(1/4))))/(4 sqrt(2) a^(1/4) b^(3/4))" +
-    " + (i log(1 - i ((sqrt(2) a^(1/4) x)/b^(1/4) + 1)))/(4 sqrt(2) a^(1/4) b^(3/4))" +
-    " - (i log(1 + i ((sqrt(2) a^(1/4) x)/b^(1/4) + 1)))/(4 sqrt(2) a^(1/4) b^(3/4))", // from Wolfram Alpha
+        " + log(sqrt(2) a^(1/4) b^(1/4) x + sqrt(a) x^2 + sqrt(b))/(4 sqrt(2) a^(1/4) b^(3/4))" +
+        " - (i log(1 - i (1 - (sqrt(2) a^(1/4) x)/b^(1/4))))/(4 sqrt(2) a^(1/4) b^(3/4))" +
+        " + (i log(1 + i (1 - (sqrt(2) a^(1/4) x)/b^(1/4))))/(4 sqrt(2) a^(1/4) b^(3/4))" +
+        " + (i log(1 - i ((sqrt(2) a^(1/4) x)/b^(1/4) + 1)))/(4 sqrt(2) a^(1/4) b^(3/4))" +
+        " - (i log(1 + i ((sqrt(2) a^(1/4) x)/b^(1/4) + 1)))/(4 sqrt(2) a^(1/4) b^(3/4))", // from Wolfram Alpha
     "1",
     //
     "1 / (a x^5 + b)",
     "(sqrt(5) log(2 a^(2/5) x^2 + (sqrt(5) - 1) a^(1/5) b^(1/5) x + 2 b^(2/5))" +
-    " - log(2 a^(2/5) x^2 + (sqrt(5) - 1) a^(1/5) b^(1/5) x + 2 b^(2/5))" +
-    " - sqrt(5) log(2 a^(2/5) x^2 - (1 + sqrt(5)) a^(1/5) b^(1/5) x + 2 b^(2/5))" +
-    " - log(2 a^(2/5) x^2 - (1 + sqrt(5)) a^(1/5) b^(1/5) x + 2 b^(2/5))" +
-    " + 4 log(a^(1/5) x + b^(1/5))" +
-    " + 2 sqrt(2 (5 + sqrt(5))) arctan((4 a^(1/5) x + (sqrt(5) - 1) b^(1/5))/(sqrt(2 (5 + sqrt(5))) b^(1/5)))" +
-    " + 2 sqrt(10 - 2 sqrt(5)) arctan((4 a^(1/5) x - (1 + sqrt(5)) b^(1/5))/(sqrt(10 - 2 sqrt(5)) b^(1/5))))/(20 a^(1/5) b^(4/5))", // from Wolfram Alpha
+        " - log(2 a^(2/5) x^2 + (sqrt(5) - 1) a^(1/5) b^(1/5) x + 2 b^(2/5))" +
+        " - sqrt(5) log(2 a^(2/5) x^2 - (1 + sqrt(5)) a^(1/5) b^(1/5) x + 2 b^(2/5))" +
+        " - log(2 a^(2/5) x^2 - (1 + sqrt(5)) a^(1/5) b^(1/5) x + 2 b^(2/5))" +
+        " + 4 log(a^(1/5) x + b^(1/5))" +
+        " + 2 sqrt(2 (5 + sqrt(5))) arctan((4 a^(1/5) x + (sqrt(5) - 1) b^(1/5))/(sqrt(2 (5 + sqrt(5))) b^(1/5)))" +
+        " + 2 sqrt(10 - 2 sqrt(5)) arctan((4 a^(1/5) x - (1 + sqrt(5)) b^(1/5))/(sqrt(10 - 2 sqrt(5)) b^(1/5))))/(20 a^(1/5) b^(4/5))", // from Wolfram Alpha
     "1",
     // 164
     "sqrt(a + x^6 + 3 a^(1/3) x^4 + 3 a^(2/3) x^2)",
@@ -7532,11 +7087,10 @@ const integral_tab_power: string[] = [
 
     "cosh(x)^2",
     "sinh(2 x) 1/4 + x 1/2",
-    "1",
+    "1"
 ];
 
 const integral_tab: string[] = [
-
     "a",
     "a x",
     "1",
@@ -7635,9 +7189,9 @@ const integral_tab: string[] = [
     // 75
     "x / (a x^3 + b)",
     "log(a^(2/3) x^2 - a^(1/3) b^(1/3) x + b^(2/3))/(6 a^(2/3) b^(1/3))" +
-    " - log(a^(1/3) x + b^(1/3))/(3 a^(2/3) b^(1/3))" +
-    " - (i log(1 - (i (1 - (2 a^(1/3) x)/b^(1/3)))/sqrt(3)))/(2 sqrt(3) a^(2/3) b^(1/3))" +
-    " + (i log(1 + (i (1 - (2 a^(1/3) x)/b^(1/3)))/sqrt(3)))/(2 sqrt(3) a^(2/3) b^(1/3))", // from Wolfram Alpha
+        " - log(a^(1/3) x + b^(1/3))/(3 a^(2/3) b^(1/3))" +
+        " - (i log(1 - (i (1 - (2 a^(1/3) x)/b^(1/3)))/sqrt(3)))/(2 sqrt(3) a^(2/3) b^(1/3))" +
+        " + (i log(1 + (i (1 - (2 a^(1/3) x)/b^(1/3)))/sqrt(3)))/(2 sqrt(3) a^(2/3) b^(1/3))", // from Wolfram Alpha
     "1",
     // 76
     "x^2 / (a + b x^3)",
@@ -7645,17 +7199,16 @@ const integral_tab: string[] = [
     "1",
     // 79 80
     "x / (a x^4 + b)",
-    "(i log(1 - (i sqrt(a) x^2)/sqrt(b)))/(4 sqrt(a) sqrt(b))" +
-    " - (i log(1 + (i sqrt(a) x^2)/sqrt(b)))/(4 sqrt(a) sqrt(b))", // from Wolfram Alpha
+    "(i log(1 - (i sqrt(a) x^2)/sqrt(b)))/(4 sqrt(a) sqrt(b))" + " - (i log(1 + (i sqrt(a) x^2)/sqrt(b)))/(4 sqrt(a) sqrt(b))", // from Wolfram Alpha
     "1",
     // 81 82
     "x^2 / (a x^4 + b)",
     "log(-sqrt(2) a^(1/4) b^(1/4) x + sqrt(a) x^2 + sqrt(b))/(4 sqrt(2) a^(3/4) b^(1/4))" +
-    " - log(sqrt(2) a^(1/4) b^(1/4) x + sqrt(a) x^2 + sqrt(b))/(4 sqrt(2) a^(3/4) b^(1/4))" +
-    " - (i log(1 - i (1 - (sqrt(2) a^(1/4) x)/b^(1/4))))/(4 sqrt(2) a^(3/4) b^(1/4))" +
-    " + (i log(1 + i (1 - (sqrt(2) a^(1/4) x)/b^(1/4))))/(4 sqrt(2) a^(3/4) b^(1/4))" +
-    " + (i log(1 - i ((sqrt(2) a^(1/4) x)/b^(1/4) + 1)))/(4 sqrt(2) a^(3/4) b^(1/4))" +
-    " - (i log(1 + i ((sqrt(2) a^(1/4) x)/b^(1/4) + 1)))/(4 sqrt(2) a^(3/4) b^(1/4))", // from Wolfram Alpha
+        " - log(sqrt(2) a^(1/4) b^(1/4) x + sqrt(a) x^2 + sqrt(b))/(4 sqrt(2) a^(3/4) b^(1/4))" +
+        " - (i log(1 - i (1 - (sqrt(2) a^(1/4) x)/b^(1/4))))/(4 sqrt(2) a^(3/4) b^(1/4))" +
+        " + (i log(1 + i (1 - (sqrt(2) a^(1/4) x)/b^(1/4))))/(4 sqrt(2) a^(3/4) b^(1/4))" +
+        " + (i log(1 - i ((sqrt(2) a^(1/4) x)/b^(1/4) + 1)))/(4 sqrt(2) a^(3/4) b^(1/4))" +
+        " - (i log(1 + i ((sqrt(2) a^(1/4) x)/b^(1/4) + 1)))/(4 sqrt(2) a^(3/4) b^(1/4))", // from Wolfram Alpha
     "1",
     //
     "x^3 / (a + b x^4)",
@@ -7796,11 +7349,10 @@ const integral_tab: string[] = [
 
     "x^4 (1 - x^2)^(3/2)",
     "(-x sqrt(1 - x^2) (16 x^6 - 24 x^4 + 2 x^2 + 3) + 3 arcsin(x)) 1/128",
-    "1",
+    "1"
 ];
 
 function eval_integral(p1: unknown): void {
-
     push(cadr(p1));
     evalf();
 
@@ -7817,12 +7369,10 @@ function eval_integral(p1: unknown): void {
     let Y: unknown;
 
     while (iscons(p1) || flag) {
-
         if (flag) {
             X = Y;
             flag = 0;
-        }
-        else {
+        } else {
             push(car(p1));
             evalf();
             X = pop();
@@ -7841,11 +7391,9 @@ function eval_integral(p1: unknown): void {
             continue;
         }
 
-        if (!(issymbol(X) && isusersymbol(X)))
-            stopf("integral");
+        if (!(issymbol(X) && isusersymbol(X))) stopf("integral");
 
         if (iscons(p1)) {
-
             push(car(p1));
             evalf();
             Y = pop();
@@ -7870,12 +7418,10 @@ function eval_integral(p1: unknown): void {
 }
 
 function integral(): void {
-
     const X = pop();
     let F = pop();
 
-    if (!(issymbol(X) && isusersymbol(X)))
-        stopf("integral: symbol expected");
+    if (!(issymbol(X) && isusersymbol(X))) stopf("integral: symbol expected");
 
     if (car(F) == symbol(ADD)) {
         const h = stack.length;
@@ -7893,10 +7439,10 @@ function integral(): void {
     if (car(F) == symbol(MULTIPLY)) {
         push(F);
         push(X);
-        partition_term();	// push const part then push var part
-        F = pop();		// pop var part
+        partition_term(); // push const part then push var part
+        F = pop(); // pop var part
         integral_nib(F, X);
-        multiply();		// multiply by const part
+        multiply(); // multiply by const part
         return;
     }
 
@@ -7904,7 +7450,6 @@ function integral(): void {
 }
 
 function integral_nib(F: unknown, X: unknown): void {
-
     save_symbol(symbol(SA));
     save_symbol(symbol(SB));
     save_symbol(symbol(SX));
@@ -7929,32 +7474,24 @@ function integral_nib(F: unknown, X: unknown): void {
 }
 
 function integral_lookup(h: number, F: unknown): void {
-
     const t = integral_classify(F);
 
-    if ((t & 1) && integral_search(h, F, integral_tab_exp, integral_tab_exp.length))
-        return;
+    if (t & 1 && integral_search(h, F, integral_tab_exp, integral_tab_exp.length)) return;
 
-    if ((t & 2) && integral_search(h, F, integral_tab_log, integral_tab_log.length))
-        return;
+    if (t & 2 && integral_search(h, F, integral_tab_log, integral_tab_log.length)) return;
 
-    if ((t & 4) && integral_search(h, F, integral_tab_trig, integral_tab_trig.length))
-        return;
+    if (t & 4 && integral_search(h, F, integral_tab_trig, integral_tab_trig.length)) return;
 
     if (car(F) == symbol(POWER)) {
-        if (integral_search(h, F, integral_tab_power, integral_tab_power.length))
-            return;
-    }
-    else {
-        if (integral_search(h, F, integral_tab, integral_tab.length))
-            return;
+        if (integral_search(h, F, integral_tab_power, integral_tab_power.length)) return;
+    } else {
+        if (integral_search(h, F, integral_tab, integral_tab.length)) return;
     }
 
     stopf("integral: no solution found");
 }
 
 function integral_classify(p: unknown): number {
-
     if (iscons(p)) {
         let t = 0;
         while (iscons(p)) {
@@ -7964,14 +7501,11 @@ function integral_classify(p: unknown): number {
         return t;
     }
 
-    if (p == symbol(EXP1))
-        return 1;
+    if (p == symbol(EXP1)) return 1;
 
-    if (p == symbol(LOG))
-        return 2;
+    if (p == symbol(LOG)) return 2;
 
-    if (p == symbol(SIN) || p == symbol(COS) || p == symbol(TAN))
-        return 4;
+    if (p == symbol(SIN) || p == symbol(COS) || p == symbol(TAN)) return 4;
 
     return 0;
 }
@@ -7982,19 +7516,16 @@ function integral_search(h: number, F: unknown, table: string[], n: number): 0 |
     let I: unknown;
 
     for (i = 0; i < n; i += 3) {
-
         scan1(table[i + 0]); // integrand
         I = pop();
 
         scan1(table[i + 2]); // condition
         C = pop();
 
-        if (integral_search_nib(h, F, I, C))
-            break;
+        if (integral_search_nib(h, F, I, C)) break;
     }
 
-    if (i >= n)
-        return 0;
+    if (i >= n) return 0;
 
     stack.splice(h); // pop all
 
@@ -8005,32 +7536,27 @@ function integral_search(h: number, F: unknown, table: string[], n: number): 0 |
 }
 
 function integral_search_nib(h: number, F: unknown, I: unknown, C: unknown): 0 | 1 {
-
     for (let i = h; i < stack.length; i++) {
-
         set_symbol(symbol(SA), stack[i], symbol(NIL));
 
         for (let j = h; j < stack.length; j++) {
-
             set_symbol(symbol(SB), stack[j], symbol(NIL));
 
-            push(C);			// condition ok?
+            push(C); // condition ok?
             evalf();
             let p1 = pop();
-            if (iszero(p1))
-                continue;		// no, go to next j
+            if (iszero(p1)) continue; // no, go to next j
 
-            push(F);			// F = I?
+            push(F); // F = I?
             push(I);
             evalf();
             subtract();
             p1 = pop();
-            if (iszero(p1))
-                return 1;		// yes
+            if (iszero(p1)) return 1; // yes
         }
     }
 
-    return 0;					// no
+    return 0; // no
 }
 
 function eval_inv(p1: unknown): void {
@@ -8040,7 +7566,6 @@ function eval_inv(p1: unknown): void {
 }
 
 function inv(): void {
-
     const p1 = pop();
 
     if (!istensor(p1)) {
@@ -8049,8 +7574,7 @@ function inv(): void {
         return;
     }
 
-    if (!issquarematrix(p1))
-        stopf("inv: square matrix expected");
+    if (!issquarematrix(p1)) stopf("inv: square matrix expected");
 
     push(p1);
     adj();
@@ -8074,7 +7598,6 @@ function eval_kronecker(p1: unknown): void {
 }
 
 function kronecker(): void {
-
     const p2 = pop();
     const p1 = pop();
 
@@ -8085,8 +7608,7 @@ function kronecker(): void {
         return;
     }
 
-    if (p1.dim.length > 2 || p2.dim.length > 2)
-        stopf("kronecker");
+    if (p1.dim.length > 2 || p2.dim.length > 2) stopf("kronecker");
 
     const m = p1.dim[0];
     const n = p1.dim.length == 1 ? 1 : p1.dim[1];
@@ -8114,8 +7636,7 @@ function kronecker(): void {
 
     p3.dim[0] = m * p;
 
-    if (n * q > 1)
-        p3.dim[1] = n * q;
+    if (n * q > 1) p3.dim[1] = n * q;
 
     push(p3);
 }
@@ -8127,7 +7648,6 @@ function eval_log(p1: unknown): void {
 }
 
 function logfunc(): void {
-
     let p1 = pop();
 
     if (istensor(p1)) {
@@ -8213,8 +7733,7 @@ function logfunc(): void {
                 push(cadr(p2)); // base
                 list(2);
                 multiply();
-            }
-            else {
+            } else {
                 push_symbol(LOG);
                 push(p2);
                 list(2);
@@ -8262,7 +7781,7 @@ function eval_mag(p1: unknown): void {
 
 /**
  * Returns a copy of the source Tensor with foo applied to each element.
- * @param source 
+ * @param source
  * @param foo A function that is expected to pop a single value from the stack and push the result.
  */
 function elementwise(source: Tensor, foo: () => void): Tensor {
@@ -8277,7 +7796,6 @@ function elementwise(source: Tensor, foo: () => void): Tensor {
 }
 
 function mag(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -8299,7 +7817,6 @@ function mag(): void {
 }
 
 function mag_nib(): void {
-
     let p1 = pop();
 
     if (isnum(p1)) {
@@ -8368,7 +7885,6 @@ function mag_nib(): void {
 }
 
 function eval_minor(p1: unknown): void {
-
     push(cadr(p1));
     evalf();
     const p2 = pop();
@@ -8381,11 +7897,9 @@ function eval_minor(p1: unknown): void {
     evalf();
     const j = pop_integer();
 
-    if (!istensor(p2) || p2.dim.length != 2 || p2.dim[0] != p2.dim[1])
-        stopf("minor");
+    if (!istensor(p2) || p2.dim.length != 2 || p2.dim[0] != p2.dim[1]) stopf("minor");
 
-    if (i < 1 || i > p2.dim[0] || j < 0 || j > p2.dim[1])
-        stopf("minor");
+    if (i < 1 || i > p2.dim[0] || j < 0 || j > p2.dim[1]) stopf("minor");
 
     push(p2);
 
@@ -8395,7 +7909,6 @@ function eval_minor(p1: unknown): void {
 }
 
 function eval_minormatrix(p1: unknown): void {
-
     push(cadr(p1));
     evalf();
     const p2 = pop();
@@ -8408,11 +7921,9 @@ function eval_minormatrix(p1: unknown): void {
     evalf();
     const j = pop_integer();
 
-    if (!istensor(p2) || p2.dim.length != 2)
-        stopf("minormatrix: matrix expected");
+    if (!istensor(p2) || p2.dim.length != 2) stopf("minormatrix: matrix expected");
 
-    if (i < 1 || i > p2.dim[0] || j < 0 || j > p2.dim[1])
-        stopf("minormatrix: index err");
+    if (i < 1 || i > p2.dim[0] || j < 0 || j > p2.dim[1]) stopf("minormatrix: index err");
 
     push(p2);
 
@@ -8420,7 +7931,6 @@ function eval_minormatrix(p1: unknown): void {
 }
 
 function minormatrix(row: number, col: number): void {
-
     const p1 = pop() as unknown as Tensor;
 
     const n = p1.dim[0];
@@ -8428,16 +7938,11 @@ function minormatrix(row: number, col: number): void {
 
     if (n == 2 && m == 2) {
         if (row == 1) {
-            if (col == 1)
-                push(p1.elem[3]);
-            else
-                push(p1.elem[2]);
-        }
-        else {
-            if (col == 1)
-                push(p1.elem[1]);
-            else
-                push(p1.elem[0]);
+            if (col == 1) push(p1.elem[3]);
+            else push(p1.elem[2]);
+        } else {
+            if (col == 1) push(p1.elem[1]);
+            else push(p1.elem[0]);
         }
         return;
     }
@@ -8446,14 +7951,11 @@ function minormatrix(row: number, col: number): void {
 
     if (n == 2) {
         p2 = alloc_vector(m - 1);
-    }
-    else if (m == 2) {
+    } else if (m == 2) {
         p2 = alloc_vector(n - 1);
-    }
-    else if (n > 2 && m > 2) {
+    } else if (n > 2 && m > 2) {
         p2 = alloc_matrix(n - 1, m - 1);
-    }
-    else {
+    } else {
         stopf("minormatrix is undefined.");
     }
 
@@ -8463,14 +7965,10 @@ function minormatrix(row: number, col: number): void {
     let k = 0;
 
     for (let i = 0; i < n; i++) {
-
-        if (i == row)
-            continue;
+        if (i == row) continue;
 
         for (let j = 0; j < m; j++) {
-
-            if (j == col)
-                continue;
+            if (j == col) continue;
 
             p2.elem[k++] = p1.elem[m * i + j];
         }
@@ -8488,7 +7986,6 @@ function eval_mod(p1: unknown): void {
 }
 
 function modfunc(): void {
-
     const p2 = pop();
     const p1 = pop();
 
@@ -8540,8 +8037,7 @@ function mod_rationals(p1: Rat, p2: Rat): void {
     floorfunc();
     push(p2);
     multiply();
-    if (p1.sign == p2.sign)
-        negate();
+    if (p1.sign == p2.sign) negate();
     add();
 }
 
@@ -8599,9 +8095,7 @@ function eval_nonstop_nib(): void {
 
     try {
         evalf();
-    }
-    catch (errmsg) {
-
+    } catch (errmsg) {
         stack.splice(save_tos);
         frame.splice(save_tof);
 
@@ -8616,10 +8110,8 @@ function eval_not(p1: unknown): void {
     push(cadr(p1));
     evalp();
     p1 = pop();
-    if (iszero(p1))
-        push_integer(1);
-    else
-        push_integer(0);
+    if (iszero(p1)) push_integer(1);
+    else push_integer(0);
 }
 const DELTA = 1e-6;
 const EPSILON = 1e-9;
@@ -8633,9 +8125,7 @@ function eval_nroots(p1: unknown): void {
     if (iscons(p1)) {
         push(car(p1));
         evalf();
-    }
-    else
-        push_symbol(X_LOWER);
+    } else push_symbol(X_LOWER);
 
     nroots();
 }
@@ -8658,7 +8148,6 @@ function nroots(): void {
     // convert coeffs to floating point
 
     for (let i = 0; i < n; i++) {
-
         push(stack[h + i]);
         real();
         floatfunc();
@@ -8669,8 +8158,7 @@ function nroots(): void {
         floatfunc();
         const IM = pop();
 
-        if (!isdouble(RE) || !isdouble(IM))
-            stopf("nroots: coeffs");
+        if (!isdouble(RE) || !isdouble(IM)) stopf("nroots: coeffs");
 
         cr[i] = RE.d;
         ci[i] = IM.d;
@@ -8698,17 +8186,14 @@ function nroots(): void {
     // find roots
 
     while (n > 1) {
-
         nfindroot(cr, ci, n, tr, ti);
 
         let ar = tr[0];
         let ai = ti[0];
 
-        if (Math.abs(ar) < DELTA * Math.abs(ai))
-            ar = 0;
+        if (Math.abs(ar) < DELTA * Math.abs(ai)) ar = 0;
 
-        if (Math.abs(ai) < DELTA * Math.abs(ar))
-            ai = 0;
+        if (Math.abs(ai) < DELTA * Math.abs(ar)) ai = 0;
 
         // push root
 
@@ -8734,15 +8219,13 @@ function nroots(): void {
         return;
     }
 
-    if (n == 1)
-        return; // one root
+    if (n == 1) return; // one root
 
     sort(n);
 
     const A = alloc_vector(n);
 
-    for (let i = 0; i < n; i++)
-        A.elem[i] = stack[h + i];
+    for (let i = 0; i < n; i++) A.elem[i] = stack[h + i];
 
     stack.splice(h); // pop all
 
@@ -8768,7 +8251,6 @@ function nfindroot(cr: number[], ci: number[], n: number, par: number[], pai: nu
     // secant method
 
     for (let i = 0; i < 100; i++) {
-
         let ar = urandom();
         let ai = urandom();
 
@@ -8787,7 +8269,6 @@ function nfindroot(cr: number[], ci: number[], n: number, par: number[], pai: nu
         ai = urandom();
 
         for (let j = 0; j < 1000; j++) {
-
             fata(cr, ci, n, ar, ai, tr, ti);
 
             far = tr[0];
@@ -8800,7 +8281,6 @@ function nfindroot(cr: number[], ci: number[], n: number, par: number[], pai: nu
             }
 
             if (zabs(far, fai) < zabs(fbr, fbi)) {
-
                 let xr = ar;
                 let xi = ai;
 
@@ -8834,8 +8314,7 @@ function nfindroot(cr: number[], ci: number[], n: number, par: number[], pai: nu
 
             const d = dfr * dfr + dfi * dfi;
 
-            if (d == 0.0)
-                break;
+            if (d == 0.0) break;
 
             const yr = (dxr * dfr + dxi * dfi) / d;
             const yi = (dxi * dfr - dxr * dfi) / d;
@@ -8853,12 +8332,10 @@ function nfindroot(cr: number[], ci: number[], n: number, par: number[], pai: nu
 // compute f at a
 
 function fata(cr: number[], ci: number[], n: number, ar: number, ai: number, far: number[], fai: number[]): void {
-
     let yr = cr[n - 1];
     let yi = ci[n - 1];
 
     for (let k = n - 2; k >= 0; k--) {
-
         // x = a * y
 
         const xr = ar * yr - ai * yi;
@@ -8877,7 +8354,6 @@ function fata(cr: number[], ci: number[], n: number, ar: number, ai: number, far
 // divide by x - a
 
 function nreduce(cr: number[], ci: number[], n: number, ar: number, ai: number): void {
-
     // divide
 
     for (let k = n - 1; k > 0; k--) {
@@ -8885,8 +8361,7 @@ function nreduce(cr: number[], ci: number[], n: number, ar: number, ai: number):
         ci[k - 1] += ci[k] * ar + cr[k] * ai;
     }
 
-    if (zabs(cr[0], ci[0]) > DELTA)
-        stopf("nroots: residual error"); // not a root
+    if (zabs(cr[0], ci[0]) > DELTA) stopf("nroots: residual error"); // not a root
 
     // shift
 
@@ -8909,10 +8384,8 @@ function eval_number(p1: unknown): void {
     evalf();
     p1 = pop();
 
-    if (isnum(p1))
-        push_integer(1);
-    else
-        push_integer(0);
+    if (isnum(p1)) push_integer(1);
+    else push_integer(0);
 }
 
 function eval_numerator(p1: unknown): void {
@@ -8922,7 +8395,6 @@ function eval_numerator(p1: unknown): void {
 }
 
 function numerator(): void {
-
     let p1 = pop();
 
     if (isrational(p1)) {
@@ -8967,7 +8439,6 @@ function eval_outer(p1: unknown): void {
 }
 
 function outer(): void {
-
     const p2 = pop();
     const p1 = pop();
 
@@ -8999,13 +8470,11 @@ function outer(): void {
 
     let n = p1.dim.length;
 
-    for (let i = 0; i < n; i++)
-        p3.dim[k++] = p1.dim[i];
+    for (let i = 0; i < n; i++) p3.dim[k++] = p1.dim[i];
 
     n = p2.dim.length;
 
-    for (let i = 0; i < n; i++)
-        p3.dim[k++] = p2.dim[i];
+    for (let i = 0; i < n; i++) p3.dim[k++] = p2.dim[i];
 
     push(p3);
 }
@@ -9017,7 +8486,6 @@ function eval_polar(p1: unknown): void {
 }
 
 function polar(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -9035,8 +8503,7 @@ function polar(): void {
         push_double(p2.d / Math.PI);
         push_symbol(PI);
         multiply_factors(3);
-    }
-    else {
+    } else {
         push(p2);
         multiply_factors(2);
     }
@@ -9045,7 +8512,6 @@ function polar(): void {
 }
 
 function eval_power(p1: unknown) {
-
     expanding--;
 
     // base
@@ -9067,9 +8533,7 @@ function eval_power(p1: unknown) {
         expanding = 0;
         evalf();
         expanding = t;
-    }
-    else
-        evalf();
+    } else evalf();
     swap();
 
     power();
@@ -9078,7 +8542,6 @@ function eval_power(p1: unknown) {
 }
 
 function power(): void {
-
     const EXPO = pop();
     let BASE = pop();
 
@@ -9180,8 +8643,7 @@ function power(): void {
                 push(EXPO);
                 multiply();
                 list(3);
-            }
-            else {
+            } else {
                 push_symbol(POWER);
                 push(p1);
                 push(EXPO);
@@ -9287,12 +8749,10 @@ function eval_print(p1: unknown): void {
 }
 
 function print_result(): void {
-
     let p2 = pop(); // result
     let p1 = pop(); // input
 
-    if (p2 == symbol(NIL))
-        return;
+    if (p2 == symbol(NIL)) return;
 
     if (annotate_result(p1, p2)) {
         push_symbol(SETQ);
@@ -9307,31 +8767,24 @@ function print_result(): void {
     if (p1 == symbol(TTY) || iszero(p1)) {
         push(p2);
         display();
-    }
-    else
-        print_infixform(p2);
+    } else print_infixform(p2);
 }
 
 // returns 1 if result should be annotated
 
 function annotate_result(p1: unknown, p2: unknown): 0 | 1 {
-    if (!(issymbol(p1) && isusersymbol(p1)))
-        return 0;
+    if (!(issymbol(p1) && isusersymbol(p1))) return 0;
 
-    if (p1 == p2)
-        return 0; // A = A
+    if (p1 == p2) return 0; // A = A
 
-    if (p1 == symbol(I_LOWER) && isimaginaryunit(p2))
-        return 0;
+    if (p1 == symbol(I_LOWER) && isimaginaryunit(p2)) return 0;
 
-    if (p1 == symbol(J_LOWER) && isimaginaryunit(p2))
-        return 0;
+    if (p1 == symbol(J_LOWER) && isimaginaryunit(p2)) return 0;
 
     return 1;
 }
 
 function eval_product(p1: unknown): void {
-
     if (lengthf(p1) == 2) {
         push(cadr(p1));
         evalf();
@@ -9341,15 +8794,13 @@ function eval_product(p1: unknown): void {
             return;
         }
         const n = p1.elem.length;
-        for (let i = 0; i < n; i++)
-            push(p1.elem[i]);
+        for (let i = 0; i < n; i++) push(p1.elem[i]);
         multiply_factors(n);
         return;
     }
 
     const p2 = cadr(p1);
-    if (!(issymbol(p2) && isusersymbol(p2)))
-        stopf("product: symbol error");
+    if (!(issymbol(p2) && isusersymbol(p2))) stopf("product: symbol error");
 
     push(caddr(p1));
     evalf();
@@ -9365,18 +8816,15 @@ function eval_product(p1: unknown): void {
 
     const h = stack.length;
 
-    for (; ;) {
+    for (;;) {
         push_integer(j);
         const p3 = pop();
         set_symbol(p2, p3, symbol(NIL));
         push(p1);
         evalf();
-        if (j == k)
-            break;
-        if (j < k)
-            j++;
-        else
-            j--;
+        if (j == k) break;
+        if (j < k) j++;
+        else j--;
     }
 
     multiply_factors(stack.length - h);
@@ -9392,10 +8840,8 @@ function eval_rank(p1: unknown): void {
     push(cadr(p1));
     evalf();
     p1 = pop();
-    if (istensor(p1))
-        push_integer(p1.dim.length);
-    else
-        push_integer(0);
+    if (istensor(p1)) push_integer(p1.dim.length);
+    else push_integer(0);
 }
 
 function eval_rationalize(p1: unknown): void {
@@ -9405,7 +8851,6 @@ function eval_rationalize(p1: unknown): void {
 }
 
 function rationalize(): void {
-
     let p1 = pop();
 
     if (istensor(p1)) {
@@ -9440,7 +8885,6 @@ function eval_real(p1: unknown): void {
 }
 
 function real(): void {
-
     let p1 = pop();
 
     if (istensor(p1)) {
@@ -9466,7 +8910,6 @@ function eval_rect(p1: unknown): void {
 }
 
 function rect(): void {
-
     let p1 = pop();
 
     if (istensor(p1)) {
@@ -9554,15 +8997,12 @@ function eval_roots(p1: unknown): void {
     if (iscons(p1)) {
         push(car(p1));
         evalf();
-    }
-    else
-        push_symbol(X_LOWER);
+    } else push_symbol(X_LOWER);
 
     roots();
 }
 
 function roots(): void {
-
     const X = pop();
     const P = pop();
 
@@ -9576,16 +9016,12 @@ function roots(): void {
 
     // check coeffs
 
-    for (let i = 0; i < n; i++)
-        if (!isrational(stack[h + i]))
-            stopf("roots: coeffs");
+    for (let i = 0; i < n; i++) if (!isrational(stack[h + i])) stopf("roots: coeffs");
 
     // find roots
 
     while (n > 1) {
-
-        if (findroot(h, n) == 0)
-            break; // no root found
+        if (findroot(h, n) == 0) break; // no root found
 
         // A is the root
 
@@ -9612,8 +9048,7 @@ function roots(): void {
 
     for (let i = 0; i < n - 1; i++)
         if (equal(stack[k + i], stack[k + i + 1])) {
-            for (let j = i + 1; j < n - 1; j++)
-                stack[k + j] = stack[k + j + 1];
+            for (let j = i + 1; j < n - 1; j++) stack[k + j] = stack[k + j + 1];
             i--;
             n--;
         }
@@ -9627,8 +9062,7 @@ function roots(): void {
 
     const A = alloc_vector(n);
 
-    for (let i = 0; i < n; i++)
-        A.elem[i] = stack[k + i];
+    for (let i = 0; i < n; i++) A.elem[i] = stack[k + i];
 
     stack.length = h; // pop all
 
@@ -9636,7 +9070,6 @@ function roots(): void {
 }
 
 function findroot(h: number, n: number): 1 | 0 {
-
     // check constant term
 
     if (iszero(stack[h])) {
@@ -9648,8 +9081,7 @@ function findroot(h: number, n: number): 1 | 0 {
 
     for (let i = 0; i < n; i++) {
         let C = stack[h + i];
-        if (isrational(C) && isinteger(C))
-            continue;
+        if (isrational(C) && isinteger(C)) continue;
         push(C);
         denominator();
         C = pop();
@@ -9677,7 +9109,6 @@ function findroot(h: number, n: number): 1 | 0 {
 
     for (let i = p; i < q; i++) {
         for (let j = q; j < r; j++) {
-
             // try positive A
 
             push(stack[i]);
@@ -9721,7 +9152,6 @@ function findroot(h: number, n: number): 1 | 0 {
 // evaluate p(x) at x = A using horner's rule
 
 function horner(h: number, n: number, A: unknown): void {
-
     push(stack[h + n - 1]);
 
     for (let i = n - 2; i >= 0; i--) {
@@ -9735,7 +9165,6 @@ function horner(h: number, n: number, A: unknown): void {
 // push all divisors of n
 
 function divisors(n: number): void {
-
     const h = stack.length;
 
     factor_int(n);
@@ -9752,8 +9181,7 @@ function divisors(n: number): void {
 
     n = stack.length - k;
 
-    for (let i = 0; i < n; i++)
-        stack[h + i] = stack[k + i];
+    for (let i = 0; i < n; i++) stack[h + i] = stack[k + i];
 
     stack.length = h + n; // pop all
 }
@@ -9773,9 +9201,7 @@ function divisors(n: number): void {
 //	1, 2, 3, 4, 6, 12
 
 function divisors_nib(h: number, k: number): void {
-
-    if (h == k)
-        return;
+    if (h == k) return;
 
     const ACCUM = pop();
 
@@ -9798,7 +9224,6 @@ function divisors_nib(h: number, k: number): void {
 // divide by X - A
 
 function reduce(h: number, n: number, A: unknown): void {
-
     for (let i = n - 1; i > 0; i--) {
         push(A);
         push(stack[h + i]);
@@ -9808,40 +9233,33 @@ function reduce(h: number, n: number, A: unknown): void {
         stack[h + i - 1] = pop();
     }
 
-    if (!iszero(stack[h]))
-        stopf("roots: residual error"); // not a root
+    if (!iszero(stack[h])) stopf("roots: residual error"); // not a root
 
     // move
 
-    for (let i = 0; i < n - 1; i++)
-        stack[h + i] = stack[h + i + 1];
+    for (let i = 0; i < n - 1; i++) stack[h + i] = stack[h + i + 1];
 }
 
 function eval_rotate(p1: unknown): void {
-
     push(cadr(p1));
     evalf();
     const PSI = pop();
 
-    if (!istensor(PSI) || PSI.dim.length > 1 || PSI.elem.length > 32768 || (PSI.elem.length & (PSI.elem.length - 1)) != 0)
-        stopf("rotate error 1 first argument is not a vector or dimension error");
+    if (!istensor(PSI) || PSI.dim.length > 1 || PSI.elem.length > 32768 || (PSI.elem.length & (PSI.elem.length - 1)) != 0) stopf("rotate error 1 first argument is not a vector or dimension error");
 
     let c = 0;
 
     p1 = cddr(p1);
 
     while (iscons(p1)) {
-
-        if (!iscons(cdr(p1)))
-            stopf("rotate error 2 unexpected end of argument list");
+        if (!iscons(cdr(p1))) stopf("rotate error 2 unexpected end of argument list");
 
         const OPCODE = car(p1);
         push(cadr(p1));
         evalf();
         let n = pop_integer();
 
-        if (n > 14 || (1 << n) >= PSI.elem.length)
-            stopf("rotate error 3 qubit number format or range");
+        if (n > 14 || 1 << n >= PSI.elem.length) stopf("rotate error 3 qubit number format or range");
 
         p1 = cddr(p1);
 
@@ -9857,8 +9275,7 @@ function eval_rotate(p1: unknown): void {
         }
 
         if (OPCODE == symbol("P")) {
-            if (!iscons(p1))
-                stopf("rotate error 2 unexpected end of argument list");
+            if (!iscons(p1)) stopf("rotate error 2 unexpected end of argument list");
             push(car(p1));
             p1 = cdr(p1);
             evalf();
@@ -9885,14 +9302,12 @@ function eval_rotate(p1: unknown): void {
 
         if (OPCODE == symbol("W")) {
             const m = n;
-            if (!iscons(p1))
-                stopf("rotate error 2 unexpected end of argument list");
+            if (!iscons(p1)) stopf("rotate error 2 unexpected end of argument list");
             push(car(p1));
             p1 = cdr(p1);
             evalf();
             n = pop_integer();
-            if (n > 14 || (1 << n) >= PSI.elem.length)
-                stopf("rotate error 3 qubit number format or range");
+            if (n > 14 || 1 << n >= PSI.elem.length) stopf("rotate error 3 qubit number format or range");
             rotate_w(PSI, c, m, n);
             c = 0;
             continue;
@@ -9927,23 +9342,22 @@ function eval_rotate(p1: unknown): void {
 function rotate_h(PSI: Tensor, c: number, n: number): void {
     n = 1 << n;
     for (let i = 0; i < PSI.elem.length; i++) {
-        if ((i & c) != c)
-            continue;
+        if ((i & c) != c) continue;
         if (i & n) {
-            push(PSI.elem[i ^ n]);		// KET0
-            push(PSI.elem[i]);		// KET1
+            push(PSI.elem[i ^ n]); // KET0
+            push(PSI.elem[i]); // KET1
             add();
             push_rational(1, 2);
             sqrtfunc();
             multiply();
-            push(PSI.elem[i ^ n]);		// KET0
-            push(PSI.elem[i]);		// KET1
+            push(PSI.elem[i ^ n]); // KET0
+            push(PSI.elem[i]); // KET1
             subtract();
             push_rational(1, 2);
             sqrtfunc();
             multiply();
-            PSI.elem[i] = pop();		// KET1
-            PSI.elem[i ^ n] = pop();	// KET0
+            PSI.elem[i] = pop(); // KET1
+            PSI.elem[i ^ n] = pop(); // KET0
         }
     }
 }
@@ -9953,13 +9367,12 @@ function rotate_h(PSI: Tensor, c: number, n: number): void {
 function rotate_p(PSI: Tensor, PHASE: unknown, c: number, n: number): void {
     n = 1 << n;
     for (let i = 0; i < PSI.elem.length; i++) {
-        if ((i & c) != c)
-            continue;
+        if ((i & c) != c) continue;
         if (i & n) {
-            push(PSI.elem[i]);		// KET1
+            push(PSI.elem[i]); // KET1
             push(PHASE);
             multiply();
-            PSI.elem[i] = pop();		// KET1
+            PSI.elem[i] = pop(); // KET1
         }
     }
 }
@@ -9970,9 +9383,8 @@ function rotate_w(PSI: Tensor, c: number, m: number, n: number): void {
     m = 1 << m;
     n = 1 << n;
     for (let i = 0; i < PSI.elem.length; i++) {
-        if ((i & c) != c)
-            continue;
-        if ((i & m) && !(i & n)) {
+        if ((i & c) != c) continue;
+        if (i & m && !(i & n)) {
             push(PSI.elem[i]);
             push(PSI.elem[i ^ m ^ n]);
             PSI.elem[i] = pop();
@@ -9984,13 +9396,12 @@ function rotate_w(PSI: Tensor, c: number, m: number, n: number): void {
 function rotate_x(PSI: Tensor, c: number, n: number): void {
     n = 1 << n;
     for (let i = 0; i < PSI.elem.length; i++) {
-        if ((i & c) != c)
-            continue;
+        if ((i & c) != c) continue;
         if (i & n) {
-            push(PSI.elem[i ^ n]);		// KET0
-            push(PSI.elem[i]);		// KET1
-            PSI.elem[i ^ n] = pop();	// KET0
-            PSI.elem[i] = pop();		// KET1
+            push(PSI.elem[i ^ n]); // KET0
+            push(PSI.elem[i]); // KET1
+            PSI.elem[i ^ n] = pop(); // KET0
+            PSI.elem[i] = pop(); // KET1
         }
     }
 }
@@ -9998,18 +9409,17 @@ function rotate_x(PSI: Tensor, c: number, n: number): void {
 function rotate_y(PSI: Tensor, c: number, n: number): void {
     n = 1 << n;
     for (let i = 0; i < PSI.elem.length; i++) {
-        if ((i & c) != c)
-            continue;
+        if ((i & c) != c) continue;
         if (i & n) {
             push(imaginaryunit);
             negate();
-            push(PSI.elem[i ^ n]);		// KET0
+            push(PSI.elem[i ^ n]); // KET0
             multiply();
             push(imaginaryunit);
-            push(PSI.elem[i]);		// KET1
+            push(PSI.elem[i]); // KET1
             multiply();
-            PSI.elem[i ^ n] = pop();	// KET0
-            PSI.elem[i] = pop();		// KET1
+            PSI.elem[i ^ n] = pop(); // KET0
+            PSI.elem[i] = pop(); // KET1
         }
     }
 }
@@ -10017,12 +9427,11 @@ function rotate_y(PSI: Tensor, c: number, n: number): void {
 function rotate_z(PSI: Tensor, c: number, n: number): void {
     n = 1 << n;
     for (let i = 0; i < PSI.elem.length; i++) {
-        if ((i & c) != c)
-            continue;
+        if ((i & c) != c) continue;
         if (i & n) {
-            push(PSI.elem[i]);		// KET1
+            push(PSI.elem[i]); // KET1
             negate();
-            PSI.elem[i] = pop();		// KET1
+            PSI.elem[i] = pop(); // KET1
         }
     }
 }
@@ -10045,15 +9454,13 @@ function rotate_q(PSI: Tensor, n: number): void {
             rotate_p(PSI, PHASE, 1 << j, i);
         }
     }
-    for (let i = 0; i < (n + 1) / 2; i++)
-        rotate_w(PSI, 0, i, n - i);
+    for (let i = 0; i < (n + 1) / 2; i++) rotate_w(PSI, 0, i, n - i);
 }
 
 // inverse qft
 
 function rotate_v(PSI: Tensor, n: number): void {
-    for (let i = 0; i < (n + 1) / 2; i++)
-        rotate_w(PSI, 0, i, n - i);
+    for (let i = 0; i < (n + 1) / 2; i++) rotate_w(PSI, 0, i, n - i);
     for (let i = 0; i <= n; i++) {
         for (let j = i - 1; j >= 0; j--) {
             push_rational(1, 2);
@@ -10073,13 +9480,11 @@ function rotate_v(PSI: Tensor, n: number): void {
 }
 
 function eval_run(p1: unknown): void {
-
     push(cadr(p1));
     evalf();
     p1 = pop();
 
-    if (!isstring(p1))
-        stopf("run: string expected");
+    if (!isstring(p1)) stopf("run: string expected");
 
     const f = new XMLHttpRequest();
     f.open("GET", p1.string, false);
@@ -10088,8 +9493,7 @@ function eval_run(p1: unknown): void {
     };
     f.send();
 
-    if (f.status == 404 || f.responseText.length == 0)
-        stopf("run: file not found");
+    if (f.status == 404 || f.responseText.length == 0) stopf("run: file not found");
 
     const save_inbuf = inbuf;
     const save_trace1 = trace1;
@@ -10099,12 +9503,10 @@ function eval_run(p1: unknown): void {
 
     let k = 0;
 
-    for (; ;) {
-
+    for (;;) {
         k = scan_inbuf(k);
 
-        if (k == 0)
-            break; // end of input
+        if (k == 0) break; // end of input
 
         eval_and_print_result();
     }
@@ -10117,7 +9519,6 @@ function eval_run(p1: unknown): void {
 }
 
 function eval_setq(p1: unknown): void {
-
     push_symbol(NIL); // return value
 
     if (caadr(p1) == symbol(INDEX)) {
@@ -10131,8 +9532,7 @@ function eval_setq(p1: unknown): void {
     }
 
     const s = cadr(p1);
-    if (!(issymbol(s) && isusersymbol(s)))
-        stopf("user symbol expected");
+    if (!(issymbol(s) && isusersymbol(s))) stopf("user symbol expected");
 
     push(caddr(p1));
     evalf();
@@ -10154,11 +9554,9 @@ function eval_setq(p1: unknown): void {
 // caddr(p1) = b
 
 function setq_indexed(p1: unknown): void {
-
     const S = cadadr(p1);
 
-    if (!(issymbol(S) && isusersymbol(S)))
-        stopf("user symbol expected");
+    if (!(issymbol(S) && isusersymbol(S))) stopf("user symbol expected");
 
     push(S);
     evalf();
@@ -10185,16 +9583,13 @@ function setq_indexed(p1: unknown): void {
 }
 
 function set_component(LVAL: unknown, RVAL: unknown, h: number): void {
-
-    if (!istensor(LVAL))
-        stopf("index error");
+    if (!istensor(LVAL)) stopf("index error");
 
     // n is number of indices
 
     const n = stack.length - h;
 
-    if (n < 1 || n > LVAL.dim.length)
-        stopf("index error");
+    if (n < 1 || n > LVAL.dim.length) stopf("index error");
 
     // k is combined index
 
@@ -10203,8 +9598,7 @@ function set_component(LVAL: unknown, RVAL: unknown, h: number): void {
     for (let i = 0; i < n; i++) {
         push(stack[h + i]);
         const t = pop_integer();
-        if (t < 1 || t > LVAL.dim[i])
-            stopf("index error");
+        if (t < 1 || t > LVAL.dim[i]) stopf("index error");
         k = k * LVAL.dim[i] + t - 1;
     }
 
@@ -10212,18 +9606,12 @@ function set_component(LVAL: unknown, RVAL: unknown, h: number): void {
 
     if (istensor(RVAL)) {
         let m = RVAL.dim.length;
-        if (n + m != LVAL.dim.length)
-            stopf("index error");
-        for (let i = 0; i < m; i++)
-            if (LVAL.dim[n + i] != RVAL.dim[i])
-                stopf("index error");
+        if (n + m != LVAL.dim.length) stopf("index error");
+        for (let i = 0; i < m; i++) if (LVAL.dim[n + i] != RVAL.dim[i]) stopf("index error");
         m = RVAL.elem.length;
-        for (let i = 0; i < m; i++)
-            LVAL.elem[m * k + i] = RVAL.elem[i];
-    }
-    else {
-        if (n != LVAL.dim.length)
-            stopf("index error");
+        for (let i = 0; i < m; i++) LVAL.elem[m * k + i] = RVAL.elem[i];
+    } else {
+        if (n != LVAL.dim.length) stopf("index error");
         LVAL.elem[k] = RVAL;
     }
 }
@@ -10255,16 +9643,13 @@ function set_component(LVAL: unknown, RVAL: unknown, h: number): void {
 //	caddr(p1) points to (power x y)
 
 function setq_usrfunc(p1: unknown): void {
-
     const F = caadr(p1); // function name
     const A = cdadr(p1); // function args
     const B = caddr(p1); // function body
 
-    if (!(issymbol(F) && isusersymbol(F)))
-        stopf("user symbol expected");
+    if (!(issymbol(F) && isusersymbol(F))) stopf("user symbol expected");
 
-    if (lengthf(A) > 9)
-        stopf("more than 9 arguments");
+    if (lengthf(A) > 9) stopf("more than 9 arguments");
 
     push(B);
     convert_body(A);
@@ -10274,40 +9659,35 @@ function setq_usrfunc(p1: unknown): void {
 }
 
 function convert_body(A: unknown): void {
-    if (!iscons(A))
-        return;
+    if (!iscons(A)) return;
 
     push(car(A));
     push_symbol(ARG1);
     subst();
 
     A = cdr(A);
-    if (!iscons(A))
-        return;
+    if (!iscons(A)) return;
 
     push(car(A));
     push_symbol(ARG2);
     subst();
 
     A = cdr(A);
-    if (!iscons(A))
-        return;
+    if (!iscons(A)) return;
 
     push(car(A));
     push_symbol(ARG3);
     subst();
 
     A = cdr(A);
-    if (!iscons(A))
-        return;
+    if (!iscons(A)) return;
 
     push(car(A));
     push_symbol(ARG4);
     subst();
 
     A = cdr(A);
-    if (!iscons(A))
-        return;
+    if (!iscons(A)) return;
 
     push(car(A));
     push_symbol(ARG5);
@@ -10315,32 +9695,28 @@ function convert_body(A: unknown): void {
 
     A = cdr(A);
 
-    if (!iscons(A))
-        return;
+    if (!iscons(A)) return;
 
     push(car(A));
     push_symbol(ARG6);
     subst();
 
     A = cdr(A);
-    if (!iscons(A))
-        return;
+    if (!iscons(A)) return;
 
     push(car(A));
     push_symbol(ARG7);
     subst();
 
     A = cdr(A);
-    if (!iscons(A))
-        return;
+    if (!iscons(A)) return;
 
     push(car(A));
     push_symbol(ARG8);
     subst();
 
     A = cdr(A);
-    if (!iscons(A))
-        return;
+    if (!iscons(A)) return;
 
     push(car(A));
     push_symbol(ARG9);
@@ -10354,7 +9730,6 @@ function eval_sgn(p1: unknown): void {
 }
 
 function sgn(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -10374,10 +9749,8 @@ function sgn(): void {
         return;
     }
 
-    if (isnegativenumber(p1))
-        push_integer(-1);
-    else
-        push_integer(1);
+    if (isnegativenumber(p1)) push_integer(-1);
+    else push_integer(1);
 }
 
 function eval_simplify(p1: unknown): void {
@@ -10388,10 +9761,8 @@ function eval_simplify(p1: unknown): void {
 
 function simplify(): void {
     const p1 = pop();
-    if (istensor(p1))
-        simplify_tensor(p1);
-    else
-        simplify_scalar(p1);
+    if (istensor(p1)) simplify_tensor(p1);
+    else simplify_scalar(p1);
 }
 
 function simplify_tensor(p1: Tensor): void {
@@ -10406,7 +9777,6 @@ function simplify_tensor(p1: Tensor): void {
 }
 
 function simplify_scalar(p1: unknown): void {
-
     // already simple?
 
     if (!iscons(p1)) {
@@ -10433,7 +9803,6 @@ function simplify_scalar(p1: unknown): void {
 }
 
 function simplify_pass1(): void {
-
     let p1 = pop();
 
     // already simple?
@@ -10453,9 +9822,7 @@ function simplify_pass1(): void {
             push(p1); // no change
             return;
         }
-    }
-    else
-        T = p1;
+    } else T = p1;
 
     push(T);
     numerator();
@@ -10495,8 +9862,7 @@ function simplify_pass1(): void {
         push(DEN);
         divide();
         T = pop();
-        if (complexity(T) < complexity(p1))
-            p1 = T;
+        if (complexity(T) < complexity(p1)) p1 = T;
         push(p1);
         return;
     }
@@ -10516,8 +9882,7 @@ function simplify_pass1(): void {
 
     T = pop();
 
-    if (iszero(T))
-        p1 = R;
+    if (iszero(T)) p1 = R;
 
     push(p1);
 }
@@ -10525,7 +9890,6 @@ function simplify_pass1(): void {
 // try exponential form
 
 function simplify_pass2(): void {
-
     const p1 = pop();
 
     // already simple?
@@ -10552,7 +9916,6 @@ function simplify_pass2(): void {
 // try polar form
 
 function simplify_pass3(): void {
-
     const p1 = pop();
 
     if (car(p1) != symbol(ADD) || isusersymbolsomewhere(p1) || !findf(p1, imaginaryunit)) {
@@ -10579,7 +9942,6 @@ function eval_sin(p1: unknown): void {
 }
 
 function sinfunc(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -10803,7 +10165,6 @@ function eval_sinh(p1: unknown): void {
 }
 
 function sinhfunc(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -10889,12 +10250,10 @@ function eval_subst(p1: unknown): void {
 }
 
 function subst(): void {
-
     const p3 = pop(); // new expr
     const p2 = pop(); // old expr
 
-    if (p2 == symbol(NIL) || p3 == symbol(NIL))
-        return;
+    if (p2 == symbol(NIL) || p3 == symbol(NIL)) return;
 
     let p1 = pop(); // expr
 
@@ -10934,7 +10293,6 @@ function subst(): void {
 }
 
 function eval_sum(p1: unknown): void {
-
     if (lengthf(p1) == 2) {
         push(cadr(p1));
         evalf();
@@ -10944,15 +10302,13 @@ function eval_sum(p1: unknown): void {
             return;
         }
         const n = p1.elem.length;
-        for (let i = 0; i < n; i++)
-            push(p1.elem[i]);
+        for (let i = 0; i < n; i++) push(p1.elem[i]);
         add_terms(n);
         return;
     }
 
     const p2 = cadr(p1);
-    if (!(issymbol(p2) && isusersymbol(p2)))
-        stopf("sum: symbol error");
+    if (!(issymbol(p2) && isusersymbol(p2))) stopf("sum: symbol error");
 
     push(caddr(p1));
     evalf();
@@ -10968,18 +10324,15 @@ function eval_sum(p1: unknown): void {
 
     const h = stack.length;
 
-    for (; ;) {
+    for (;;) {
         push_integer(j);
         const p3 = pop();
         set_symbol(p2, p3, symbol(NIL));
         push(p1);
         evalf();
-        if (j == k)
-            break;
-        if (j < k)
-            j++;
-        else
-            j--;
+        if (j == k) break;
+        if (j < k) j++;
+        else j--;
     }
 
     add_terms(stack.length - h);
@@ -10994,7 +10347,6 @@ function eval_tan(p1: unknown): void {
 }
 
 function tanfunc(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -11160,7 +10512,6 @@ function eval_tanh(p1: unknown): void {
 }
 
 function tanhfunc(): void {
-
     const p1 = pop();
 
     if (istensor(p1)) {
@@ -11211,7 +10562,6 @@ function tanhfunc(): void {
 }
 
 function eval_taylor(p1: unknown): void {
-
     push(cadr(p1));
     evalf();
     let F = pop();
@@ -11229,15 +10579,13 @@ function eval_taylor(p1: unknown): void {
     if (iscons(p1)) {
         push(car(p1));
         evalf();
-    }
-    else
-        push_integer(0); // default expansion point
+    } else push_integer(0); // default expansion point
 
     const A = pop();
 
     const h = stack.length;
 
-    push(F);	// f(a)
+    push(F); // f(a)
     push(X);
     push(A);
     subst();
@@ -11247,23 +10595,21 @@ function eval_taylor(p1: unknown): void {
     let C = pop();
 
     for (let i = 1; i <= n; i++) {
-
-        push(F);	// f = f'
+        push(F); // f = f'
         push(X);
         derivative();
         F = pop();
 
-        if (iszero(F))
-            break;
+        if (iszero(F)) break;
 
-        push(C);	// c = c * (x - a)
+        push(C); // c = c * (x - a)
         push(X);
         push(A);
         subtract();
         multiply();
         C = pop();
 
-        push(F);	// f(a)
+        push(F); // f(a)
         push(X);
         push(A);
         subst();
@@ -11280,7 +10626,6 @@ function eval_taylor(p1: unknown): void {
 }
 
 function eval_tensor(p1: Tensor): void {
-
     p1 = copy_tensor(p1);
 
     const n = p1.elem.length;
@@ -11325,38 +10670,28 @@ function eval_testeq(p1: unknown): void {
     subtract();
     simplify();
     p1 = pop();
-    if (iszero(p1))
-        push_integer(1);
-    else
-        push_integer(0);
+    if (iszero(p1)) push_integer(1);
+    else push_integer(0);
 }
 
 function eval_testge(p1: unknown): void {
-    if (cmp_args(p1) >= 0)
-        push_integer(1);
-    else
-        push_integer(0);
+    if (cmp_args(p1) >= 0) push_integer(1);
+    else push_integer(0);
 }
 
 function eval_testgt(p1: unknown): void {
-    if (cmp_args(p1) > 0)
-        push_integer(1);
-    else
-        push_integer(0);
+    if (cmp_args(p1) > 0) push_integer(1);
+    else push_integer(0);
 }
 
 function eval_testle(p1: unknown): void {
-    if (cmp_args(p1) <= 0)
-        push_integer(1);
-    else
-        push_integer(0);
+    if (cmp_args(p1) <= 0) push_integer(1);
+    else push_integer(0);
 }
 
 function eval_testlt(p1: unknown): void {
-    if (cmp_args(p1) < 0)
-        push_integer(1);
-    else
-        push_integer(0);
+    if (cmp_args(p1) < 0) push_integer(1);
+    else push_integer(0);
 }
 
 function cmp_args(p1: unknown): 0 | 1 | -1 {
@@ -11368,25 +10703,19 @@ function cmp_args(p1: unknown): 0 | 1 | -1 {
     simplify();
     floatfunc();
     p1 = pop();
-    if (iszero(p1))
-        return 0;
-    if (!isnum(p1))
-        stopf("compare err");
-    if (isnegativenumber(p1))
-        return -1;
-    else
-        return 1;
+    if (iszero(p1)) return 0;
+    if (!isnum(p1)) stopf("compare err");
+    if (isnegativenumber(p1)) return -1;
+    else return 1;
 }
 
 function eval_transpose(p1: unknown): void {
-
     push(cadr(p1));
     evalf();
     const p2 = pop();
     push(p2);
 
-    if (!istensor(p2) || p2.dim.length < 2)
-        return;
+    if (!istensor(p2) || p2.dim.length < 2) return;
 
     p1 = cddr(p1);
 
@@ -11396,7 +10725,6 @@ function eval_transpose(p1: unknown): void {
     }
 
     while (iscons(p1)) {
-
         push(car(p1));
         evalf();
         const n = pop_integer();
@@ -11419,8 +10747,7 @@ function transpose(n: number, m: number): void {
     const ndim = p1.dim.length;
     const nelem = p1.elem.length;
 
-    if (n < 1 || n > ndim || m < 1 || m > ndim)
-        stopf("transpose: index error");
+    if (n < 1 || n > ndim || m < 1 || m > ndim) stopf("transpose: index error");
 
     n--; // make zero based
     m--;
@@ -11432,20 +10759,15 @@ function transpose(n: number, m: number): void {
     p2.dim[n] = p1.dim[m];
     p2.dim[m] = p1.dim[n];
 
-    for (let i = 0; i < ndim; i++)
-        index[i] = 0;
+    for (let i = 0; i < ndim; i++) index[i] = 0;
 
     for (let i = 0; i < nelem; i++) {
-
         let k = 0;
 
         for (let j = 0; j < ndim; j++) {
-            if (j == n)
-                k = k * p1.dim[m] + index[m];
-            else if (j == m)
-                k = k * p1.dim[n] + index[n];
-            else
-                k = k * p1.dim[j] + index[j];
+            if (j == n) k = k * p1.dim[m] + index[m];
+            else if (j == m) k = k * p1.dim[n] + index[n];
+            else k = k * p1.dim[j] + index[j];
         }
 
         p2.elem[k] = p1.elem[i];
@@ -11453,8 +10775,7 @@ function transpose(n: number, m: number): void {
         // increment index
 
         for (let j = ndim - 1; j >= 0; j--) {
-            if (++index[j] < p1.dim[j])
-                break;
+            if (++index[j] < p1.dim[j]) break;
             index[j] = 0;
         }
     }
@@ -11463,14 +10784,12 @@ function transpose(n: number, m: number): void {
 }
 
 function eval_unit(p1: unknown): void {
-
     push(cadr(p1));
     evalf();
 
     const n = pop_integer();
 
-    if (n < 1)
-        stopf("unit: index err");
+    if (n < 1) stopf("unit: index err");
 
     if (n == 1) {
         push_integer(1);
@@ -11481,16 +10800,13 @@ function eval_unit(p1: unknown): void {
 
     for (let i = 0; i < n; i++)
         for (let j = 0; j < n; j++)
-            if (i == j)
-                M.elem[n * i + j] = one;
-            else
-                M.elem[n * i + j] = zero;
+            if (i == j) M.elem[n * i + j] = one;
+            else M.elem[n * i + j] = zero;
 
     push(M);
 }
 
 function eval_user_function(p1: unknown): void {
-
     const FUNC_NAME = car(p1) as Sym;
     let FUNC_ARGS = cdr(p1);
 
@@ -11570,7 +10886,6 @@ function eval_user_symbol(p1: unknown): void {
 }
 
 function eval_zero(p1: unknown): void {
-
     p1 = cdr(p1);
     const h = stack.length;
     let m = 1;
@@ -11580,8 +10895,7 @@ function eval_zero(p1: unknown): void {
         evalf();
         dupl();
         const n = pop_integer();
-        if (n < 2)
-            stopf("zero: dim err");
+        if (n < 2) stopf("zero: dim err");
         m *= n;
         p1 = cdr(p1);
     }
@@ -11595,13 +10909,11 @@ function eval_zero(p1: unknown): void {
 
     const T = alloc_tensor();
 
-    for (let i = 0; i < m; i++)
-        T.elem[i] = zero;
+    for (let i = 0; i < m; i++) T.elem[i] = zero;
 
     // dim info
 
-    for (let i = 0; i < n; i++)
-        T.dim[n - i - 1] = pop_integer();
+    for (let i = 0; i < n; i++) T.dim[n - i - 1] = pop_integer();
 
     push(T);
 }
@@ -11613,9 +10925,7 @@ function evalf(): void {
 }
 
 function evalf_nib(): void {
-
-    if (eval_level == 200)
-        stopf("circular definition?");
+    if (eval_level == 200) stopf("circular definition?");
 
     const p1 = pop();
 
@@ -11632,7 +10942,8 @@ function evalf_nib(): void {
         return;
     }
 
-    if (issymbol(p1) && iskeyword(p1)) { // bare keyword
+    if (issymbol(p1) && iskeyword(p1)) {
+        // bare keyword
         push(p1);
         push_symbol(LAST); // default arg
         list(2);
@@ -11655,8 +10966,7 @@ function evalf_nib(): void {
 
 function evalp(): void {
     const p1 = pop();
-    if (car(p1) == symbol(SETQ))
-        eval_testeq(p1);
+    if (car(p1) == symbol(SETQ)) eval_testeq(p1);
     else {
         push(p1);
         evalf();
@@ -11664,11 +10974,9 @@ function evalp(): void {
 }
 
 function expand_sum_factors(h: number): void {
-
     let n = stack.length;
 
-    if (n - h < 2)
-        return;
+    if (n - h < 2) return;
 
     // search for a sum factor
     let i: number;
@@ -11676,12 +10984,10 @@ function expand_sum_factors(h: number): void {
 
     for (i = h; i < n; i++) {
         p2 = stack[i];
-        if (car(p2) == symbol(ADD))
-            break;
+        if (car(p2) == symbol(ADD)) break;
     }
 
-    if (i == n)
-        return; // no sum factors
+    if (i == n) return; // no sum factors
 
     // remove the sum factor
 
@@ -11713,13 +11019,11 @@ function expand_sum_factors(h: number): void {
 // N is bignum, M is rational
 
 function factor_bignum(N: number[], M: unknown): void {
-
     // greater than 31 bits?
 
     if (!bignum_issmallnum(N)) {
         push_bignum(1, bignum_copy(N), bignum_int(1));
-        if (isplusone(M))
-            return;
+        if (isplusone(M)) return;
         push_symbol(POWER);
         swap();
         push(M);
@@ -11736,7 +11040,6 @@ function factor_bignum(N: number[], M: unknown): void {
     n = (stack.length - h) / 2; // number of factors on stack
 
     for (let i = 0; i < n; i++) {
-
         const BASE = stack[h + 2 * i + 0];
         let EXPO = stack[h + 2 * i + 1];
 
@@ -11762,11 +11065,9 @@ function factor_bignum(N: number[], M: unknown): void {
 // factors N or N^M where N and M are rational numbers, returns factors on stack
 
 function factor_factor(): void {
-
     const INPUT = pop();
 
     if (car(INPUT) == symbol(POWER)) {
-
         const BASE = cadr(INPUT);
         const EXPO = caddr(INPUT);
 
@@ -11790,8 +11091,7 @@ function factor_factor(): void {
         const numer = BASE.a;
         const denom = BASE.b;
 
-        if (!bignum_equal(numer, 1))
-            factor_bignum(numer, EXPO);
+        if (!bignum_equal(numer, 1)) factor_bignum(numer, EXPO);
 
         if (!bignum_equal(denom, 1)) {
             // flip sign of exponent
@@ -11809,629 +11109,152 @@ function factor_factor(): void {
         return;
     }
 
-    if (isnegativenumber(INPUT))
-        push_integer(-1);
+    if (isnegativenumber(INPUT)) push_integer(-1);
 
     const numer = INPUT.a;
     const denom = INPUT.b;
 
-    if (!bignum_equal(numer, 1))
-        factor_bignum(numer, one);
+    if (!bignum_equal(numer, 1)) factor_bignum(numer, one);
 
-    if (!bignum_equal(denom, 1))
-        factor_bignum(denom, minusone);
+    if (!bignum_equal(denom, 1)) factor_bignum(denom, minusone);
 }
 const primetab = [
-    2, 3, 5, 7, 11, 13, 17, 19,
-    23, 29, 31, 37, 41, 43, 47, 53,
-    59, 61, 67, 71, 73, 79, 83, 89,
-    97, 101, 103, 107, 109, 113, 127, 131,
-    137, 139, 149, 151, 157, 163, 167, 173,
-    179, 181, 191, 193, 197, 199, 211, 223,
-    227, 229, 233, 239, 241, 251, 257, 263,
-    269, 271, 277, 281, 283, 293, 307, 311,
-    313, 317, 331, 337, 347, 349, 353, 359,
-    367, 373, 379, 383, 389, 397, 401, 409,
-    419, 421, 431, 433, 439, 443, 449, 457,
-    461, 463, 467, 479, 487, 491, 499, 503,
-    509, 521, 523, 541, 547, 557, 563, 569,
-    571, 577, 587, 593, 599, 601, 607, 613,
-    617, 619, 631, 641, 643, 647, 653, 659,
-    661, 673, 677, 683, 691, 701, 709, 719,
-    727, 733, 739, 743, 751, 757, 761, 769,
-    773, 787, 797, 809, 811, 821, 823, 827,
-    829, 839, 853, 857, 859, 863, 877, 881,
-    883, 887, 907, 911, 919, 929, 937, 941,
-    947, 953, 967, 971, 977, 983, 991, 997,
-    1009, 1013, 1019, 1021, 1031, 1033, 1039, 1049,
-    1051, 1061, 1063, 1069, 1087, 1091, 1093, 1097,
-    1103, 1109, 1117, 1123, 1129, 1151, 1153, 1163,
-    1171, 1181, 1187, 1193, 1201, 1213, 1217, 1223,
-    1229, 1231, 1237, 1249, 1259, 1277, 1279, 1283,
-    1289, 1291, 1297, 1301, 1303, 1307, 1319, 1321,
-    1327, 1361, 1367, 1373, 1381, 1399, 1409, 1423,
-    1427, 1429, 1433, 1439, 1447, 1451, 1453, 1459,
-    1471, 1481, 1483, 1487, 1489, 1493, 1499, 1511,
-    1523, 1531, 1543, 1549, 1553, 1559, 1567, 1571,
-    1579, 1583, 1597, 1601, 1607, 1609, 1613, 1619,
-    1621, 1627, 1637, 1657, 1663, 1667, 1669, 1693,
-    1697, 1699, 1709, 1721, 1723, 1733, 1741, 1747,
-    1753, 1759, 1777, 1783, 1787, 1789, 1801, 1811,
-    1823, 1831, 1847, 1861, 1867, 1871, 1873, 1877,
-    1879, 1889, 1901, 1907, 1913, 1931, 1933, 1949,
-    1951, 1973, 1979, 1987, 1993, 1997, 1999, 2003,
-    2011, 2017, 2027, 2029, 2039, 2053, 2063, 2069,
-    2081, 2083, 2087, 2089, 2099, 2111, 2113, 2129,
-    2131, 2137, 2141, 2143, 2153, 2161, 2179, 2203,
-    2207, 2213, 2221, 2237, 2239, 2243, 2251, 2267,
-    2269, 2273, 2281, 2287, 2293, 2297, 2309, 2311,
-    2333, 2339, 2341, 2347, 2351, 2357, 2371, 2377,
-    2381, 2383, 2389, 2393, 2399, 2411, 2417, 2423,
-    2437, 2441, 2447, 2459, 2467, 2473, 2477, 2503,
-    2521, 2531, 2539, 2543, 2549, 2551, 2557, 2579,
-    2591, 2593, 2609, 2617, 2621, 2633, 2647, 2657,
-    2659, 2663, 2671, 2677, 2683, 2687, 2689, 2693,
-    2699, 2707, 2711, 2713, 2719, 2729, 2731, 2741,
-    2749, 2753, 2767, 2777, 2789, 2791, 2797, 2801,
-    2803, 2819, 2833, 2837, 2843, 2851, 2857, 2861,
-    2879, 2887, 2897, 2903, 2909, 2917, 2927, 2939,
-    2953, 2957, 2963, 2969, 2971, 2999, 3001, 3011,
-    3019, 3023, 3037, 3041, 3049, 3061, 3067, 3079,
-    3083, 3089, 3109, 3119, 3121, 3137, 3163, 3167,
-    3169, 3181, 3187, 3191, 3203, 3209, 3217, 3221,
-    3229, 3251, 3253, 3257, 3259, 3271, 3299, 3301,
-    3307, 3313, 3319, 3323, 3329, 3331, 3343, 3347,
-    3359, 3361, 3371, 3373, 3389, 3391, 3407, 3413,
-    3433, 3449, 3457, 3461, 3463, 3467, 3469, 3491,
-    3499, 3511, 3517, 3527, 3529, 3533, 3539, 3541,
-    3547, 3557, 3559, 3571, 3581, 3583, 3593, 3607,
-    3613, 3617, 3623, 3631, 3637, 3643, 3659, 3671,
-    3673, 3677, 3691, 3697, 3701, 3709, 3719, 3727,
-    3733, 3739, 3761, 3767, 3769, 3779, 3793, 3797,
-    3803, 3821, 3823, 3833, 3847, 3851, 3853, 3863,
-    3877, 3881, 3889, 3907, 3911, 3917, 3919, 3923,
-    3929, 3931, 3943, 3947, 3967, 3989, 4001, 4003,
-    4007, 4013, 4019, 4021, 4027, 4049, 4051, 4057,
-    4073, 4079, 4091, 4093, 4099, 4111, 4127, 4129,
-    4133, 4139, 4153, 4157, 4159, 4177, 4201, 4211,
-    4217, 4219, 4229, 4231, 4241, 4243, 4253, 4259,
-    4261, 4271, 4273, 4283, 4289, 4297, 4327, 4337,
-    4339, 4349, 4357, 4363, 4373, 4391, 4397, 4409,
-    4421, 4423, 4441, 4447, 4451, 4457, 4463, 4481,
-    4483, 4493, 4507, 4513, 4517, 4519, 4523, 4547,
-    4549, 4561, 4567, 4583, 4591, 4597, 4603, 4621,
-    4637, 4639, 4643, 4649, 4651, 4657, 4663, 4673,
-    4679, 4691, 4703, 4721, 4723, 4729, 4733, 4751,
-    4759, 4783, 4787, 4789, 4793, 4799, 4801, 4813,
-    4817, 4831, 4861, 4871, 4877, 4889, 4903, 4909,
-    4919, 4931, 4933, 4937, 4943, 4951, 4957, 4967,
-    4969, 4973, 4987, 4993, 4999, 5003, 5009, 5011,
-    5021, 5023, 5039, 5051, 5059, 5077, 5081, 5087,
-    5099, 5101, 5107, 5113, 5119, 5147, 5153, 5167,
-    5171, 5179, 5189, 5197, 5209, 5227, 5231, 5233,
-    5237, 5261, 5273, 5279, 5281, 5297, 5303, 5309,
-    5323, 5333, 5347, 5351, 5381, 5387, 5393, 5399,
-    5407, 5413, 5417, 5419, 5431, 5437, 5441, 5443,
-    5449, 5471, 5477, 5479, 5483, 5501, 5503, 5507,
-    5519, 5521, 5527, 5531, 5557, 5563, 5569, 5573,
-    5581, 5591, 5623, 5639, 5641, 5647, 5651, 5653,
-    5657, 5659, 5669, 5683, 5689, 5693, 5701, 5711,
-    5717, 5737, 5741, 5743, 5749, 5779, 5783, 5791,
-    5801, 5807, 5813, 5821, 5827, 5839, 5843, 5849,
-    5851, 5857, 5861, 5867, 5869, 5879, 5881, 5897,
-    5903, 5923, 5927, 5939, 5953, 5981, 5987, 6007,
-    6011, 6029, 6037, 6043, 6047, 6053, 6067, 6073,
-    6079, 6089, 6091, 6101, 6113, 6121, 6131, 6133,
-    6143, 6151, 6163, 6173, 6197, 6199, 6203, 6211,
-    6217, 6221, 6229, 6247, 6257, 6263, 6269, 6271,
-    6277, 6287, 6299, 6301, 6311, 6317, 6323, 6329,
-    6337, 6343, 6353, 6359, 6361, 6367, 6373, 6379,
-    6389, 6397, 6421, 6427, 6449, 6451, 6469, 6473,
-    6481, 6491, 6521, 6529, 6547, 6551, 6553, 6563,
-    6569, 6571, 6577, 6581, 6599, 6607, 6619, 6637,
-    6653, 6659, 6661, 6673, 6679, 6689, 6691, 6701,
-    6703, 6709, 6719, 6733, 6737, 6761, 6763, 6779,
-    6781, 6791, 6793, 6803, 6823, 6827, 6829, 6833,
-    6841, 6857, 6863, 6869, 6871, 6883, 6899, 6907,
-    6911, 6917, 6947, 6949, 6959, 6961, 6967, 6971,
-    6977, 6983, 6991, 6997, 7001, 7013, 7019, 7027,
-    7039, 7043, 7057, 7069, 7079, 7103, 7109, 7121,
-    7127, 7129, 7151, 7159, 7177, 7187, 7193, 7207,
-    7211, 7213, 7219, 7229, 7237, 7243, 7247, 7253,
-    7283, 7297, 7307, 7309, 7321, 7331, 7333, 7349,
-    7351, 7369, 7393, 7411, 7417, 7433, 7451, 7457,
-    7459, 7477, 7481, 7487, 7489, 7499, 7507, 7517,
-    7523, 7529, 7537, 7541, 7547, 7549, 7559, 7561,
-    7573, 7577, 7583, 7589, 7591, 7603, 7607, 7621,
-    7639, 7643, 7649, 7669, 7673, 7681, 7687, 7691,
-    7699, 7703, 7717, 7723, 7727, 7741, 7753, 7757,
-    7759, 7789, 7793, 7817, 7823, 7829, 7841, 7853,
-    7867, 7873, 7877, 7879, 7883, 7901, 7907, 7919,
-    7927, 7933, 7937, 7949, 7951, 7963, 7993, 8009,
-    8011, 8017, 8039, 8053, 8059, 8069, 8081, 8087,
-    8089, 8093, 8101, 8111, 8117, 8123, 8147, 8161,
-    8167, 8171, 8179, 8191, 8209, 8219, 8221, 8231,
-    8233, 8237, 8243, 8263, 8269, 8273, 8287, 8291,
-    8293, 8297, 8311, 8317, 8329, 8353, 8363, 8369,
-    8377, 8387, 8389, 8419, 8423, 8429, 8431, 8443,
-    8447, 8461, 8467, 8501, 8513, 8521, 8527, 8537,
-    8539, 8543, 8563, 8573, 8581, 8597, 8599, 8609,
-    8623, 8627, 8629, 8641, 8647, 8663, 8669, 8677,
-    8681, 8689, 8693, 8699, 8707, 8713, 8719, 8731,
-    8737, 8741, 8747, 8753, 8761, 8779, 8783, 8803,
-    8807, 8819, 8821, 8831, 8837, 8839, 8849, 8861,
-    8863, 8867, 8887, 8893, 8923, 8929, 8933, 8941,
-    8951, 8963, 8969, 8971, 8999, 9001, 9007, 9011,
-    9013, 9029, 9041, 9043, 9049, 9059, 9067, 9091,
-    9103, 9109, 9127, 9133, 9137, 9151, 9157, 9161,
-    9173, 9181, 9187, 9199, 9203, 9209, 9221, 9227,
-    9239, 9241, 9257, 9277, 9281, 9283, 9293, 9311,
-    9319, 9323, 9337, 9341, 9343, 9349, 9371, 9377,
-    9391, 9397, 9403, 9413, 9419, 9421, 9431, 9433,
-    9437, 9439, 9461, 9463, 9467, 9473, 9479, 9491,
-    9497, 9511, 9521, 9533, 9539, 9547, 9551, 9587,
-    9601, 9613, 9619, 9623, 9629, 9631, 9643, 9649,
-    9661, 9677, 9679, 9689, 9697, 9719, 9721, 9733,
-    9739, 9743, 9749, 9767, 9769, 9781, 9787, 9791,
-    9803, 9811, 9817, 9829, 9833, 9839, 9851, 9857,
-    9859, 9871, 9883, 9887, 9901, 9907, 9923, 9929,
-    9931, 9941, 9949, 9967, 9973, 10007, 10009, 10037,
-    10039, 10061, 10067, 10069, 10079, 10091, 10093, 10099,
-    10103, 10111, 10133, 10139, 10141, 10151, 10159, 10163,
-    10169, 10177, 10181, 10193, 10211, 10223, 10243, 10247,
-    10253, 10259, 10267, 10271, 10273, 10289, 10301, 10303,
-    10313, 10321, 10331, 10333, 10337, 10343, 10357, 10369,
-    10391, 10399, 10427, 10429, 10433, 10453, 10457, 10459,
-    10463, 10477, 10487, 10499, 10501, 10513, 10529, 10531,
-    10559, 10567, 10589, 10597, 10601, 10607, 10613, 10627,
-    10631, 10639, 10651, 10657, 10663, 10667, 10687, 10691,
-    10709, 10711, 10723, 10729, 10733, 10739, 10753, 10771,
-    10781, 10789, 10799, 10831, 10837, 10847, 10853, 10859,
-    10861, 10867, 10883, 10889, 10891, 10903, 10909, 10937,
-    10939, 10949, 10957, 10973, 10979, 10987, 10993, 11003,
-    11027, 11047, 11057, 11059, 11069, 11071, 11083, 11087,
-    11093, 11113, 11117, 11119, 11131, 11149, 11159, 11161,
-    11171, 11173, 11177, 11197, 11213, 11239, 11243, 11251,
-    11257, 11261, 11273, 11279, 11287, 11299, 11311, 11317,
-    11321, 11329, 11351, 11353, 11369, 11383, 11393, 11399,
-    11411, 11423, 11437, 11443, 11447, 11467, 11471, 11483,
-    11489, 11491, 11497, 11503, 11519, 11527, 11549, 11551,
-    11579, 11587, 11593, 11597, 11617, 11621, 11633, 11657,
-    11677, 11681, 11689, 11699, 11701, 11717, 11719, 11731,
-    11743, 11777, 11779, 11783, 11789, 11801, 11807, 11813,
-    11821, 11827, 11831, 11833, 11839, 11863, 11867, 11887,
-    11897, 11903, 11909, 11923, 11927, 11933, 11939, 11941,
-    11953, 11959, 11969, 11971, 11981, 11987, 12007, 12011,
-    12037, 12041, 12043, 12049, 12071, 12073, 12097, 12101,
-    12107, 12109, 12113, 12119, 12143, 12149, 12157, 12161,
-    12163, 12197, 12203, 12211, 12227, 12239, 12241, 12251,
-    12253, 12263, 12269, 12277, 12281, 12289, 12301, 12323,
-    12329, 12343, 12347, 12373, 12377, 12379, 12391, 12401,
-    12409, 12413, 12421, 12433, 12437, 12451, 12457, 12473,
-    12479, 12487, 12491, 12497, 12503, 12511, 12517, 12527,
-    12539, 12541, 12547, 12553, 12569, 12577, 12583, 12589,
-    12601, 12611, 12613, 12619, 12637, 12641, 12647, 12653,
-    12659, 12671, 12689, 12697, 12703, 12713, 12721, 12739,
-    12743, 12757, 12763, 12781, 12791, 12799, 12809, 12821,
-    12823, 12829, 12841, 12853, 12889, 12893, 12899, 12907,
-    12911, 12917, 12919, 12923, 12941, 12953, 12959, 12967,
-    12973, 12979, 12983, 13001, 13003, 13007, 13009, 13033,
-    13037, 13043, 13049, 13063, 13093, 13099, 13103, 13109,
-    13121, 13127, 13147, 13151, 13159, 13163, 13171, 13177,
-    13183, 13187, 13217, 13219, 13229, 13241, 13249, 13259,
-    13267, 13291, 13297, 13309, 13313, 13327, 13331, 13337,
-    13339, 13367, 13381, 13397, 13399, 13411, 13417, 13421,
-    13441, 13451, 13457, 13463, 13469, 13477, 13487, 13499,
-    13513, 13523, 13537, 13553, 13567, 13577, 13591, 13597,
-    13613, 13619, 13627, 13633, 13649, 13669, 13679, 13681,
-    13687, 13691, 13693, 13697, 13709, 13711, 13721, 13723,
-    13729, 13751, 13757, 13759, 13763, 13781, 13789, 13799,
-    13807, 13829, 13831, 13841, 13859, 13873, 13877, 13879,
-    13883, 13901, 13903, 13907, 13913, 13921, 13931, 13933,
-    13963, 13967, 13997, 13999, 14009, 14011, 14029, 14033,
-    14051, 14057, 14071, 14081, 14083, 14087, 14107, 14143,
-    14149, 14153, 14159, 14173, 14177, 14197, 14207, 14221,
-    14243, 14249, 14251, 14281, 14293, 14303, 14321, 14323,
-    14327, 14341, 14347, 14369, 14387, 14389, 14401, 14407,
-    14411, 14419, 14423, 14431, 14437, 14447, 14449, 14461,
-    14479, 14489, 14503, 14519, 14533, 14537, 14543, 14549,
-    14551, 14557, 14561, 14563, 14591, 14593, 14621, 14627,
-    14629, 14633, 14639, 14653, 14657, 14669, 14683, 14699,
-    14713, 14717, 14723, 14731, 14737, 14741, 14747, 14753,
-    14759, 14767, 14771, 14779, 14783, 14797, 14813, 14821,
-    14827, 14831, 14843, 14851, 14867, 14869, 14879, 14887,
-    14891, 14897, 14923, 14929, 14939, 14947, 14951, 14957,
-    14969, 14983, 15013, 15017, 15031, 15053, 15061, 15073,
-    15077, 15083, 15091, 15101, 15107, 15121, 15131, 15137,
-    15139, 15149, 15161, 15173, 15187, 15193, 15199, 15217,
-    15227, 15233, 15241, 15259, 15263, 15269, 15271, 15277,
-    15287, 15289, 15299, 15307, 15313, 15319, 15329, 15331,
-    15349, 15359, 15361, 15373, 15377, 15383, 15391, 15401,
-    15413, 15427, 15439, 15443, 15451, 15461, 15467, 15473,
-    15493, 15497, 15511, 15527, 15541, 15551, 15559, 15569,
-    15581, 15583, 15601, 15607, 15619, 15629, 15641, 15643,
-    15647, 15649, 15661, 15667, 15671, 15679, 15683, 15727,
-    15731, 15733, 15737, 15739, 15749, 15761, 15767, 15773,
-    15787, 15791, 15797, 15803, 15809, 15817, 15823, 15859,
-    15877, 15881, 15887, 15889, 15901, 15907, 15913, 15919,
-    15923, 15937, 15959, 15971, 15973, 15991, 16001, 16007,
-    16033, 16057, 16061, 16063, 16067, 16069, 16073, 16087,
-    16091, 16097, 16103, 16111, 16127, 16139, 16141, 16183,
-    16187, 16189, 16193, 16217, 16223, 16229, 16231, 16249,
-    16253, 16267, 16273, 16301, 16319, 16333, 16339, 16349,
-    16361, 16363, 16369, 16381, 16411, 16417, 16421, 16427,
-    16433, 16447, 16451, 16453, 16477, 16481, 16487, 16493,
-    16519, 16529, 16547, 16553, 16561, 16567, 16573, 16603,
-    16607, 16619, 16631, 16633, 16649, 16651, 16657, 16661,
-    16673, 16691, 16693, 16699, 16703, 16729, 16741, 16747,
-    16759, 16763, 16787, 16811, 16823, 16829, 16831, 16843,
-    16871, 16879, 16883, 16889, 16901, 16903, 16921, 16927,
-    16931, 16937, 16943, 16963, 16979, 16981, 16987, 16993,
-    17011, 17021, 17027, 17029, 17033, 17041, 17047, 17053,
-    17077, 17093, 17099, 17107, 17117, 17123, 17137, 17159,
-    17167, 17183, 17189, 17191, 17203, 17207, 17209, 17231,
-    17239, 17257, 17291, 17293, 17299, 17317, 17321, 17327,
-    17333, 17341, 17351, 17359, 17377, 17383, 17387, 17389,
-    17393, 17401, 17417, 17419, 17431, 17443, 17449, 17467,
-    17471, 17477, 17483, 17489, 17491, 17497, 17509, 17519,
-    17539, 17551, 17569, 17573, 17579, 17581, 17597, 17599,
-    17609, 17623, 17627, 17657, 17659, 17669, 17681, 17683,
-    17707, 17713, 17729, 17737, 17747, 17749, 17761, 17783,
-    17789, 17791, 17807, 17827, 17837, 17839, 17851, 17863,
-    17881, 17891, 17903, 17909, 17911, 17921, 17923, 17929,
-    17939, 17957, 17959, 17971, 17977, 17981, 17987, 17989,
-    18013, 18041, 18043, 18047, 18049, 18059, 18061, 18077,
-    18089, 18097, 18119, 18121, 18127, 18131, 18133, 18143,
-    18149, 18169, 18181, 18191, 18199, 18211, 18217, 18223,
-    18229, 18233, 18251, 18253, 18257, 18269, 18287, 18289,
-    18301, 18307, 18311, 18313, 18329, 18341, 18353, 18367,
-    18371, 18379, 18397, 18401, 18413, 18427, 18433, 18439,
-    18443, 18451, 18457, 18461, 18481, 18493, 18503, 18517,
-    18521, 18523, 18539, 18541, 18553, 18583, 18587, 18593,
-    18617, 18637, 18661, 18671, 18679, 18691, 18701, 18713,
-    18719, 18731, 18743, 18749, 18757, 18773, 18787, 18793,
-    18797, 18803, 18839, 18859, 18869, 18899, 18911, 18913,
-    18917, 18919, 18947, 18959, 18973, 18979, 19001, 19009,
-    19013, 19031, 19037, 19051, 19069, 19073, 19079, 19081,
-    19087, 19121, 19139, 19141, 19157, 19163, 19181, 19183,
-    19207, 19211, 19213, 19219, 19231, 19237, 19249, 19259,
-    19267, 19273, 19289, 19301, 19309, 19319, 19333, 19373,
-    19379, 19381, 19387, 19391, 19403, 19417, 19421, 19423,
-    19427, 19429, 19433, 19441, 19447, 19457, 19463, 19469,
-    19471, 19477, 19483, 19489, 19501, 19507, 19531, 19541,
-    19543, 19553, 19559, 19571, 19577, 19583, 19597, 19603,
-    19609, 19661, 19681, 19687, 19697, 19699, 19709, 19717,
-    19727, 19739, 19751, 19753, 19759, 19763, 19777, 19793,
-    19801, 19813, 19819, 19841, 19843, 19853, 19861, 19867,
-    19889, 19891, 19913, 19919, 19927, 19937, 19949, 19961,
-    19963, 19973, 19979, 19991, 19993, 19997, 20011, 20021,
-    20023, 20029, 20047, 20051, 20063, 20071, 20089, 20101,
-    20107, 20113, 20117, 20123, 20129, 20143, 20147, 20149,
-    20161, 20173, 20177, 20183, 20201, 20219, 20231, 20233,
-    20249, 20261, 20269, 20287, 20297, 20323, 20327, 20333,
-    20341, 20347, 20353, 20357, 20359, 20369, 20389, 20393,
-    20399, 20407, 20411, 20431, 20441, 20443, 20477, 20479,
-    20483, 20507, 20509, 20521, 20533, 20543, 20549, 20551,
-    20563, 20593, 20599, 20611, 20627, 20639, 20641, 20663,
-    20681, 20693, 20707, 20717, 20719, 20731, 20743, 20747,
-    20749, 20753, 20759, 20771, 20773, 20789, 20807, 20809,
-    20849, 20857, 20873, 20879, 20887, 20897, 20899, 20903,
-    20921, 20929, 20939, 20947, 20959, 20963, 20981, 20983,
-    21001, 21011, 21013, 21017, 21019, 21023, 21031, 21059,
-    21061, 21067, 21089, 21101, 21107, 21121, 21139, 21143,
-    21149, 21157, 21163, 21169, 21179, 21187, 21191, 21193,
-    21211, 21221, 21227, 21247, 21269, 21277, 21283, 21313,
-    21317, 21319, 21323, 21341, 21347, 21377, 21379, 21383,
-    21391, 21397, 21401, 21407, 21419, 21433, 21467, 21481,
-    21487, 21491, 21493, 21499, 21503, 21517, 21521, 21523,
-    21529, 21557, 21559, 21563, 21569, 21577, 21587, 21589,
-    21599, 21601, 21611, 21613, 21617, 21647, 21649, 21661,
-    21673, 21683, 21701, 21713, 21727, 21737, 21739, 21751,
-    21757, 21767, 21773, 21787, 21799, 21803, 21817, 21821,
-    21839, 21841, 21851, 21859, 21863, 21871, 21881, 21893,
-    21911, 21929, 21937, 21943, 21961, 21977, 21991, 21997,
-    22003, 22013, 22027, 22031, 22037, 22039, 22051, 22063,
-    22067, 22073, 22079, 22091, 22093, 22109, 22111, 22123,
-    22129, 22133, 22147, 22153, 22157, 22159, 22171, 22189,
-    22193, 22229, 22247, 22259, 22271, 22273, 22277, 22279,
-    22283, 22291, 22303, 22307, 22343, 22349, 22367, 22369,
-    22381, 22391, 22397, 22409, 22433, 22441, 22447, 22453,
-    22469, 22481, 22483, 22501, 22511, 22531, 22541, 22543,
-    22549, 22567, 22571, 22573, 22613, 22619, 22621, 22637,
-    22639, 22643, 22651, 22669, 22679, 22691, 22697, 22699,
-    22709, 22717, 22721, 22727, 22739, 22741, 22751, 22769,
-    22777, 22783, 22787, 22807, 22811, 22817, 22853, 22859,
-    22861, 22871, 22877, 22901, 22907, 22921, 22937, 22943,
-    22961, 22963, 22973, 22993, 23003, 23011, 23017, 23021,
-    23027, 23029, 23039, 23041, 23053, 23057, 23059, 23063,
-    23071, 23081, 23087, 23099, 23117, 23131, 23143, 23159,
-    23167, 23173, 23189, 23197, 23201, 23203, 23209, 23227,
-    23251, 23269, 23279, 23291, 23293, 23297, 23311, 23321,
-    23327, 23333, 23339, 23357, 23369, 23371, 23399, 23417,
-    23431, 23447, 23459, 23473, 23497, 23509, 23531, 23537,
-    23539, 23549, 23557, 23561, 23563, 23567, 23581, 23593,
-    23599, 23603, 23609, 23623, 23627, 23629, 23633, 23663,
-    23669, 23671, 23677, 23687, 23689, 23719, 23741, 23743,
-    23747, 23753, 23761, 23767, 23773, 23789, 23801, 23813,
-    23819, 23827, 23831, 23833, 23857, 23869, 23873, 23879,
-    23887, 23893, 23899, 23909, 23911, 23917, 23929, 23957,
-    23971, 23977, 23981, 23993, 24001, 24007, 24019, 24023,
-    24029, 24043, 24049, 24061, 24071, 24077, 24083, 24091,
-    24097, 24103, 24107, 24109, 24113, 24121, 24133, 24137,
-    24151, 24169, 24179, 24181, 24197, 24203, 24223, 24229,
-    24239, 24247, 24251, 24281, 24317, 24329, 24337, 24359,
-    24371, 24373, 24379, 24391, 24407, 24413, 24419, 24421,
-    24439, 24443, 24469, 24473, 24481, 24499, 24509, 24517,
-    24527, 24533, 24547, 24551, 24571, 24593, 24611, 24623,
-    24631, 24659, 24671, 24677, 24683, 24691, 24697, 24709,
-    24733, 24749, 24763, 24767, 24781, 24793, 24799, 24809,
-    24821, 24841, 24847, 24851, 24859, 24877, 24889, 24907,
-    24917, 24919, 24923, 24943, 24953, 24967, 24971, 24977,
-    24979, 24989, 25013, 25031, 25033, 25037, 25057, 25073,
-    25087, 25097, 25111, 25117, 25121, 25127, 25147, 25153,
-    25163, 25169, 25171, 25183, 25189, 25219, 25229, 25237,
-    25243, 25247, 25253, 25261, 25301, 25303, 25307, 25309,
-    25321, 25339, 25343, 25349, 25357, 25367, 25373, 25391,
-    25409, 25411, 25423, 25439, 25447, 25453, 25457, 25463,
-    25469, 25471, 25523, 25537, 25541, 25561, 25577, 25579,
-    25583, 25589, 25601, 25603, 25609, 25621, 25633, 25639,
-    25643, 25657, 25667, 25673, 25679, 25693, 25703, 25717,
-    25733, 25741, 25747, 25759, 25763, 25771, 25793, 25799,
-    25801, 25819, 25841, 25847, 25849, 25867, 25873, 25889,
-    25903, 25913, 25919, 25931, 25933, 25939, 25943, 25951,
-    25969, 25981, 25997, 25999, 26003, 26017, 26021, 26029,
-    26041, 26053, 26083, 26099, 26107, 26111, 26113, 26119,
-    26141, 26153, 26161, 26171, 26177, 26183, 26189, 26203,
-    26209, 26227, 26237, 26249, 26251, 26261, 26263, 26267,
-    26293, 26297, 26309, 26317, 26321, 26339, 26347, 26357,
-    26371, 26387, 26393, 26399, 26407, 26417, 26423, 26431,
-    26437, 26449, 26459, 26479, 26489, 26497, 26501, 26513,
-    26539, 26557, 26561, 26573, 26591, 26597, 26627, 26633,
-    26641, 26647, 26669, 26681, 26683, 26687, 26693, 26699,
-    26701, 26711, 26713, 26717, 26723, 26729, 26731, 26737,
-    26759, 26777, 26783, 26801, 26813, 26821, 26833, 26839,
-    26849, 26861, 26863, 26879, 26881, 26891, 26893, 26903,
-    26921, 26927, 26947, 26951, 26953, 26959, 26981, 26987,
-    26993, 27011, 27017, 27031, 27043, 27059, 27061, 27067,
-    27073, 27077, 27091, 27103, 27107, 27109, 27127, 27143,
-    27179, 27191, 27197, 27211, 27239, 27241, 27253, 27259,
-    27271, 27277, 27281, 27283, 27299, 27329, 27337, 27361,
-    27367, 27397, 27407, 27409, 27427, 27431, 27437, 27449,
-    27457, 27479, 27481, 27487, 27509, 27527, 27529, 27539,
-    27541, 27551, 27581, 27583, 27611, 27617, 27631, 27647,
-    27653, 27673, 27689, 27691, 27697, 27701, 27733, 27737,
-    27739, 27743, 27749, 27751, 27763, 27767, 27773, 27779,
-    27791, 27793, 27799, 27803, 27809, 27817, 27823, 27827,
-    27847, 27851, 27883, 27893, 27901, 27917, 27919, 27941,
-    27943, 27947, 27953, 27961, 27967, 27983, 27997, 28001,
-    28019, 28027, 28031, 28051, 28057, 28069, 28081, 28087,
-    28097, 28099, 28109, 28111, 28123, 28151, 28163, 28181,
-    28183, 28201, 28211, 28219, 28229, 28277, 28279, 28283,
-    28289, 28297, 28307, 28309, 28319, 28349, 28351, 28387,
-    28393, 28403, 28409, 28411, 28429, 28433, 28439, 28447,
-    28463, 28477, 28493, 28499, 28513, 28517, 28537, 28541,
-    28547, 28549, 28559, 28571, 28573, 28579, 28591, 28597,
-    28603, 28607, 28619, 28621, 28627, 28631, 28643, 28649,
-    28657, 28661, 28663, 28669, 28687, 28697, 28703, 28711,
-    28723, 28729, 28751, 28753, 28759, 28771, 28789, 28793,
-    28807, 28813, 28817, 28837, 28843, 28859, 28867, 28871,
-    28879, 28901, 28909, 28921, 28927, 28933, 28949, 28961,
-    28979, 29009, 29017, 29021, 29023, 29027, 29033, 29059,
-    29063, 29077, 29101, 29123, 29129, 29131, 29137, 29147,
-    29153, 29167, 29173, 29179, 29191, 29201, 29207, 29209,
-    29221, 29231, 29243, 29251, 29269, 29287, 29297, 29303,
-    29311, 29327, 29333, 29339, 29347, 29363, 29383, 29387,
-    29389, 29399, 29401, 29411, 29423, 29429, 29437, 29443,
-    29453, 29473, 29483, 29501, 29527, 29531, 29537, 29567,
-    29569, 29573, 29581, 29587, 29599, 29611, 29629, 29633,
-    29641, 29663, 29669, 29671, 29683, 29717, 29723, 29741,
-    29753, 29759, 29761, 29789, 29803, 29819, 29833, 29837,
-    29851, 29863, 29867, 29873, 29879, 29881, 29917, 29921,
-    29927, 29947, 29959, 29983, 29989, 30011, 30013, 30029,
-    30047, 30059, 30071, 30089, 30091, 30097, 30103, 30109,
-    30113, 30119, 30133, 30137, 30139, 30161, 30169, 30181,
-    30187, 30197, 30203, 30211, 30223, 30241, 30253, 30259,
-    30269, 30271, 30293, 30307, 30313, 30319, 30323, 30341,
-    30347, 30367, 30389, 30391, 30403, 30427, 30431, 30449,
-    30467, 30469, 30491, 30493, 30497, 30509, 30517, 30529,
-    30539, 30553, 30557, 30559, 30577, 30593, 30631, 30637,
-    30643, 30649, 30661, 30671, 30677, 30689, 30697, 30703,
-    30707, 30713, 30727, 30757, 30763, 30773, 30781, 30803,
-    30809, 30817, 30829, 30839, 30841, 30851, 30853, 30859,
-    30869, 30871, 30881, 30893, 30911, 30931, 30937, 30941,
-    30949, 30971, 30977, 30983, 31013, 31019, 31033, 31039,
-    31051, 31063, 31069, 31079, 31081, 31091, 31121, 31123,
-    31139, 31147, 31151, 31153, 31159, 31177, 31181, 31183,
-    31189, 31193, 31219, 31223, 31231, 31237, 31247, 31249,
-    31253, 31259, 31267, 31271, 31277, 31307, 31319, 31321,
-    31327, 31333, 31337, 31357, 31379, 31387, 31391, 31393,
-    31397, 31469, 31477, 31481, 31489, 31511, 31513, 31517,
-    31531, 31541, 31543, 31547, 31567, 31573, 31583, 31601,
-    31607, 31627, 31643, 31649, 31657, 31663, 31667, 31687,
-    31699, 31721, 31723, 31727, 31729, 31741, 31751, 31769,
-    31771, 31793, 31799, 31817, 31847, 31849, 31859, 31873,
-    31883, 31891, 31907, 31957, 31963, 31973, 31981, 31991,
-    32003, 32009, 32027, 32029, 32051, 32057, 32059, 32063,
-    32069, 32077, 32083, 32089, 32099, 32117, 32119, 32141,
-    32143, 32159, 32173, 32183, 32189, 32191, 32203, 32213,
-    32233, 32237, 32251, 32257, 32261, 32297, 32299, 32303,
-    32309, 32321, 32323, 32327, 32341, 32353, 32359, 32363,
-    32369, 32371, 32377, 32381, 32401, 32411, 32413, 32423,
-    32429, 32441, 32443, 32467, 32479, 32491, 32497, 32503,
-    32507, 32531, 32533, 32537, 32561, 32563, 32569, 32573,
-    32579, 32587, 32603, 32609, 32611, 32621, 32633, 32647,
-    32653, 32687, 32693, 32707, 32713, 32717, 32719, 32749,
-    32771, 32779, 32783, 32789, 32797, 32801, 32803, 32831,
-    32833, 32839, 32843, 32869, 32887, 32909, 32911, 32917,
-    32933, 32939, 32941, 32957, 32969, 32971, 32983, 32987,
-    32993, 32999, 33013, 33023, 33029, 33037, 33049, 33053,
-    33071, 33073, 33083, 33091, 33107, 33113, 33119, 33149,
-    33151, 33161, 33179, 33181, 33191, 33199, 33203, 33211,
-    33223, 33247, 33287, 33289, 33301, 33311, 33317, 33329,
-    33331, 33343, 33347, 33349, 33353, 33359, 33377, 33391,
-    33403, 33409, 33413, 33427, 33457, 33461, 33469, 33479,
-    33487, 33493, 33503, 33521, 33529, 33533, 33547, 33563,
-    33569, 33577, 33581, 33587, 33589, 33599, 33601, 33613,
-    33617, 33619, 33623, 33629, 33637, 33641, 33647, 33679,
-    33703, 33713, 33721, 33739, 33749, 33751, 33757, 33767,
-    33769, 33773, 33791, 33797, 33809, 33811, 33827, 33829,
-    33851, 33857, 33863, 33871, 33889, 33893, 33911, 33923,
-    33931, 33937, 33941, 33961, 33967, 33997, 34019, 34031,
-    34033, 34039, 34057, 34061, 34123, 34127, 34129, 34141,
-    34147, 34157, 34159, 34171, 34183, 34211, 34213, 34217,
-    34231, 34253, 34259, 34261, 34267, 34273, 34283, 34297,
-    34301, 34303, 34313, 34319, 34327, 34337, 34351, 34361,
-    34367, 34369, 34381, 34403, 34421, 34429, 34439, 34457,
-    34469, 34471, 34483, 34487, 34499, 34501, 34511, 34513,
-    34519, 34537, 34543, 34549, 34583, 34589, 34591, 34603,
-    34607, 34613, 34631, 34649, 34651, 34667, 34673, 34679,
-    34687, 34693, 34703, 34721, 34729, 34739, 34747, 34757,
-    34759, 34763, 34781, 34807, 34819, 34841, 34843, 34847,
-    34849, 34871, 34877, 34883, 34897, 34913, 34919, 34939,
-    34949, 34961, 34963, 34981, 35023, 35027, 35051, 35053,
-    35059, 35069, 35081, 35083, 35089, 35099, 35107, 35111,
-    35117, 35129, 35141, 35149, 35153, 35159, 35171, 35201,
-    35221, 35227, 35251, 35257, 35267, 35279, 35281, 35291,
-    35311, 35317, 35323, 35327, 35339, 35353, 35363, 35381,
-    35393, 35401, 35407, 35419, 35423, 35437, 35447, 35449,
-    35461, 35491, 35507, 35509, 35521, 35527, 35531, 35533,
-    35537, 35543, 35569, 35573, 35591, 35593, 35597, 35603,
-    35617, 35671, 35677, 35729, 35731, 35747, 35753, 35759,
-    35771, 35797, 35801, 35803, 35809, 35831, 35837, 35839,
-    35851, 35863, 35869, 35879, 35897, 35899, 35911, 35923,
-    35933, 35951, 35963, 35969, 35977, 35983, 35993, 35999,
-    36007, 36011, 36013, 36017, 36037, 36061, 36067, 36073,
-    36083, 36097, 36107, 36109, 36131, 36137, 36151, 36161,
-    36187, 36191, 36209, 36217, 36229, 36241, 36251, 36263,
-    36269, 36277, 36293, 36299, 36307, 36313, 36319, 36341,
-    36343, 36353, 36373, 36383, 36389, 36433, 36451, 36457,
-    36467, 36469, 36473, 36479, 36493, 36497, 36523, 36527,
-    36529, 36541, 36551, 36559, 36563, 36571, 36583, 36587,
-    36599, 36607, 36629, 36637, 36643, 36653, 36671, 36677,
-    36683, 36691, 36697, 36709, 36713, 36721, 36739, 36749,
-    36761, 36767, 36779, 36781, 36787, 36791, 36793, 36809,
-    36821, 36833, 36847, 36857, 36871, 36877, 36887, 36899,
-    36901, 36913, 36919, 36923, 36929, 36931, 36943, 36947,
-    36973, 36979, 36997, 37003, 37013, 37019, 37021, 37039,
-    37049, 37057, 37061, 37087, 37097, 37117, 37123, 37139,
-    37159, 37171, 37181, 37189, 37199, 37201, 37217, 37223,
-    37243, 37253, 37273, 37277, 37307, 37309, 37313, 37321,
-    37337, 37339, 37357, 37361, 37363, 37369, 37379, 37397,
-    37409, 37423, 37441, 37447, 37463, 37483, 37489, 37493,
-    37501, 37507, 37511, 37517, 37529, 37537, 37547, 37549,
-    37561, 37567, 37571, 37573, 37579, 37589, 37591, 37607,
-    37619, 37633, 37643, 37649, 37657, 37663, 37691, 37693,
-    37699, 37717, 37747, 37781, 37783, 37799, 37811, 37813,
-    37831, 37847, 37853, 37861, 37871, 37879, 37889, 37897,
-    37907, 37951, 37957, 37963, 37967, 37987, 37991, 37993,
-    37997, 38011, 38039, 38047, 38053, 38069, 38083, 38113,
-    38119, 38149, 38153, 38167, 38177, 38183, 38189, 38197,
-    38201, 38219, 38231, 38237, 38239, 38261, 38273, 38281,
-    38287, 38299, 38303, 38317, 38321, 38327, 38329, 38333,
-    38351, 38371, 38377, 38393, 38431, 38447, 38449, 38453,
-    38459, 38461, 38501, 38543, 38557, 38561, 38567, 38569,
-    38593, 38603, 38609, 38611, 38629, 38639, 38651, 38653,
-    38669, 38671, 38677, 38693, 38699, 38707, 38711, 38713,
-    38723, 38729, 38737, 38747, 38749, 38767, 38783, 38791,
-    38803, 38821, 38833, 38839, 38851, 38861, 38867, 38873,
-    38891, 38903, 38917, 38921, 38923, 38933, 38953, 38959,
-    38971, 38977, 38993, 39019, 39023, 39041, 39043, 39047,
-    39079, 39089, 39097, 39103, 39107, 39113, 39119, 39133,
-    39139, 39157, 39161, 39163, 39181, 39191, 39199, 39209,
-    39217, 39227, 39229, 39233, 39239, 39241, 39251, 39293,
-    39301, 39313, 39317, 39323, 39341, 39343, 39359, 39367,
-    39371, 39373, 39383, 39397, 39409, 39419, 39439, 39443,
-    39451, 39461, 39499, 39503, 39509, 39511, 39521, 39541,
-    39551, 39563, 39569, 39581, 39607, 39619, 39623, 39631,
-    39659, 39667, 39671, 39679, 39703, 39709, 39719, 39727,
-    39733, 39749, 39761, 39769, 39779, 39791, 39799, 39821,
-    39827, 39829, 39839, 39841, 39847, 39857, 39863, 39869,
-    39877, 39883, 39887, 39901, 39929, 39937, 39953, 39971,
-    39979, 39983, 39989, 40009, 40013, 40031, 40037, 40039,
-    40063, 40087, 40093, 40099, 40111, 40123, 40127, 40129,
-    40151, 40153, 40163, 40169, 40177, 40189, 40193, 40213,
-    40231, 40237, 40241, 40253, 40277, 40283, 40289, 40343,
-    40351, 40357, 40361, 40387, 40423, 40427, 40429, 40433,
-    40459, 40471, 40483, 40487, 40493, 40499, 40507, 40519,
-    40529, 40531, 40543, 40559, 40577, 40583, 40591, 40597,
-    40609, 40627, 40637, 40639, 40693, 40697, 40699, 40709,
-    40739, 40751, 40759, 40763, 40771, 40787, 40801, 40813,
-    40819, 40823, 40829, 40841, 40847, 40849, 40853, 40867,
-    40879, 40883, 40897, 40903, 40927, 40933, 40939, 40949,
-    40961, 40973, 40993, 41011, 41017, 41023, 41039, 41047,
-    41051, 41057, 41077, 41081, 41113, 41117, 41131, 41141,
-    41143, 41149, 41161, 41177, 41179, 41183, 41189, 41201,
-    41203, 41213, 41221, 41227, 41231, 41233, 41243, 41257,
-    41263, 41269, 41281, 41299, 41333, 41341, 41351, 41357,
-    41381, 41387, 41389, 41399, 41411, 41413, 41443, 41453,
-    41467, 41479, 41491, 41507, 41513, 41519, 41521, 41539,
-    41543, 41549, 41579, 41593, 41597, 41603, 41609, 41611,
-    41617, 41621, 41627, 41641, 41647, 41651, 41659, 41669,
-    41681, 41687, 41719, 41729, 41737, 41759, 41761, 41771,
-    41777, 41801, 41809, 41813, 41843, 41849, 41851, 41863,
-    41879, 41887, 41893, 41897, 41903, 41911, 41927, 41941,
-    41947, 41953, 41957, 41959, 41969, 41981, 41983, 41999,
-    42013, 42017, 42019, 42023, 42043, 42061, 42071, 42073,
-    42083, 42089, 42101, 42131, 42139, 42157, 42169, 42179,
-    42181, 42187, 42193, 42197, 42209, 42221, 42223, 42227,
-    42239, 42257, 42281, 42283, 42293, 42299, 42307, 42323,
-    42331, 42337, 42349, 42359, 42373, 42379, 42391, 42397,
-    42403, 42407, 42409, 42433, 42437, 42443, 42451, 42457,
-    42461, 42463, 42467, 42473, 42487, 42491, 42499, 42509,
-    42533, 42557, 42569, 42571, 42577, 42589, 42611, 42641,
-    42643, 42649, 42667, 42677, 42683, 42689, 42697, 42701,
-    42703, 42709, 42719, 42727, 42737, 42743, 42751, 42767,
-    42773, 42787, 42793, 42797, 42821, 42829, 42839, 42841,
-    42853, 42859, 42863, 42899, 42901, 42923, 42929, 42937,
-    42943, 42953, 42961, 42967, 42979, 42989, 43003, 43013,
-    43019, 43037, 43049, 43051, 43063, 43067, 43093, 43103,
-    43117, 43133, 43151, 43159, 43177, 43189, 43201, 43207,
-    43223, 43237, 43261, 43271, 43283, 43291, 43313, 43319,
-    43321, 43331, 43391, 43397, 43399, 43403, 43411, 43427,
-    43441, 43451, 43457, 43481, 43487, 43499, 43517, 43541,
-    43543, 43573, 43577, 43579, 43591, 43597, 43607, 43609,
-    43613, 43627, 43633, 43649, 43651, 43661, 43669, 43691,
-    43711, 43717, 43721, 43753, 43759, 43777, 43781, 43783,
-    43787, 43789, 43793, 43801, 43853, 43867, 43889, 43891,
-    43913, 43933, 43943, 43951, 43961, 43963, 43969, 43973,
-    43987, 43991, 43997, 44017, 44021, 44027, 44029, 44041,
-    44053, 44059, 44071, 44087, 44089, 44101, 44111, 44119,
-    44123, 44129, 44131, 44159, 44171, 44179, 44189, 44201,
-    44203, 44207, 44221, 44249, 44257, 44263, 44267, 44269,
-    44273, 44279, 44281, 44293, 44351, 44357, 44371, 44381,
-    44383, 44389, 44417, 44449, 44453, 44483, 44491, 44497,
-    44501, 44507, 44519, 44531, 44533, 44537, 44543, 44549,
-    44563, 44579, 44587, 44617, 44621, 44623, 44633, 44641,
-    44647, 44651, 44657, 44683, 44687, 44699, 44701, 44711,
-    44729, 44741, 44753, 44771, 44773, 44777, 44789, 44797,
-    44809, 44819, 44839, 44843, 44851, 44867, 44879, 44887,
-    44893, 44909, 44917, 44927, 44939, 44953, 44959, 44963,
-    44971, 44983, 44987, 45007, 45013, 45053, 45061, 45077,
-    45083, 45119, 45121, 45127, 45131, 45137, 45139, 45161,
-    45179, 45181, 45191, 45197, 45233, 45247, 45259, 45263,
-    45281, 45289, 45293, 45307, 45317, 45319, 45329, 45337,
-    45341, 45343, 45361, 45377, 45389, 45403, 45413, 45427,
-    45433, 45439, 45481, 45491, 45497, 45503, 45523, 45533,
-    45541, 45553, 45557, 45569, 45587, 45589, 45599, 45613,
-    45631, 45641, 45659, 45667, 45673, 45677, 45691, 45697,
-    45707, 45737, 45751, 45757, 45763, 45767, 45779, 45817,
-    45821, 45823, 45827, 45833, 45841, 45853, 45863, 45869,
-    45887, 45893, 45943, 45949, 45953, 45959, 45971, 45979,
-    45989, 46021, 46027, 46049, 46051, 46061, 46073, 46091,
-    46093, 46099, 46103, 46133, 46141, 46147, 46153, 46171,
-    46181, 46183, 46187, 46199, 46219, 46229, 46237, 46261,
-    46271, 46273, 46279, 46301, 46307, 46309, 46327, 46337,
+    2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263,
+    269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541, 547, 557, 563, 569, 571, 577,
+    587, 593, 599, 601, 607, 613, 617, 619, 631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727, 733, 739, 743, 751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, 829, 839, 853, 857, 859, 863, 877, 881, 883, 887, 907, 911,
+    919, 929, 937, 941, 947, 953, 967, 971, 977, 983, 991, 997, 1009, 1013, 1019, 1021, 1031, 1033, 1039, 1049, 1051, 1061, 1063, 1069, 1087, 1091, 1093, 1097, 1103, 1109, 1117, 1123, 1129, 1151, 1153, 1163, 1171, 1181, 1187, 1193, 1201, 1213, 1217, 1223,
+    1229, 1231, 1237, 1249, 1259, 1277, 1279, 1283, 1289, 1291, 1297, 1301, 1303, 1307, 1319, 1321, 1327, 1361, 1367, 1373, 1381, 1399, 1409, 1423, 1427, 1429, 1433, 1439, 1447, 1451, 1453, 1459, 1471, 1481, 1483, 1487, 1489, 1493, 1499, 1511, 1523, 1531,
+    1543, 1549, 1553, 1559, 1567, 1571, 1579, 1583, 1597, 1601, 1607, 1609, 1613, 1619, 1621, 1627, 1637, 1657, 1663, 1667, 1669, 1693, 1697, 1699, 1709, 1721, 1723, 1733, 1741, 1747, 1753, 1759, 1777, 1783, 1787, 1789, 1801, 1811, 1823, 1831, 1847, 1861,
+    1867, 1871, 1873, 1877, 1879, 1889, 1901, 1907, 1913, 1931, 1933, 1949, 1951, 1973, 1979, 1987, 1993, 1997, 1999, 2003, 2011, 2017, 2027, 2029, 2039, 2053, 2063, 2069, 2081, 2083, 2087, 2089, 2099, 2111, 2113, 2129, 2131, 2137, 2141, 2143, 2153, 2161,
+    2179, 2203, 2207, 2213, 2221, 2237, 2239, 2243, 2251, 2267, 2269, 2273, 2281, 2287, 2293, 2297, 2309, 2311, 2333, 2339, 2341, 2347, 2351, 2357, 2371, 2377, 2381, 2383, 2389, 2393, 2399, 2411, 2417, 2423, 2437, 2441, 2447, 2459, 2467, 2473, 2477, 2503,
+    2521, 2531, 2539, 2543, 2549, 2551, 2557, 2579, 2591, 2593, 2609, 2617, 2621, 2633, 2647, 2657, 2659, 2663, 2671, 2677, 2683, 2687, 2689, 2693, 2699, 2707, 2711, 2713, 2719, 2729, 2731, 2741, 2749, 2753, 2767, 2777, 2789, 2791, 2797, 2801, 2803, 2819,
+    2833, 2837, 2843, 2851, 2857, 2861, 2879, 2887, 2897, 2903, 2909, 2917, 2927, 2939, 2953, 2957, 2963, 2969, 2971, 2999, 3001, 3011, 3019, 3023, 3037, 3041, 3049, 3061, 3067, 3079, 3083, 3089, 3109, 3119, 3121, 3137, 3163, 3167, 3169, 3181, 3187, 3191,
+    3203, 3209, 3217, 3221, 3229, 3251, 3253, 3257, 3259, 3271, 3299, 3301, 3307, 3313, 3319, 3323, 3329, 3331, 3343, 3347, 3359, 3361, 3371, 3373, 3389, 3391, 3407, 3413, 3433, 3449, 3457, 3461, 3463, 3467, 3469, 3491, 3499, 3511, 3517, 3527, 3529, 3533,
+    3539, 3541, 3547, 3557, 3559, 3571, 3581, 3583, 3593, 3607, 3613, 3617, 3623, 3631, 3637, 3643, 3659, 3671, 3673, 3677, 3691, 3697, 3701, 3709, 3719, 3727, 3733, 3739, 3761, 3767, 3769, 3779, 3793, 3797, 3803, 3821, 3823, 3833, 3847, 3851, 3853, 3863,
+    3877, 3881, 3889, 3907, 3911, 3917, 3919, 3923, 3929, 3931, 3943, 3947, 3967, 3989, 4001, 4003, 4007, 4013, 4019, 4021, 4027, 4049, 4051, 4057, 4073, 4079, 4091, 4093, 4099, 4111, 4127, 4129, 4133, 4139, 4153, 4157, 4159, 4177, 4201, 4211, 4217, 4219,
+    4229, 4231, 4241, 4243, 4253, 4259, 4261, 4271, 4273, 4283, 4289, 4297, 4327, 4337, 4339, 4349, 4357, 4363, 4373, 4391, 4397, 4409, 4421, 4423, 4441, 4447, 4451, 4457, 4463, 4481, 4483, 4493, 4507, 4513, 4517, 4519, 4523, 4547, 4549, 4561, 4567, 4583,
+    4591, 4597, 4603, 4621, 4637, 4639, 4643, 4649, 4651, 4657, 4663, 4673, 4679, 4691, 4703, 4721, 4723, 4729, 4733, 4751, 4759, 4783, 4787, 4789, 4793, 4799, 4801, 4813, 4817, 4831, 4861, 4871, 4877, 4889, 4903, 4909, 4919, 4931, 4933, 4937, 4943, 4951,
+    4957, 4967, 4969, 4973, 4987, 4993, 4999, 5003, 5009, 5011, 5021, 5023, 5039, 5051, 5059, 5077, 5081, 5087, 5099, 5101, 5107, 5113, 5119, 5147, 5153, 5167, 5171, 5179, 5189, 5197, 5209, 5227, 5231, 5233, 5237, 5261, 5273, 5279, 5281, 5297, 5303, 5309,
+    5323, 5333, 5347, 5351, 5381, 5387, 5393, 5399, 5407, 5413, 5417, 5419, 5431, 5437, 5441, 5443, 5449, 5471, 5477, 5479, 5483, 5501, 5503, 5507, 5519, 5521, 5527, 5531, 5557, 5563, 5569, 5573, 5581, 5591, 5623, 5639, 5641, 5647, 5651, 5653, 5657, 5659,
+    5669, 5683, 5689, 5693, 5701, 5711, 5717, 5737, 5741, 5743, 5749, 5779, 5783, 5791, 5801, 5807, 5813, 5821, 5827, 5839, 5843, 5849, 5851, 5857, 5861, 5867, 5869, 5879, 5881, 5897, 5903, 5923, 5927, 5939, 5953, 5981, 5987, 6007, 6011, 6029, 6037, 6043,
+    6047, 6053, 6067, 6073, 6079, 6089, 6091, 6101, 6113, 6121, 6131, 6133, 6143, 6151, 6163, 6173, 6197, 6199, 6203, 6211, 6217, 6221, 6229, 6247, 6257, 6263, 6269, 6271, 6277, 6287, 6299, 6301, 6311, 6317, 6323, 6329, 6337, 6343, 6353, 6359, 6361, 6367,
+    6373, 6379, 6389, 6397, 6421, 6427, 6449, 6451, 6469, 6473, 6481, 6491, 6521, 6529, 6547, 6551, 6553, 6563, 6569, 6571, 6577, 6581, 6599, 6607, 6619, 6637, 6653, 6659, 6661, 6673, 6679, 6689, 6691, 6701, 6703, 6709, 6719, 6733, 6737, 6761, 6763, 6779,
+    6781, 6791, 6793, 6803, 6823, 6827, 6829, 6833, 6841, 6857, 6863, 6869, 6871, 6883, 6899, 6907, 6911, 6917, 6947, 6949, 6959, 6961, 6967, 6971, 6977, 6983, 6991, 6997, 7001, 7013, 7019, 7027, 7039, 7043, 7057, 7069, 7079, 7103, 7109, 7121, 7127, 7129,
+    7151, 7159, 7177, 7187, 7193, 7207, 7211, 7213, 7219, 7229, 7237, 7243, 7247, 7253, 7283, 7297, 7307, 7309, 7321, 7331, 7333, 7349, 7351, 7369, 7393, 7411, 7417, 7433, 7451, 7457, 7459, 7477, 7481, 7487, 7489, 7499, 7507, 7517, 7523, 7529, 7537, 7541,
+    7547, 7549, 7559, 7561, 7573, 7577, 7583, 7589, 7591, 7603, 7607, 7621, 7639, 7643, 7649, 7669, 7673, 7681, 7687, 7691, 7699, 7703, 7717, 7723, 7727, 7741, 7753, 7757, 7759, 7789, 7793, 7817, 7823, 7829, 7841, 7853, 7867, 7873, 7877, 7879, 7883, 7901,
+    7907, 7919, 7927, 7933, 7937, 7949, 7951, 7963, 7993, 8009, 8011, 8017, 8039, 8053, 8059, 8069, 8081, 8087, 8089, 8093, 8101, 8111, 8117, 8123, 8147, 8161, 8167, 8171, 8179, 8191, 8209, 8219, 8221, 8231, 8233, 8237, 8243, 8263, 8269, 8273, 8287, 8291,
+    8293, 8297, 8311, 8317, 8329, 8353, 8363, 8369, 8377, 8387, 8389, 8419, 8423, 8429, 8431, 8443, 8447, 8461, 8467, 8501, 8513, 8521, 8527, 8537, 8539, 8543, 8563, 8573, 8581, 8597, 8599, 8609, 8623, 8627, 8629, 8641, 8647, 8663, 8669, 8677, 8681, 8689,
+    8693, 8699, 8707, 8713, 8719, 8731, 8737, 8741, 8747, 8753, 8761, 8779, 8783, 8803, 8807, 8819, 8821, 8831, 8837, 8839, 8849, 8861, 8863, 8867, 8887, 8893, 8923, 8929, 8933, 8941, 8951, 8963, 8969, 8971, 8999, 9001, 9007, 9011, 9013, 9029, 9041, 9043,
+    9049, 9059, 9067, 9091, 9103, 9109, 9127, 9133, 9137, 9151, 9157, 9161, 9173, 9181, 9187, 9199, 9203, 9209, 9221, 9227, 9239, 9241, 9257, 9277, 9281, 9283, 9293, 9311, 9319, 9323, 9337, 9341, 9343, 9349, 9371, 9377, 9391, 9397, 9403, 9413, 9419, 9421,
+    9431, 9433, 9437, 9439, 9461, 9463, 9467, 9473, 9479, 9491, 9497, 9511, 9521, 9533, 9539, 9547, 9551, 9587, 9601, 9613, 9619, 9623, 9629, 9631, 9643, 9649, 9661, 9677, 9679, 9689, 9697, 9719, 9721, 9733, 9739, 9743, 9749, 9767, 9769, 9781, 9787, 9791,
+    9803, 9811, 9817, 9829, 9833, 9839, 9851, 9857, 9859, 9871, 9883, 9887, 9901, 9907, 9923, 9929, 9931, 9941, 9949, 9967, 9973, 10007, 10009, 10037, 10039, 10061, 10067, 10069, 10079, 10091, 10093, 10099, 10103, 10111, 10133, 10139, 10141, 10151, 10159,
+    10163, 10169, 10177, 10181, 10193, 10211, 10223, 10243, 10247, 10253, 10259, 10267, 10271, 10273, 10289, 10301, 10303, 10313, 10321, 10331, 10333, 10337, 10343, 10357, 10369, 10391, 10399, 10427, 10429, 10433, 10453, 10457, 10459, 10463, 10477, 10487,
+    10499, 10501, 10513, 10529, 10531, 10559, 10567, 10589, 10597, 10601, 10607, 10613, 10627, 10631, 10639, 10651, 10657, 10663, 10667, 10687, 10691, 10709, 10711, 10723, 10729, 10733, 10739, 10753, 10771, 10781, 10789, 10799, 10831, 10837, 10847, 10853,
+    10859, 10861, 10867, 10883, 10889, 10891, 10903, 10909, 10937, 10939, 10949, 10957, 10973, 10979, 10987, 10993, 11003, 11027, 11047, 11057, 11059, 11069, 11071, 11083, 11087, 11093, 11113, 11117, 11119, 11131, 11149, 11159, 11161, 11171, 11173, 11177,
+    11197, 11213, 11239, 11243, 11251, 11257, 11261, 11273, 11279, 11287, 11299, 11311, 11317, 11321, 11329, 11351, 11353, 11369, 11383, 11393, 11399, 11411, 11423, 11437, 11443, 11447, 11467, 11471, 11483, 11489, 11491, 11497, 11503, 11519, 11527, 11549,
+    11551, 11579, 11587, 11593, 11597, 11617, 11621, 11633, 11657, 11677, 11681, 11689, 11699, 11701, 11717, 11719, 11731, 11743, 11777, 11779, 11783, 11789, 11801, 11807, 11813, 11821, 11827, 11831, 11833, 11839, 11863, 11867, 11887, 11897, 11903, 11909,
+    11923, 11927, 11933, 11939, 11941, 11953, 11959, 11969, 11971, 11981, 11987, 12007, 12011, 12037, 12041, 12043, 12049, 12071, 12073, 12097, 12101, 12107, 12109, 12113, 12119, 12143, 12149, 12157, 12161, 12163, 12197, 12203, 12211, 12227, 12239, 12241,
+    12251, 12253, 12263, 12269, 12277, 12281, 12289, 12301, 12323, 12329, 12343, 12347, 12373, 12377, 12379, 12391, 12401, 12409, 12413, 12421, 12433, 12437, 12451, 12457, 12473, 12479, 12487, 12491, 12497, 12503, 12511, 12517, 12527, 12539, 12541, 12547,
+    12553, 12569, 12577, 12583, 12589, 12601, 12611, 12613, 12619, 12637, 12641, 12647, 12653, 12659, 12671, 12689, 12697, 12703, 12713, 12721, 12739, 12743, 12757, 12763, 12781, 12791, 12799, 12809, 12821, 12823, 12829, 12841, 12853, 12889, 12893, 12899,
+    12907, 12911, 12917, 12919, 12923, 12941, 12953, 12959, 12967, 12973, 12979, 12983, 13001, 13003, 13007, 13009, 13033, 13037, 13043, 13049, 13063, 13093, 13099, 13103, 13109, 13121, 13127, 13147, 13151, 13159, 13163, 13171, 13177, 13183, 13187, 13217,
+    13219, 13229, 13241, 13249, 13259, 13267, 13291, 13297, 13309, 13313, 13327, 13331, 13337, 13339, 13367, 13381, 13397, 13399, 13411, 13417, 13421, 13441, 13451, 13457, 13463, 13469, 13477, 13487, 13499, 13513, 13523, 13537, 13553, 13567, 13577, 13591,
+    13597, 13613, 13619, 13627, 13633, 13649, 13669, 13679, 13681, 13687, 13691, 13693, 13697, 13709, 13711, 13721, 13723, 13729, 13751, 13757, 13759, 13763, 13781, 13789, 13799, 13807, 13829, 13831, 13841, 13859, 13873, 13877, 13879, 13883, 13901, 13903,
+    13907, 13913, 13921, 13931, 13933, 13963, 13967, 13997, 13999, 14009, 14011, 14029, 14033, 14051, 14057, 14071, 14081, 14083, 14087, 14107, 14143, 14149, 14153, 14159, 14173, 14177, 14197, 14207, 14221, 14243, 14249, 14251, 14281, 14293, 14303, 14321,
+    14323, 14327, 14341, 14347, 14369, 14387, 14389, 14401, 14407, 14411, 14419, 14423, 14431, 14437, 14447, 14449, 14461, 14479, 14489, 14503, 14519, 14533, 14537, 14543, 14549, 14551, 14557, 14561, 14563, 14591, 14593, 14621, 14627, 14629, 14633, 14639,
+    14653, 14657, 14669, 14683, 14699, 14713, 14717, 14723, 14731, 14737, 14741, 14747, 14753, 14759, 14767, 14771, 14779, 14783, 14797, 14813, 14821, 14827, 14831, 14843, 14851, 14867, 14869, 14879, 14887, 14891, 14897, 14923, 14929, 14939, 14947, 14951,
+    14957, 14969, 14983, 15013, 15017, 15031, 15053, 15061, 15073, 15077, 15083, 15091, 15101, 15107, 15121, 15131, 15137, 15139, 15149, 15161, 15173, 15187, 15193, 15199, 15217, 15227, 15233, 15241, 15259, 15263, 15269, 15271, 15277, 15287, 15289, 15299,
+    15307, 15313, 15319, 15329, 15331, 15349, 15359, 15361, 15373, 15377, 15383, 15391, 15401, 15413, 15427, 15439, 15443, 15451, 15461, 15467, 15473, 15493, 15497, 15511, 15527, 15541, 15551, 15559, 15569, 15581, 15583, 15601, 15607, 15619, 15629, 15641,
+    15643, 15647, 15649, 15661, 15667, 15671, 15679, 15683, 15727, 15731, 15733, 15737, 15739, 15749, 15761, 15767, 15773, 15787, 15791, 15797, 15803, 15809, 15817, 15823, 15859, 15877, 15881, 15887, 15889, 15901, 15907, 15913, 15919, 15923, 15937, 15959,
+    15971, 15973, 15991, 16001, 16007, 16033, 16057, 16061, 16063, 16067, 16069, 16073, 16087, 16091, 16097, 16103, 16111, 16127, 16139, 16141, 16183, 16187, 16189, 16193, 16217, 16223, 16229, 16231, 16249, 16253, 16267, 16273, 16301, 16319, 16333, 16339,
+    16349, 16361, 16363, 16369, 16381, 16411, 16417, 16421, 16427, 16433, 16447, 16451, 16453, 16477, 16481, 16487, 16493, 16519, 16529, 16547, 16553, 16561, 16567, 16573, 16603, 16607, 16619, 16631, 16633, 16649, 16651, 16657, 16661, 16673, 16691, 16693,
+    16699, 16703, 16729, 16741, 16747, 16759, 16763, 16787, 16811, 16823, 16829, 16831, 16843, 16871, 16879, 16883, 16889, 16901, 16903, 16921, 16927, 16931, 16937, 16943, 16963, 16979, 16981, 16987, 16993, 17011, 17021, 17027, 17029, 17033, 17041, 17047,
+    17053, 17077, 17093, 17099, 17107, 17117, 17123, 17137, 17159, 17167, 17183, 17189, 17191, 17203, 17207, 17209, 17231, 17239, 17257, 17291, 17293, 17299, 17317, 17321, 17327, 17333, 17341, 17351, 17359, 17377, 17383, 17387, 17389, 17393, 17401, 17417,
+    17419, 17431, 17443, 17449, 17467, 17471, 17477, 17483, 17489, 17491, 17497, 17509, 17519, 17539, 17551, 17569, 17573, 17579, 17581, 17597, 17599, 17609, 17623, 17627, 17657, 17659, 17669, 17681, 17683, 17707, 17713, 17729, 17737, 17747, 17749, 17761,
+    17783, 17789, 17791, 17807, 17827, 17837, 17839, 17851, 17863, 17881, 17891, 17903, 17909, 17911, 17921, 17923, 17929, 17939, 17957, 17959, 17971, 17977, 17981, 17987, 17989, 18013, 18041, 18043, 18047, 18049, 18059, 18061, 18077, 18089, 18097, 18119,
+    18121, 18127, 18131, 18133, 18143, 18149, 18169, 18181, 18191, 18199, 18211, 18217, 18223, 18229, 18233, 18251, 18253, 18257, 18269, 18287, 18289, 18301, 18307, 18311, 18313, 18329, 18341, 18353, 18367, 18371, 18379, 18397, 18401, 18413, 18427, 18433,
+    18439, 18443, 18451, 18457, 18461, 18481, 18493, 18503, 18517, 18521, 18523, 18539, 18541, 18553, 18583, 18587, 18593, 18617, 18637, 18661, 18671, 18679, 18691, 18701, 18713, 18719, 18731, 18743, 18749, 18757, 18773, 18787, 18793, 18797, 18803, 18839,
+    18859, 18869, 18899, 18911, 18913, 18917, 18919, 18947, 18959, 18973, 18979, 19001, 19009, 19013, 19031, 19037, 19051, 19069, 19073, 19079, 19081, 19087, 19121, 19139, 19141, 19157, 19163, 19181, 19183, 19207, 19211, 19213, 19219, 19231, 19237, 19249,
+    19259, 19267, 19273, 19289, 19301, 19309, 19319, 19333, 19373, 19379, 19381, 19387, 19391, 19403, 19417, 19421, 19423, 19427, 19429, 19433, 19441, 19447, 19457, 19463, 19469, 19471, 19477, 19483, 19489, 19501, 19507, 19531, 19541, 19543, 19553, 19559,
+    19571, 19577, 19583, 19597, 19603, 19609, 19661, 19681, 19687, 19697, 19699, 19709, 19717, 19727, 19739, 19751, 19753, 19759, 19763, 19777, 19793, 19801, 19813, 19819, 19841, 19843, 19853, 19861, 19867, 19889, 19891, 19913, 19919, 19927, 19937, 19949,
+    19961, 19963, 19973, 19979, 19991, 19993, 19997, 20011, 20021, 20023, 20029, 20047, 20051, 20063, 20071, 20089, 20101, 20107, 20113, 20117, 20123, 20129, 20143, 20147, 20149, 20161, 20173, 20177, 20183, 20201, 20219, 20231, 20233, 20249, 20261, 20269,
+    20287, 20297, 20323, 20327, 20333, 20341, 20347, 20353, 20357, 20359, 20369, 20389, 20393, 20399, 20407, 20411, 20431, 20441, 20443, 20477, 20479, 20483, 20507, 20509, 20521, 20533, 20543, 20549, 20551, 20563, 20593, 20599, 20611, 20627, 20639, 20641,
+    20663, 20681, 20693, 20707, 20717, 20719, 20731, 20743, 20747, 20749, 20753, 20759, 20771, 20773, 20789, 20807, 20809, 20849, 20857, 20873, 20879, 20887, 20897, 20899, 20903, 20921, 20929, 20939, 20947, 20959, 20963, 20981, 20983, 21001, 21011, 21013,
+    21017, 21019, 21023, 21031, 21059, 21061, 21067, 21089, 21101, 21107, 21121, 21139, 21143, 21149, 21157, 21163, 21169, 21179, 21187, 21191, 21193, 21211, 21221, 21227, 21247, 21269, 21277, 21283, 21313, 21317, 21319, 21323, 21341, 21347, 21377, 21379,
+    21383, 21391, 21397, 21401, 21407, 21419, 21433, 21467, 21481, 21487, 21491, 21493, 21499, 21503, 21517, 21521, 21523, 21529, 21557, 21559, 21563, 21569, 21577, 21587, 21589, 21599, 21601, 21611, 21613, 21617, 21647, 21649, 21661, 21673, 21683, 21701,
+    21713, 21727, 21737, 21739, 21751, 21757, 21767, 21773, 21787, 21799, 21803, 21817, 21821, 21839, 21841, 21851, 21859, 21863, 21871, 21881, 21893, 21911, 21929, 21937, 21943, 21961, 21977, 21991, 21997, 22003, 22013, 22027, 22031, 22037, 22039, 22051,
+    22063, 22067, 22073, 22079, 22091, 22093, 22109, 22111, 22123, 22129, 22133, 22147, 22153, 22157, 22159, 22171, 22189, 22193, 22229, 22247, 22259, 22271, 22273, 22277, 22279, 22283, 22291, 22303, 22307, 22343, 22349, 22367, 22369, 22381, 22391, 22397,
+    22409, 22433, 22441, 22447, 22453, 22469, 22481, 22483, 22501, 22511, 22531, 22541, 22543, 22549, 22567, 22571, 22573, 22613, 22619, 22621, 22637, 22639, 22643, 22651, 22669, 22679, 22691, 22697, 22699, 22709, 22717, 22721, 22727, 22739, 22741, 22751,
+    22769, 22777, 22783, 22787, 22807, 22811, 22817, 22853, 22859, 22861, 22871, 22877, 22901, 22907, 22921, 22937, 22943, 22961, 22963, 22973, 22993, 23003, 23011, 23017, 23021, 23027, 23029, 23039, 23041, 23053, 23057, 23059, 23063, 23071, 23081, 23087,
+    23099, 23117, 23131, 23143, 23159, 23167, 23173, 23189, 23197, 23201, 23203, 23209, 23227, 23251, 23269, 23279, 23291, 23293, 23297, 23311, 23321, 23327, 23333, 23339, 23357, 23369, 23371, 23399, 23417, 23431, 23447, 23459, 23473, 23497, 23509, 23531,
+    23537, 23539, 23549, 23557, 23561, 23563, 23567, 23581, 23593, 23599, 23603, 23609, 23623, 23627, 23629, 23633, 23663, 23669, 23671, 23677, 23687, 23689, 23719, 23741, 23743, 23747, 23753, 23761, 23767, 23773, 23789, 23801, 23813, 23819, 23827, 23831,
+    23833, 23857, 23869, 23873, 23879, 23887, 23893, 23899, 23909, 23911, 23917, 23929, 23957, 23971, 23977, 23981, 23993, 24001, 24007, 24019, 24023, 24029, 24043, 24049, 24061, 24071, 24077, 24083, 24091, 24097, 24103, 24107, 24109, 24113, 24121, 24133,
+    24137, 24151, 24169, 24179, 24181, 24197, 24203, 24223, 24229, 24239, 24247, 24251, 24281, 24317, 24329, 24337, 24359, 24371, 24373, 24379, 24391, 24407, 24413, 24419, 24421, 24439, 24443, 24469, 24473, 24481, 24499, 24509, 24517, 24527, 24533, 24547,
+    24551, 24571, 24593, 24611, 24623, 24631, 24659, 24671, 24677, 24683, 24691, 24697, 24709, 24733, 24749, 24763, 24767, 24781, 24793, 24799, 24809, 24821, 24841, 24847, 24851, 24859, 24877, 24889, 24907, 24917, 24919, 24923, 24943, 24953, 24967, 24971,
+    24977, 24979, 24989, 25013, 25031, 25033, 25037, 25057, 25073, 25087, 25097, 25111, 25117, 25121, 25127, 25147, 25153, 25163, 25169, 25171, 25183, 25189, 25219, 25229, 25237, 25243, 25247, 25253, 25261, 25301, 25303, 25307, 25309, 25321, 25339, 25343,
+    25349, 25357, 25367, 25373, 25391, 25409, 25411, 25423, 25439, 25447, 25453, 25457, 25463, 25469, 25471, 25523, 25537, 25541, 25561, 25577, 25579, 25583, 25589, 25601, 25603, 25609, 25621, 25633, 25639, 25643, 25657, 25667, 25673, 25679, 25693, 25703,
+    25717, 25733, 25741, 25747, 25759, 25763, 25771, 25793, 25799, 25801, 25819, 25841, 25847, 25849, 25867, 25873, 25889, 25903, 25913, 25919, 25931, 25933, 25939, 25943, 25951, 25969, 25981, 25997, 25999, 26003, 26017, 26021, 26029, 26041, 26053, 26083,
+    26099, 26107, 26111, 26113, 26119, 26141, 26153, 26161, 26171, 26177, 26183, 26189, 26203, 26209, 26227, 26237, 26249, 26251, 26261, 26263, 26267, 26293, 26297, 26309, 26317, 26321, 26339, 26347, 26357, 26371, 26387, 26393, 26399, 26407, 26417, 26423,
+    26431, 26437, 26449, 26459, 26479, 26489, 26497, 26501, 26513, 26539, 26557, 26561, 26573, 26591, 26597, 26627, 26633, 26641, 26647, 26669, 26681, 26683, 26687, 26693, 26699, 26701, 26711, 26713, 26717, 26723, 26729, 26731, 26737, 26759, 26777, 26783,
+    26801, 26813, 26821, 26833, 26839, 26849, 26861, 26863, 26879, 26881, 26891, 26893, 26903, 26921, 26927, 26947, 26951, 26953, 26959, 26981, 26987, 26993, 27011, 27017, 27031, 27043, 27059, 27061, 27067, 27073, 27077, 27091, 27103, 27107, 27109, 27127,
+    27143, 27179, 27191, 27197, 27211, 27239, 27241, 27253, 27259, 27271, 27277, 27281, 27283, 27299, 27329, 27337, 27361, 27367, 27397, 27407, 27409, 27427, 27431, 27437, 27449, 27457, 27479, 27481, 27487, 27509, 27527, 27529, 27539, 27541, 27551, 27581,
+    27583, 27611, 27617, 27631, 27647, 27653, 27673, 27689, 27691, 27697, 27701, 27733, 27737, 27739, 27743, 27749, 27751, 27763, 27767, 27773, 27779, 27791, 27793, 27799, 27803, 27809, 27817, 27823, 27827, 27847, 27851, 27883, 27893, 27901, 27917, 27919,
+    27941, 27943, 27947, 27953, 27961, 27967, 27983, 27997, 28001, 28019, 28027, 28031, 28051, 28057, 28069, 28081, 28087, 28097, 28099, 28109, 28111, 28123, 28151, 28163, 28181, 28183, 28201, 28211, 28219, 28229, 28277, 28279, 28283, 28289, 28297, 28307,
+    28309, 28319, 28349, 28351, 28387, 28393, 28403, 28409, 28411, 28429, 28433, 28439, 28447, 28463, 28477, 28493, 28499, 28513, 28517, 28537, 28541, 28547, 28549, 28559, 28571, 28573, 28579, 28591, 28597, 28603, 28607, 28619, 28621, 28627, 28631, 28643,
+    28649, 28657, 28661, 28663, 28669, 28687, 28697, 28703, 28711, 28723, 28729, 28751, 28753, 28759, 28771, 28789, 28793, 28807, 28813, 28817, 28837, 28843, 28859, 28867, 28871, 28879, 28901, 28909, 28921, 28927, 28933, 28949, 28961, 28979, 29009, 29017,
+    29021, 29023, 29027, 29033, 29059, 29063, 29077, 29101, 29123, 29129, 29131, 29137, 29147, 29153, 29167, 29173, 29179, 29191, 29201, 29207, 29209, 29221, 29231, 29243, 29251, 29269, 29287, 29297, 29303, 29311, 29327, 29333, 29339, 29347, 29363, 29383,
+    29387, 29389, 29399, 29401, 29411, 29423, 29429, 29437, 29443, 29453, 29473, 29483, 29501, 29527, 29531, 29537, 29567, 29569, 29573, 29581, 29587, 29599, 29611, 29629, 29633, 29641, 29663, 29669, 29671, 29683, 29717, 29723, 29741, 29753, 29759, 29761,
+    29789, 29803, 29819, 29833, 29837, 29851, 29863, 29867, 29873, 29879, 29881, 29917, 29921, 29927, 29947, 29959, 29983, 29989, 30011, 30013, 30029, 30047, 30059, 30071, 30089, 30091, 30097, 30103, 30109, 30113, 30119, 30133, 30137, 30139, 30161, 30169,
+    30181, 30187, 30197, 30203, 30211, 30223, 30241, 30253, 30259, 30269, 30271, 30293, 30307, 30313, 30319, 30323, 30341, 30347, 30367, 30389, 30391, 30403, 30427, 30431, 30449, 30467, 30469, 30491, 30493, 30497, 30509, 30517, 30529, 30539, 30553, 30557,
+    30559, 30577, 30593, 30631, 30637, 30643, 30649, 30661, 30671, 30677, 30689, 30697, 30703, 30707, 30713, 30727, 30757, 30763, 30773, 30781, 30803, 30809, 30817, 30829, 30839, 30841, 30851, 30853, 30859, 30869, 30871, 30881, 30893, 30911, 30931, 30937,
+    30941, 30949, 30971, 30977, 30983, 31013, 31019, 31033, 31039, 31051, 31063, 31069, 31079, 31081, 31091, 31121, 31123, 31139, 31147, 31151, 31153, 31159, 31177, 31181, 31183, 31189, 31193, 31219, 31223, 31231, 31237, 31247, 31249, 31253, 31259, 31267,
+    31271, 31277, 31307, 31319, 31321, 31327, 31333, 31337, 31357, 31379, 31387, 31391, 31393, 31397, 31469, 31477, 31481, 31489, 31511, 31513, 31517, 31531, 31541, 31543, 31547, 31567, 31573, 31583, 31601, 31607, 31627, 31643, 31649, 31657, 31663, 31667,
+    31687, 31699, 31721, 31723, 31727, 31729, 31741, 31751, 31769, 31771, 31793, 31799, 31817, 31847, 31849, 31859, 31873, 31883, 31891, 31907, 31957, 31963, 31973, 31981, 31991, 32003, 32009, 32027, 32029, 32051, 32057, 32059, 32063, 32069, 32077, 32083,
+    32089, 32099, 32117, 32119, 32141, 32143, 32159, 32173, 32183, 32189, 32191, 32203, 32213, 32233, 32237, 32251, 32257, 32261, 32297, 32299, 32303, 32309, 32321, 32323, 32327, 32341, 32353, 32359, 32363, 32369, 32371, 32377, 32381, 32401, 32411, 32413,
+    32423, 32429, 32441, 32443, 32467, 32479, 32491, 32497, 32503, 32507, 32531, 32533, 32537, 32561, 32563, 32569, 32573, 32579, 32587, 32603, 32609, 32611, 32621, 32633, 32647, 32653, 32687, 32693, 32707, 32713, 32717, 32719, 32749, 32771, 32779, 32783,
+    32789, 32797, 32801, 32803, 32831, 32833, 32839, 32843, 32869, 32887, 32909, 32911, 32917, 32933, 32939, 32941, 32957, 32969, 32971, 32983, 32987, 32993, 32999, 33013, 33023, 33029, 33037, 33049, 33053, 33071, 33073, 33083, 33091, 33107, 33113, 33119,
+    33149, 33151, 33161, 33179, 33181, 33191, 33199, 33203, 33211, 33223, 33247, 33287, 33289, 33301, 33311, 33317, 33329, 33331, 33343, 33347, 33349, 33353, 33359, 33377, 33391, 33403, 33409, 33413, 33427, 33457, 33461, 33469, 33479, 33487, 33493, 33503,
+    33521, 33529, 33533, 33547, 33563, 33569, 33577, 33581, 33587, 33589, 33599, 33601, 33613, 33617, 33619, 33623, 33629, 33637, 33641, 33647, 33679, 33703, 33713, 33721, 33739, 33749, 33751, 33757, 33767, 33769, 33773, 33791, 33797, 33809, 33811, 33827,
+    33829, 33851, 33857, 33863, 33871, 33889, 33893, 33911, 33923, 33931, 33937, 33941, 33961, 33967, 33997, 34019, 34031, 34033, 34039, 34057, 34061, 34123, 34127, 34129, 34141, 34147, 34157, 34159, 34171, 34183, 34211, 34213, 34217, 34231, 34253, 34259,
+    34261, 34267, 34273, 34283, 34297, 34301, 34303, 34313, 34319, 34327, 34337, 34351, 34361, 34367, 34369, 34381, 34403, 34421, 34429, 34439, 34457, 34469, 34471, 34483, 34487, 34499, 34501, 34511, 34513, 34519, 34537, 34543, 34549, 34583, 34589, 34591,
+    34603, 34607, 34613, 34631, 34649, 34651, 34667, 34673, 34679, 34687, 34693, 34703, 34721, 34729, 34739, 34747, 34757, 34759, 34763, 34781, 34807, 34819, 34841, 34843, 34847, 34849, 34871, 34877, 34883, 34897, 34913, 34919, 34939, 34949, 34961, 34963,
+    34981, 35023, 35027, 35051, 35053, 35059, 35069, 35081, 35083, 35089, 35099, 35107, 35111, 35117, 35129, 35141, 35149, 35153, 35159, 35171, 35201, 35221, 35227, 35251, 35257, 35267, 35279, 35281, 35291, 35311, 35317, 35323, 35327, 35339, 35353, 35363,
+    35381, 35393, 35401, 35407, 35419, 35423, 35437, 35447, 35449, 35461, 35491, 35507, 35509, 35521, 35527, 35531, 35533, 35537, 35543, 35569, 35573, 35591, 35593, 35597, 35603, 35617, 35671, 35677, 35729, 35731, 35747, 35753, 35759, 35771, 35797, 35801,
+    35803, 35809, 35831, 35837, 35839, 35851, 35863, 35869, 35879, 35897, 35899, 35911, 35923, 35933, 35951, 35963, 35969, 35977, 35983, 35993, 35999, 36007, 36011, 36013, 36017, 36037, 36061, 36067, 36073, 36083, 36097, 36107, 36109, 36131, 36137, 36151,
+    36161, 36187, 36191, 36209, 36217, 36229, 36241, 36251, 36263, 36269, 36277, 36293, 36299, 36307, 36313, 36319, 36341, 36343, 36353, 36373, 36383, 36389, 36433, 36451, 36457, 36467, 36469, 36473, 36479, 36493, 36497, 36523, 36527, 36529, 36541, 36551,
+    36559, 36563, 36571, 36583, 36587, 36599, 36607, 36629, 36637, 36643, 36653, 36671, 36677, 36683, 36691, 36697, 36709, 36713, 36721, 36739, 36749, 36761, 36767, 36779, 36781, 36787, 36791, 36793, 36809, 36821, 36833, 36847, 36857, 36871, 36877, 36887,
+    36899, 36901, 36913, 36919, 36923, 36929, 36931, 36943, 36947, 36973, 36979, 36997, 37003, 37013, 37019, 37021, 37039, 37049, 37057, 37061, 37087, 37097, 37117, 37123, 37139, 37159, 37171, 37181, 37189, 37199, 37201, 37217, 37223, 37243, 37253, 37273,
+    37277, 37307, 37309, 37313, 37321, 37337, 37339, 37357, 37361, 37363, 37369, 37379, 37397, 37409, 37423, 37441, 37447, 37463, 37483, 37489, 37493, 37501, 37507, 37511, 37517, 37529, 37537, 37547, 37549, 37561, 37567, 37571, 37573, 37579, 37589, 37591,
+    37607, 37619, 37633, 37643, 37649, 37657, 37663, 37691, 37693, 37699, 37717, 37747, 37781, 37783, 37799, 37811, 37813, 37831, 37847, 37853, 37861, 37871, 37879, 37889, 37897, 37907, 37951, 37957, 37963, 37967, 37987, 37991, 37993, 37997, 38011, 38039,
+    38047, 38053, 38069, 38083, 38113, 38119, 38149, 38153, 38167, 38177, 38183, 38189, 38197, 38201, 38219, 38231, 38237, 38239, 38261, 38273, 38281, 38287, 38299, 38303, 38317, 38321, 38327, 38329, 38333, 38351, 38371, 38377, 38393, 38431, 38447, 38449,
+    38453, 38459, 38461, 38501, 38543, 38557, 38561, 38567, 38569, 38593, 38603, 38609, 38611, 38629, 38639, 38651, 38653, 38669, 38671, 38677, 38693, 38699, 38707, 38711, 38713, 38723, 38729, 38737, 38747, 38749, 38767, 38783, 38791, 38803, 38821, 38833,
+    38839, 38851, 38861, 38867, 38873, 38891, 38903, 38917, 38921, 38923, 38933, 38953, 38959, 38971, 38977, 38993, 39019, 39023, 39041, 39043, 39047, 39079, 39089, 39097, 39103, 39107, 39113, 39119, 39133, 39139, 39157, 39161, 39163, 39181, 39191, 39199,
+    39209, 39217, 39227, 39229, 39233, 39239, 39241, 39251, 39293, 39301, 39313, 39317, 39323, 39341, 39343, 39359, 39367, 39371, 39373, 39383, 39397, 39409, 39419, 39439, 39443, 39451, 39461, 39499, 39503, 39509, 39511, 39521, 39541, 39551, 39563, 39569,
+    39581, 39607, 39619, 39623, 39631, 39659, 39667, 39671, 39679, 39703, 39709, 39719, 39727, 39733, 39749, 39761, 39769, 39779, 39791, 39799, 39821, 39827, 39829, 39839, 39841, 39847, 39857, 39863, 39869, 39877, 39883, 39887, 39901, 39929, 39937, 39953,
+    39971, 39979, 39983, 39989, 40009, 40013, 40031, 40037, 40039, 40063, 40087, 40093, 40099, 40111, 40123, 40127, 40129, 40151, 40153, 40163, 40169, 40177, 40189, 40193, 40213, 40231, 40237, 40241, 40253, 40277, 40283, 40289, 40343, 40351, 40357, 40361,
+    40387, 40423, 40427, 40429, 40433, 40459, 40471, 40483, 40487, 40493, 40499, 40507, 40519, 40529, 40531, 40543, 40559, 40577, 40583, 40591, 40597, 40609, 40627, 40637, 40639, 40693, 40697, 40699, 40709, 40739, 40751, 40759, 40763, 40771, 40787, 40801,
+    40813, 40819, 40823, 40829, 40841, 40847, 40849, 40853, 40867, 40879, 40883, 40897, 40903, 40927, 40933, 40939, 40949, 40961, 40973, 40993, 41011, 41017, 41023, 41039, 41047, 41051, 41057, 41077, 41081, 41113, 41117, 41131, 41141, 41143, 41149, 41161,
+    41177, 41179, 41183, 41189, 41201, 41203, 41213, 41221, 41227, 41231, 41233, 41243, 41257, 41263, 41269, 41281, 41299, 41333, 41341, 41351, 41357, 41381, 41387, 41389, 41399, 41411, 41413, 41443, 41453, 41467, 41479, 41491, 41507, 41513, 41519, 41521,
+    41539, 41543, 41549, 41579, 41593, 41597, 41603, 41609, 41611, 41617, 41621, 41627, 41641, 41647, 41651, 41659, 41669, 41681, 41687, 41719, 41729, 41737, 41759, 41761, 41771, 41777, 41801, 41809, 41813, 41843, 41849, 41851, 41863, 41879, 41887, 41893,
+    41897, 41903, 41911, 41927, 41941, 41947, 41953, 41957, 41959, 41969, 41981, 41983, 41999, 42013, 42017, 42019, 42023, 42043, 42061, 42071, 42073, 42083, 42089, 42101, 42131, 42139, 42157, 42169, 42179, 42181, 42187, 42193, 42197, 42209, 42221, 42223,
+    42227, 42239, 42257, 42281, 42283, 42293, 42299, 42307, 42323, 42331, 42337, 42349, 42359, 42373, 42379, 42391, 42397, 42403, 42407, 42409, 42433, 42437, 42443, 42451, 42457, 42461, 42463, 42467, 42473, 42487, 42491, 42499, 42509, 42533, 42557, 42569,
+    42571, 42577, 42589, 42611, 42641, 42643, 42649, 42667, 42677, 42683, 42689, 42697, 42701, 42703, 42709, 42719, 42727, 42737, 42743, 42751, 42767, 42773, 42787, 42793, 42797, 42821, 42829, 42839, 42841, 42853, 42859, 42863, 42899, 42901, 42923, 42929,
+    42937, 42943, 42953, 42961, 42967, 42979, 42989, 43003, 43013, 43019, 43037, 43049, 43051, 43063, 43067, 43093, 43103, 43117, 43133, 43151, 43159, 43177, 43189, 43201, 43207, 43223, 43237, 43261, 43271, 43283, 43291, 43313, 43319, 43321, 43331, 43391,
+    43397, 43399, 43403, 43411, 43427, 43441, 43451, 43457, 43481, 43487, 43499, 43517, 43541, 43543, 43573, 43577, 43579, 43591, 43597, 43607, 43609, 43613, 43627, 43633, 43649, 43651, 43661, 43669, 43691, 43711, 43717, 43721, 43753, 43759, 43777, 43781,
+    43783, 43787, 43789, 43793, 43801, 43853, 43867, 43889, 43891, 43913, 43933, 43943, 43951, 43961, 43963, 43969, 43973, 43987, 43991, 43997, 44017, 44021, 44027, 44029, 44041, 44053, 44059, 44071, 44087, 44089, 44101, 44111, 44119, 44123, 44129, 44131,
+    44159, 44171, 44179, 44189, 44201, 44203, 44207, 44221, 44249, 44257, 44263, 44267, 44269, 44273, 44279, 44281, 44293, 44351, 44357, 44371, 44381, 44383, 44389, 44417, 44449, 44453, 44483, 44491, 44497, 44501, 44507, 44519, 44531, 44533, 44537, 44543,
+    44549, 44563, 44579, 44587, 44617, 44621, 44623, 44633, 44641, 44647, 44651, 44657, 44683, 44687, 44699, 44701, 44711, 44729, 44741, 44753, 44771, 44773, 44777, 44789, 44797, 44809, 44819, 44839, 44843, 44851, 44867, 44879, 44887, 44893, 44909, 44917,
+    44927, 44939, 44953, 44959, 44963, 44971, 44983, 44987, 45007, 45013, 45053, 45061, 45077, 45083, 45119, 45121, 45127, 45131, 45137, 45139, 45161, 45179, 45181, 45191, 45197, 45233, 45247, 45259, 45263, 45281, 45289, 45293, 45307, 45317, 45319, 45329,
+    45337, 45341, 45343, 45361, 45377, 45389, 45403, 45413, 45427, 45433, 45439, 45481, 45491, 45497, 45503, 45523, 45533, 45541, 45553, 45557, 45569, 45587, 45589, 45599, 45613, 45631, 45641, 45659, 45667, 45673, 45677, 45691, 45697, 45707, 45737, 45751,
+    45757, 45763, 45767, 45779, 45817, 45821, 45823, 45827, 45833, 45841, 45853, 45863, 45869, 45887, 45893, 45943, 45949, 45953, 45959, 45971, 45979, 45989, 46021, 46027, 46049, 46051, 46061, 46073, 46091, 46093, 46099, 46103, 46133, 46141, 46147, 46153,
+    46171, 46181, 46183, 46187, 46199, 46219, 46229, 46237, 46261, 46271, 46273, 46279, 46301, 46307, 46309, 46327, 46337
 ];
 
 function factor_int(n: number): void {
-
     n = Math.abs(n);
 
-    if (n < 2)
-        return;
+    if (n < 2) return;
 
     for (let k = 0; k < primetab.length; k++) {
-
         const d = primetab[k];
 
         let m = 0;
@@ -12441,14 +11264,12 @@ function factor_int(n: number): void {
             m++;
         }
 
-        if (m == 0)
-            continue;
+        if (m == 0) continue;
 
         push_integer(d);
         push_integer(m);
 
-        if (n == 1)
-            return;
+        if (n == 1) return;
     }
 
     push_integer(n);
@@ -12475,8 +11296,7 @@ function find_divisor(p: unknown): 0 | 1 {
     if (car(p) == symbol(ADD)) {
         p = cdr(p);
         while (iscons(p)) {
-            if (find_divisor_term(car(p)))
-                return 1;
+            if (find_divisor_term(car(p))) return 1;
             p = cdr(p);
         }
         return 0;
@@ -12489,8 +11309,7 @@ function find_divisor_term(p: unknown): 0 | 1 {
     if (car(p) == symbol(MULTIPLY)) {
         p = cdr(p);
         while (iscons(p)) {
-            if (find_divisor_factor(car(p)))
-                return 1;
+            if (find_divisor_factor(car(p))) return 1;
             p = cdr(p);
         }
         return 0;
@@ -12500,8 +11319,7 @@ function find_divisor_term(p: unknown): 0 | 1 {
 }
 
 function find_divisor_factor(p: unknown): 0 | 1 {
-    if (isrational(p) && isinteger(p))
-        return 0;
+    if (isrational(p) && isinteger(p)) return 0;
 
     if (isrational(p)) {
         push(p);
@@ -12510,8 +11328,7 @@ function find_divisor_factor(p: unknown): 0 | 1 {
     }
 
     if (car(p) == symbol(POWER) && !isminusone(cadr(p)) && isnegativeterm(caddr(p))) {
-        if (isminusone(caddr(p)))
-            push(cadr(p));
+        if (isminusone(caddr(p))) push(cadr(p));
         else {
             push_symbol(POWER);
             push(cadr(p));
@@ -12526,27 +11343,23 @@ function find_divisor_factor(p: unknown): 0 | 1 {
 }
 /**
  * Determines whether q is in p.
- * @param p 
- * @param q 
- * @returns 
+ * @param p
+ * @param q
+ * @returns
  */
 function findf(p: unknown, q: unknown): 0 | 1 {
-
-    if (equal(p, q))
-        return 1;
+    if (equal(p, q)) return 1;
 
     if (istensor(p)) {
         const n = p.elem.length;
         for (let i = 0; i < n; i++) {
-            if (findf(p.elem[i], q))
-                return 1;
+            if (findf(p.elem[i], q)) return 1;
         }
         return 0;
     }
 
     while (iscons(p)) {
-        if (findf(car(p), q))
-            return 1;
+        if (findf(car(p), q)) return 1;
         p = cdr(p);
     }
 
@@ -12572,10 +11385,8 @@ function flatten_factors(h: number): void {
 function fmtnum(n: number): string {
     n = Math.abs(n);
 
-    if (n > 0 && n < 0.0001)
-        return n.toExponential(5);
-    else
-        return n.toPrecision(6);
+    if (n > 0 && n < 0.0001) return n.toExponential(5);
+    else return n.toPrecision(6);
 }
 const FONT_SIZE = 24;
 const SMALL_FONT_SIZE = 18;
@@ -12593,11 +11404,12 @@ function get_cap_height(font_num: number): number {
     switch (font_num) {
         case ROMAN_FONT:
         case ITALIC_FONT:
-            return FONT_CAP_HEIGHT * FONT_SIZE / 2048;
+            return (FONT_CAP_HEIGHT * FONT_SIZE) / 2048;
         case SMALL_ROMAN_FONT:
         case SMALL_ITALIC_FONT:
-            return FONT_CAP_HEIGHT * SMALL_FONT_SIZE / 2048;
-        default: throw new Error();
+            return (FONT_CAP_HEIGHT * SMALL_FONT_SIZE) / 2048;
+        default:
+            throw new Error();
     }
 }
 
@@ -12605,54 +11417,547 @@ function get_descent(font_num: number): number {
     switch (font_num) {
         case ROMAN_FONT:
         case ITALIC_FONT:
-            return FONT_DESCENT * FONT_SIZE / 2048;
+            return (FONT_DESCENT * FONT_SIZE) / 2048;
         case SMALL_ROMAN_FONT:
         case SMALL_ITALIC_FONT:
-            return FONT_DESCENT * SMALL_FONT_SIZE / 2048;
-        default: throw new Error();
+            return (FONT_DESCENT * SMALL_FONT_SIZE) / 2048;
+        default:
+            throw new Error();
     }
 }
 
 const roman_descent_tab = [
-
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
 
     //	  ! " # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ?
-    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
 
     //	@ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z [   ] ^ _
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    0,
+    1,
 
     //	` a b c d e f g h i j k l m n o p q r s t u v w x y z { | } ~
-    0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    0,
+    0,
 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // upper case greek
-    0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, // lower case greek
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, // upper case greek
+    0,
+    1,
+    1,
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    0, // lower case greek
 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
 ];
 
 const italic_descent_tab = [
-
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
 
     //	  ! " # $ % & ' ( ) * + , - . / 0 1 2 3 4 5 6 7 8 9 : ; < = > ?
-    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
 
     //	@ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z [   ] ^ _
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    0,
+    1,
 
     //	` a b c d e f g h i j k l m n o p q r s t u v w x y z { | } ~
-    0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    1,
+    1,
+    0,
+    0,
 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // upper case greek
-    0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, // lower case greek
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0, // upper case greek
+    0,
+    1,
+    1,
+    0,
+    0,
+    1,
+    1,
+    0,
+    0,
+    0,
+    0,
+    1,
+    0,
+    1,
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    0, // lower case greek
 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
 ];
 
 function get_char_depth(font_num: number, char_num: number) {
@@ -12663,103 +11968,551 @@ function get_char_depth(font_num: number, char_num: number) {
         case ITALIC_FONT:
         case SMALL_ITALIC_FONT:
             return get_descent(font_num) * italic_descent_tab[char_num];
-        default: throw new Error();
+        default:
+            throw new Error();
     }
 }
 
 const roman_width_tab = [
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
 
-    909, 909, 909, 909, 909, 909, 909, 909,
-    909, 909, 909, 909, 909, 909, 909, 909,
-    909, 909, 909, 909, 909, 909, 909, 909,
-    909, 909, 909, 909, 909, 909, 909, 909,
+    512,
+    682,
+    836,
+    1024,
+    1024,
+    1706,
+    1593,
+    369, // printable ascii
+    682,
+    682,
+    1024,
+    1155,
+    512,
+    682,
+    512,
+    569,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    569,
+    569,
+    1155,
+    1155,
+    1155,
+    909,
+    1886,
+    1479,
+    1366,
+    1366,
+    1479,
+    1251,
+    1139,
+    1479,
+    1479,
+    682,
+    797,
+    1479,
+    1251,
+    1821,
+    1479,
+    1479,
+    1139,
+    1479,
+    1366,
+    1139,
+    1251,
+    1479,
+    1479,
+    1933,
+    1479,
+    1479,
+    1251,
+    682,
+    569,
+    682,
+    961,
+    1024,
+    682,
+    909,
+    1024,
+    909,
+    1024,
+    909,
+    682,
+    1024,
+    1024,
+    569,
+    569,
+    1024,
+    569,
+    1593,
+    1024,
+    1024,
+    1024,
+    1024,
+    682,
+    797,
+    569,
+    1024,
+    1024,
+    1479,
+    1024,
+    1024,
+    909,
+    983,
+    410,
+    983,
+    1108,
+    1593,
 
-    512, 682, 836, 1024, 1024, 1706, 1593, 369,		// printable ascii
-    682, 682, 1024, 1155, 512, 682, 512, 569,
-    1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
-    1024, 1024, 569, 569, 1155, 1155, 1155, 909,
-    1886, 1479, 1366, 1366, 1479, 1251, 1139, 1479,
-    1479, 682, 797, 1479, 1251, 1821, 1479, 1479,
-    1139, 1479, 1366, 1139, 1251, 1479, 1479, 1933,
-    1479, 1479, 1251, 682, 569, 682, 961, 1024,
-    682, 909, 1024, 909, 1024, 909, 682, 1024,
-    1024, 569, 569, 1024, 569, 1593, 1024, 1024,
-    1024, 1024, 682, 797, 569, 1024, 1024, 1479,
-    1024, 1024, 909, 983, 410, 983, 1108, 1593,
+    1479,
+    1366,
+    1184,
+    1253,
+    1251,
+    1251,
+    1479,
+    1479, // upper case greek
+    682,
+    1479,
+    1485,
+    1821,
+    1479,
+    1317,
+    1479,
+    1479,
+    1139,
+    1192,
+    1251,
+    1479,
+    1497,
+    1479,
+    1511,
+    1522,
 
-    1479, 1366, 1184, 1253, 1251, 1251, 1479, 1479,	// upper case greek
-    682, 1479, 1485, 1821, 1479, 1317, 1479, 1479,
-    1139, 1192, 1251, 1479, 1497, 1479, 1511, 1522,
+    1073,
+    1042,
+    905,
+    965,
+    860,
+    848,
+    1071,
+    981, // lower case greek
+    551,
+    1032,
+    993,
+    1098,
+    926,
+    913,
+    1024,
+    1034,
+    1022,
+    1104,
+    823,
+    1014,
+    1182,
+    909,
+    1282,
+    1348,
 
-    1073, 1042, 905, 965, 860, 848, 1071, 981,		// lower case greek
-    551, 1032, 993, 1098, 926, 913, 1024, 1034,
-    1022, 1104, 823, 1014, 1182, 909, 1282, 1348,
+    1024,
+    1155,
+    1155,
+    1155,
+    1124,
+    1124,
+    1012,
+    909, // other symbols
 
-    1024, 1155, 1155, 1155, 1124, 1124, 1012, 909,		// other symbols
-
-    909, 909, 909, 909, 909, 909, 909, 909,
-    909, 909, 909, 909, 909, 909, 909, 909,
-    909, 909, 909, 909, 909, 909, 909, 909,
-    909, 909, 909, 909, 909, 909, 909, 909,
-    909, 909, 909, 909, 909, 909, 909, 909,
-    909, 909, 909, 909, 909, 909, 909, 909,
-    909, 909, 909, 909, 909, 909, 909, 909,
-    909, 909, 909, 909, 909, 909, 909, 909,
-    909, 909, 909, 909, 909, 909, 909, 909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909,
+    909
 ];
 
 const italic_width_tab = [
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
 
-    1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
-    1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
-    1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
-    1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
+    512,
+    682,
+    860,
+    1024,
+    1024,
+    1706,
+    1593,
+    438, // printable ascii
+    682,
+    682,
+    1024,
+    1382,
+    512,
+    682,
+    512,
+    569,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    682,
+    682,
+    1382,
+    1382,
+    1382,
+    1024,
+    1884,
+    1251,
+    1251,
+    1366,
+    1479,
+    1251,
+    1251,
+    1479,
+    1479,
+    682,
+    909,
+    1366,
+    1139,
+    1706,
+    1366,
+    1479,
+    1251,
+    1479,
+    1251,
+    1024,
+    1139,
+    1479,
+    1251,
+    1706,
+    1251,
+    1139,
+    1139,
+    797,
+    569,
+    797,
+    864,
+    1024,
+    682,
+    1024,
+    1024,
+    909,
+    1024,
+    909,
+    569,
+    1024,
+    1024,
+    569,
+    569,
+    909,
+    569,
+    1479,
+    1024,
+    1024,
+    1024,
+    1024,
+    797,
+    797,
+    569,
+    1024,
+    909,
+    1366,
+    909,
+    909,
+    797,
+    819,
+    563,
+    819,
+    1108,
+    1593,
 
-    512, 682, 860, 1024, 1024, 1706, 1593, 438,		// printable ascii
-    682, 682, 1024, 1382, 512, 682, 512, 569,
-    1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
-    1024, 1024, 682, 682, 1382, 1382, 1382, 1024,
-    1884, 1251, 1251, 1366, 1479, 1251, 1251, 1479,
-    1479, 682, 909, 1366, 1139, 1706, 1366, 1479,
-    1251, 1479, 1251, 1024, 1139, 1479, 1251, 1706,
-    1251, 1139, 1139, 797, 569, 797, 864, 1024,
-    682, 1024, 1024, 909, 1024, 909, 569, 1024,
-    1024, 569, 569, 909, 569, 1479, 1024, 1024,
-    1024, 1024, 797, 797, 569, 1024, 909, 1366,
-    909, 909, 797, 819, 563, 819, 1108, 1593,
+    1251,
+    1251,
+    1165,
+    1253,
+    1251,
+    1139,
+    1479,
+    1479, // upper case greek
+    682,
+    1366,
+    1237,
+    1706,
+    1366,
+    1309,
+    1479,
+    1479,
+    1251,
+    1217,
+    1139,
+    1139,
+    1559,
+    1251,
+    1440,
+    1481,
 
-    1251, 1251, 1165, 1253, 1251, 1139, 1479, 1479,	// upper case greek
-    682, 1366, 1237, 1706, 1366, 1309, 1479, 1479,
-    1251, 1217, 1139, 1139, 1559, 1251, 1440, 1481,
+    1075,
+    1020,
+    807,
+    952,
+    807,
+    829,
+    1016,
+    1006, // lower case greek
+    569,
+    983,
+    887,
+    1028,
+    909,
+    877,
+    1024,
+    1026,
+    983,
+    1010,
+    733,
+    940,
+    1133,
+    901,
+    1272,
+    1446,
 
-    1075, 1020, 807, 952, 807, 829, 1016, 1006,		// lower case greek
-    569, 983, 887, 1028, 909, 877, 1024, 1026,
-    983, 1010, 733, 940, 1133, 901, 1272, 1446,
+    1024,
+    1382,
+    1382,
+    1382,
+    1124,
+    1124,
+    1012,
+    1024, // other symbols
 
-    1024, 1382, 1382, 1382, 1124, 1124, 1012, 1024,	// other symbols
-
-    1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
-    1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
-    1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
-    1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
-    1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
-    1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
-    1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
-    1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
-    1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024,
+    1024
 ];
 
 function get_char_width(font_num: number, char_num: number): number {
     switch (font_num) {
         case ROMAN_FONT:
-            return FONT_SIZE * roman_width_tab[char_num] / 2048;
+            return (FONT_SIZE * roman_width_tab[char_num]) / 2048;
         case ITALIC_FONT:
-            return FONT_SIZE * italic_width_tab[char_num] / 2048;
+            return (FONT_SIZE * italic_width_tab[char_num]) / 2048;
         case SMALL_ROMAN_FONT:
-            return SMALL_FONT_SIZE * roman_width_tab[char_num] / 2048;
+            return (SMALL_FONT_SIZE * roman_width_tab[char_num]) / 2048;
         case SMALL_ITALIC_FONT:
-            return SMALL_FONT_SIZE * italic_width_tab[char_num] / 2048;
-        default: throw new Error();
+            return (SMALL_FONT_SIZE * italic_width_tab[char_num]) / 2048;
+        default:
+            throw new Error();
     }
 }
 
@@ -12767,11 +12520,12 @@ function get_xheight(font_num: number): number {
     switch (font_num) {
         case ROMAN_FONT:
         case ITALIC_FONT:
-            return FONT_XHEIGHT * FONT_SIZE / 2048;
+            return (FONT_XHEIGHT * FONT_SIZE) / 2048;
         case SMALL_ROMAN_FONT:
         case SMALL_ITALIC_FONT:
-            return FONT_XHEIGHT * SMALL_FONT_SIZE / 2048;
-        default: throw new Error();
+            return (FONT_XHEIGHT * SMALL_FONT_SIZE) / 2048;
+        default:
+            throw new Error();
     }
 }
 
@@ -12780,20 +12534,16 @@ function get_operator_height(font_num: number): number {
 }
 
 function get_binding(p1: Sym): unknown {
-    if (!isusersymbol(p1))
-        stopf("symbol error");
+    if (!isusersymbol(p1)) stopf("symbol error");
     let p2 = binding[p1.printname];
-    if (p2 == undefined || p2 == symbol(NIL))
-        p2 = p1; // symbol binds to itself
+    if (p2 == undefined || p2 == symbol(NIL)) p2 = p1; // symbol binds to itself
     return p2;
 }
 
 function get_usrfunc(p: Sym): unknown {
-    if (!isusersymbol(p))
-        stopf("symbol error");
+    if (!isusersymbol(p)) stopf("symbol error");
     let f = usrfunc[p.printname];
-    if (f == undefined)
-        f = symbol(NIL);
+    if (f == undefined) f = symbol(NIL);
     return f;
 }
 
@@ -12804,32 +12554,25 @@ function infixform_subexpr(p: unknown): void {
 }
 
 function infixform_expr(p: unknown): void {
-    if (isnegativeterm(p) || (car(p) == symbol(ADD) && isnegativeterm(cadr(p))))
-        infixform_write("-");
-    if (car(p) == symbol(ADD))
-        infixform_expr_nib(p);
-    else
-        infixform_term(p);
+    if (isnegativeterm(p) || (car(p) == symbol(ADD) && isnegativeterm(cadr(p)))) infixform_write("-");
+    if (car(p) == symbol(ADD)) infixform_expr_nib(p);
+    else infixform_term(p);
 }
 
 function infixform_expr_nib(p: unknown): void {
     infixform_term(cadr(p));
     p = cddr(p);
     while (iscons(p)) {
-        if (isnegativeterm(car(p)))
-            infixform_write(" - ");
-        else
-            infixform_write(" + ");
+        if (isnegativeterm(car(p))) infixform_write(" - ");
+        else infixform_write(" + ");
         infixform_term(car(p));
         p = cdr(p);
     }
 }
 
 function infixform_term(p: unknown): void {
-    if (car(p) == symbol(MULTIPLY))
-        infixform_term_nib(p);
-    else
-        infixform_factor(p);
+    if (car(p) == symbol(MULTIPLY)) infixform_term_nib(p);
+    else infixform_factor(p);
 }
 
 function infixform_term_nib(p: unknown): void {
@@ -12844,8 +12587,7 @@ function infixform_term_nib(p: unknown): void {
 
     p = cdr(p);
 
-    if (isminusone(car(p)))
-        p = cdr(p); // sign already emitted
+    if (isminusone(car(p))) p = cdr(p); // sign already emitted
 
     infixform_factor(car(p));
 
@@ -12859,21 +12601,17 @@ function infixform_term_nib(p: unknown): void {
 }
 
 function infixform_numerators(p: unknown): void {
-
     let k = 0;
 
     p = cdr(p);
 
     while (iscons(p)) {
-
         const q = car(p);
         p = cdr(p);
 
-        if (!isnumerator(q))
-            continue;
+        if (!isnumerator(q)) continue;
 
-        if (++k > 1)
-            infixform_write(" "); // space in between factors
+        if (++k > 1) infixform_write(" "); // space in between factors
 
         if (isrational(q)) {
             const s = bignum_itoa(q.a);
@@ -12884,31 +12622,25 @@ function infixform_numerators(p: unknown): void {
         infixform_factor(q);
     }
 
-    if (k == 0)
-        infixform_write("1");
+    if (k == 0) infixform_write("1");
 }
 
 function infixform_denominators(p: unknown): void {
-
     const n = count_denominators(p);
 
-    if (n > 1)
-        infixform_write("(");
+    if (n > 1) infixform_write("(");
 
     let k = 0;
 
     p = cdr(p);
 
     while (iscons(p)) {
-
         let q = car(p);
         p = cdr(p);
 
-        if (!isdenominator(q))
-            continue;
+        if (!isdenominator(q)) continue;
 
-        if (++k > 1)
-            infixform_write(" "); // space in between factors
+        if (++k > 1) infixform_write(" "); // space in between factors
 
         if (isrational(q)) {
             const s = bignum_itoa(q.b);
@@ -12919,16 +12651,14 @@ function infixform_denominators(p: unknown): void {
         if (isminusone(caddr(q))) {
             q = cadr(q);
             infixform_factor(q);
-        }
-        else {
+        } else {
             infixform_base(cadr(q));
             infixform_write("^");
             infixform_numeric_exponent(caddr(q) as Num); // sign is not emitted
         }
     }
 
-    if (n > 1)
-        infixform_write(")");
+    if (n > 1) infixform_write(")");
 }
 
 function infixform_factor(p: unknown): void {
@@ -12943,10 +12673,8 @@ function infixform_factor(p: unknown): void {
     }
 
     if (issymbol(p)) {
-        if (p == symbol(EXP1))
-            infixform_write("exp(1)");
-        else
-            infixform_write(printname(p));
+        if (p == symbol(EXP1)) infixform_write("exp(1)");
+        else infixform_write(printname(p));
         return;
     }
 
@@ -13072,12 +12800,9 @@ function infixform_power(p: unknown): void {
 
     p = caddr(p); // p now points to exponent
 
-    if (isnum(p))
-        infixform_numeric_exponent(p);
-    else if (car(p) == symbol(ADD) || car(p) == symbol(MULTIPLY) || car(p) == symbol(POWER) || car(p) == symbol(FACTORIAL))
-        infixform_subexpr(p);
-    else
-        infixform_expr(p);
+    if (isnum(p)) infixform_numeric_exponent(p);
+    else if (car(p) == symbol(ADD) || car(p) == symbol(MULTIPLY) || car(p) == symbol(POWER) || car(p) == symbol(FACTORIAL)) infixform_subexpr(p);
+    else infixform_expr(p);
 }
 
 // p = y^x where x is a negative number
@@ -13087,8 +12812,7 @@ function infixform_reciprocal(p: unknown): void {
     if (isminusone(caddr(p))) {
         p = cadr(p);
         infixform_factor(p);
-    }
-    else {
+    } else {
         infixform_base(cadr(p));
         infixform_write("^");
         infixform_numeric_exponent(caddr(p) as Num); // sign is not emitted
@@ -13134,12 +12858,10 @@ function infixform_arglist(p: unknown): void {
 // sign is not emitted
 
 function infixform_rational(p: Rat): void {
-
     const a = bignum_itoa(p.a);
     infixform_write(a);
 
-    if (isinteger(p))
-        return;
+    if (isinteger(p)) return;
 
     infixform_write("/");
 
@@ -13149,38 +12871,30 @@ function infixform_rational(p: Rat): void {
 
 // sign is not emitted
 
-function
-    infixform_double(p: Flt): void {
-
+function infixform_double(p: Flt): void {
     const s = fmtnum(p.d);
 
     let k = 0;
 
-    while (k < s.length && s.charAt(k) != "." && s.charAt(k) != "E" && s.charAt(k) != "e")
-        k++;
+    while (k < s.length && s.charAt(k) != "." && s.charAt(k) != "E" && s.charAt(k) != "e") k++;
 
     infixform_write(s.substring(0, k));
 
     // handle trailing zeroes
 
     if (s.charAt(k) == ".") {
-
         const i = k++;
 
-        while (k < s.length && s.charAt(k) != "E" && s.charAt(k) != "e")
-            k++;
+        while (k < s.length && s.charAt(k) != "E" && s.charAt(k) != "e") k++;
 
         let j = k;
 
-        while (s.charAt(j - 1) == "0")
-            j--;
+        while (s.charAt(j - 1) == "0") j--;
 
-        if (j - i > 1)
-            infixform_write(s.substring(i, j));
+        if (j - i > 1) infixform_write(s.substring(i, j));
     }
 
-    if (s.charAt(k) != "E" && s.charAt(k) != "e")
-        return;
+    if (s.charAt(k) != "E" && s.charAt(k) != "e") return;
 
     k++;
 
@@ -13189,34 +12903,29 @@ function
     if (s.charAt(k) == "-") {
         infixform_write("(-");
         k++;
-        while (s.charAt(k) == "0") // skip leading zeroes
+        while (s.charAt(k) == "0")
+            // skip leading zeroes
             k++;
         infixform_write(s.substring(k));
         infixform_write(")");
-    }
-    else {
-        if (s.charAt(k) == "+")
-            k++;
-        while (s.charAt(k) == "0") // skip leading zeroes
+    } else {
+        if (s.charAt(k) == "+") k++;
+        while (s.charAt(k) == "0")
+            // skip leading zeroes
             k++;
         infixform_write(s.substring(k));
     }
 }
 
 function infixform_base(p: unknown): void {
-    if (isnum(p))
-        infixform_numeric_base(p);
-    else if (car(p) == symbol(ADD) || car(p) == symbol(MULTIPLY) || car(p) == symbol(POWER) || car(p) == symbol(FACTORIAL))
-        infixform_subexpr(p);
-    else
-        infixform_expr(p);
+    if (isnum(p)) infixform_numeric_base(p);
+    else if (car(p) == symbol(ADD) || car(p) == symbol(MULTIPLY) || car(p) == symbol(POWER) || car(p) == symbol(FACTORIAL)) infixform_subexpr(p);
+    else infixform_expr(p);
 }
 
 function infixform_numeric_base(p: unknown): void {
-    if (isrational(p) && isposint(p))
-        infixform_rational(p);
-    else
-        infixform_subexpr(p);
+    if (isrational(p) && isposint(p)) infixform_rational(p);
+    else infixform_subexpr(p);
 }
 
 // sign is not emitted
@@ -13244,7 +12953,6 @@ function infixform_tensor(p: Tensor): void {
 }
 
 function infixform_tensor_nib(p: Tensor, d: number, k: number): void {
-
     if (d == p.dim.length) {
         infixform_expr(p.elem[k]);
         return;
@@ -13254,19 +12962,16 @@ function infixform_tensor_nib(p: Tensor, d: number, k: number): void {
 
     let n = p.dim.length;
 
-    for (let i = d + 1; i < n; i++)
-        span *= p.dim[i];
+    for (let i = d + 1; i < n; i++) span *= p.dim[i];
 
     infixform_write("(");
 
     n = p.dim[d];
 
     for (let i = 0; i < n; i++) {
-
         infixform_tensor_nib(p, d + 1, k);
 
-        if (i < n - 1)
-            infixform_write(",");
+        if (i < n - 1) infixform_write(",");
 
         k += span;
     }
@@ -13317,7 +13022,7 @@ const init_script = [
     "legendre(f,n,m,x) = eval(1 / (2^n n!) (1 - x^2)^(m/2) d((x^2 - 1)^n,x,n + m),x,f)",
     "hermite(x,n) = (-1)^n exp(x^2) d(exp(-x^2),x,n)",
     "binomial(n,k) = n! / k! / (n - k)!",
-    "choose(n,k) = n! / k! / (n - k)!",
+    "choose(n,k) = n! / k! / (n - k)!"
 ];
 
 function initscript(): void {
@@ -13348,10 +13053,8 @@ function iscomplexnumber(p: unknown): boolean {
 }
 
 function iscons(p: unknown) {
-    if ("car" in (p as Cons))
-        return 1;
-    else
-        return 0;
+    if ("car" in (p as Cons)) return 1;
+    else return 0;
 }
 
 function isdenominator(p: unknown) {
@@ -13362,8 +13065,7 @@ function isdenominator(p: unknown) {
         }
     }
 
-    if (isrational(p) && !bignum_equal(p.b, 1))
-        return 1;
+    if (isrational(p) && !bignum_equal(p.b, 1)) return 1;
 
     return 0;
 }
@@ -13372,8 +13074,7 @@ function isdenormalpolar(p: unknown) {
     if (car(p) == symbol(ADD)) {
         p = cdr(p);
         while (iscons(p)) {
-            if (isdenormalpolarterm(car(p)))
-                return 1;
+            if (isdenormalpolarterm(car(p))) return 1;
             p = cdr(p);
         }
         return 0;
@@ -13383,27 +13084,22 @@ function isdenormalpolar(p: unknown) {
 }
 
 function isdenormalpolarterm(p: unknown) {
-    if (car(p) != symbol(MULTIPLY))
-        return 0;
+    if (car(p) != symbol(MULTIPLY)) return 0;
 
-    if (lengthf(p) == 3 && isimaginaryunit(cadr(p)) && caddr(p) == symbol(PI))
-        return 1; // exp(i pi)
+    if (lengthf(p) == 3 && isimaginaryunit(cadr(p)) && caddr(p) == symbol(PI)) return 1; // exp(i pi)
 
-    if (lengthf(p) != 4 || !isnum(cadr(p)) || !isimaginaryunit(caddr(p)) || cadddr(p) != symbol(PI))
-        return 0;
+    if (lengthf(p) != 4 || !isnum(cadr(p)) || !isimaginaryunit(caddr(p)) || cadddr(p) != symbol(PI)) return 0;
 
     p = cadr(p); // p = coeff of term
 
-    if (isnum(p) && isnegativenumber(p))
-        return 1; // p < 0
+    if (isnum(p) && isnegativenumber(p)) return 1; // p < 0
 
     push(p);
     push_rational(-1, 2);
     add();
     p = pop();
 
-    if (!(isnum(p) && isnegativenumber(p)))
-        return 1; // p >= 1/2
+    if (!(isnum(p) && isnegativenumber(p))) return 1; // p >= 1/2
 
     return 0;
 }
@@ -13418,14 +13114,12 @@ function isdouble(p: unknown): p is Flt {
 }
 
 function isdoublesomewhere(p: unknown) {
-    if (isdouble(p))
-        return 1;
+    if (isdouble(p)) return 1;
 
     if (iscons(p)) {
         p = cdr(p);
         while (iscons(p)) {
-            if (isdoublesomewhere(car(p)))
-                return 1;
+            if (isdoublesomewhere(car(p))) return 1;
             p = cdr(p);
         }
     }
@@ -13435,35 +13129,30 @@ function isdoublesomewhere(p: unknown) {
 
 function isdoublez(p: unknown): 0 | 1 {
     if (car(p) == symbol(ADD)) {
+        if (lengthf(p) != 3) return 0;
 
-        if (lengthf(p) != 3)
-            return 0;
-
-        if (!isdouble(cadr(p))) // x
+        if (!isdouble(cadr(p)))
+            // x
             return 0;
 
         p = caddr(p);
     }
 
-    if (car(p) != symbol(MULTIPLY))
-        return 0;
+    if (car(p) != symbol(MULTIPLY)) return 0;
 
-    if (lengthf(p) != 3)
-        return 0;
+    if (lengthf(p) != 3) return 0;
 
-    if (!isdouble(cadr(p))) // y
+    if (!isdouble(cadr(p)))
+        // y
         return 0;
 
     p = caddr(p);
 
-    if (car(p) != symbol(POWER))
-        return 0;
+    if (car(p) != symbol(POWER)) return 0;
 
-    if (!isminusone(cadr(p)))
-        return 0;
+    if (!isminusone(cadr(p))) return 0;
 
-    if (!isequalq(caddr(p), 1, 2))
-        return 0;
+    if (!isequalq(caddr(p), 1, 2)) return 0;
 
     return 1;
 }
@@ -13474,16 +13163,13 @@ function isequaln(p: unknown, n: number): boolean {
 
 function isequalq(p: unknown, a: number, b: number): boolean {
     if (isrational(p)) {
-        if (isnegativenumber(p) && a >= 0)
-            return false;
-        if (!isnegativenumber(p) && a < 0)
-            return false;
+        if (isnegativenumber(p) && a >= 0) return false;
+        if (!isnegativenumber(p) && a < 0) return false;
         a = Math.abs(a);
         return bignum_equal(p.a, a) && bignum_equal(p.b, b);
     }
 
-    if (isdouble(p))
-        return p.d == a / b;
+    if (isdouble(p)) return p.d == a / b;
 
     return false;
 }
@@ -13527,12 +13213,10 @@ function isnegativenumber(p: Num): boolean {
 function isnegativeterm(p: unknown): boolean {
     if (isnum(p) && isnegativenumber(p)) {
         return true;
-    }
-    else if (car(p) == symbol(MULTIPLY)) {
+    } else if (car(p) == symbol(MULTIPLY)) {
         const leading = cadr(p);
         return isnum(leading) && isnegativenumber(leading);
-    }
-    else {
+    } else {
         return false;
     }
 }
@@ -13549,8 +13233,7 @@ function isnumerator(p: unknown) {
         }
     }
 
-    if (isrational(p) && bignum_equal(p.a, 1))
-        return 0;
+    if (isrational(p) && bignum_equal(p.a, 1)) return 0;
 
     return 1;
 }
@@ -13572,8 +13255,7 @@ function isradical(p: unknown): boolean {
         const base = cadr(p);
         const expo = caddr(p);
         return isrational(base) && isposint(base) && isrational(expo) && isfraction(expo);
-    }
-    else {
+    } else {
         return false;
     }
 }
@@ -13583,11 +13265,9 @@ function isrational(p: unknown): p is Rat {
 }
 
 function issmallinteger(p: unknown): boolean {
-    if (isrational(p) && isinteger(p))
-        return bignum_issmallnum(p.a);
+    if (isrational(p) && isinteger(p)) return bignum_issmallnum(p.a);
 
-    if (isdouble(p))
-        return p.d == Math.floor(p.d) && Math.abs(p.d) <= 0x7fffffff;
+    if (isdouble(p)) return p.d == Math.floor(p.d) && Math.abs(p.d) <= 0x7fffffff;
 
     return false;
 }
@@ -13613,14 +13293,12 @@ function isusersymbol(p: Sym): boolean {
 }
 
 function isusersymbolsomewhere(p: unknown): 0 | 1 {
-    if (issymbol(p) && isusersymbol(p) && p != symbol(PI) && p != symbol(EXP1))
-        return 1;
+    if (issymbol(p) && isusersymbol(p) && p != symbol(PI) && p != symbol(EXP1)) return 1;
 
     if (iscons(p)) {
         p = cdr(p);
         while (iscons(p)) {
-            if (isusersymbolsomewhere(car(p)))
-                return 1;
+            if (isusersymbolsomewhere(car(p))) return 1;
             p = cdr(p);
         }
     }
@@ -13629,18 +13307,14 @@ function isusersymbolsomewhere(p: unknown): 0 | 1 {
 }
 
 function iszero(p: unknown): boolean {
+    if (isrational(p)) return bignum_iszero(p.a);
 
-    if (isrational(p))
-        return bignum_iszero(p.a);
-
-    if (isdouble(p))
-        return p.d == 0;
+    if (isdouble(p)) return p.d == 0;
 
     if (istensor(p)) {
         const n = p.elem.length;
         for (let i = 0; i < n; i++) {
-            if (!iszero(p.elem[i]))
-                return false;
+            if (!iszero(p.elem[i])) return false;
         }
         return true;
     }
@@ -13663,8 +13337,7 @@ function lessp(p1: unknown, p2: unknown): boolean {
 
 function list(n: number): void {
     push_symbol(NIL);
-    for (let i = 0; i < n; i++)
-        cons();
+    for (let i = 0; i < n; i++) cons();
 }
 
 function lookup(s: string): Sym {
@@ -13687,13 +13360,11 @@ function multiply_expand(): void {
     expanding = t;
 }
 /**
- * 
+ *
  * @param n number of factors on stack
  */
 function multiply_factors(n: number): void {
-
-    if (n < 2)
-        return;
+    if (n < 2) return;
 
     const h = stack.length - n;
 
@@ -13717,7 +13388,6 @@ function multiply_noexpand(): void {
 }
 
 function multiply_numbers(p1: unknown, p2: unknown): void {
-
     if (isrational(p1) && isrational(p2)) {
         multiply_rationals(p1, p2);
         return;
@@ -13733,7 +13403,6 @@ function multiply_numbers(p1: unknown, p2: unknown): void {
 }
 
 function multiply_rationals(p1: Rat, p2: Rat): void {
-
     if (iszero(p1) || iszero(p2)) {
         push_integer(0);
         return;
@@ -13741,10 +13410,8 @@ function multiply_rationals(p1: Rat, p2: Rat): void {
 
     let sign: 1 | -1;
 
-    if (p1.sign == p2.sign)
-        sign = 1;
-    else
-        sign = -1;
+    if (p1.sign == p2.sign) sign = 1;
+    else sign = -1;
 
     let a: number[];
     let b: number[];
@@ -13767,7 +13434,6 @@ function multiply_rationals(p1: Rat, p2: Rat): void {
 }
 
 function multiply_scalar_factors(h: number): void {
-
     let COEFF = combine_numerical_factors(h, one);
 
     if (iszero(COEFF) || h == stack.length) {
@@ -13794,11 +13460,9 @@ function multiply_scalar_factors(h: number): void {
 
     COEFF = reduce_radical_factors(h, COEFF);
 
-    if (!isplusone(COEFF) || isdouble(COEFF))
-        push(COEFF);
+    if (!isplusone(COEFF) || isdouble(COEFF)) push(COEFF);
 
-    if (expanding)
-        expand_sum_factors(h); // success leaves one expr on stack
+    if (expanding) expand_sum_factors(h); // success leaves one expr on stack
 
     const n = stack.length - h;
 
@@ -13823,16 +13487,13 @@ function multiply_tensor_factors(h: number) {
     let n = stack.length;
     for (let i = h; i < n; i++) {
         const p1 = stack[i];
-        if (!istensor(p1))
-            continue;
+        if (!istensor(p1)) continue;
         if (istensor(T)) {
             push(T);
             push(p1);
             hadamard();
             T = pop();
-        }
-        else
-            T = p1;
+        } else T = p1;
         stack.splice(i, 1); // remove factor
         i--; // use same index again
         n--;
@@ -13851,8 +13512,7 @@ function normalize_polar(EXPO: unknown): void {
         let p1 = cdr(EXPO);
         while (iscons(p1)) {
             EXPO = car(p1);
-            if (isdenormalpolarterm(EXPO))
-                normalize_polar_term(EXPO);
+            if (isdenormalpolarterm(EXPO)) normalize_polar_term(EXPO);
             else {
                 push_symbol(POWER);
                 push_symbol(EXP1);
@@ -13862,13 +13522,10 @@ function normalize_polar(EXPO: unknown): void {
             p1 = cdr(p1);
         }
         multiply_factors(stack.length - h);
-    }
-    else
-        normalize_polar_term(EXPO);
+    } else normalize_polar_term(EXPO);
 }
 
 function normalize_polar_term(EXPO: unknown): void {
-
     // exp(i pi) = -1
 
     if (lengthf(EXPO) == 3) {
@@ -13878,14 +13535,11 @@ function normalize_polar_term(EXPO: unknown): void {
 
     const R = cadr(EXPO); // R = coeff of term
 
-    if (isrational(R))
-        normalize_polar_term_rational(R);
-    else
-        normalize_polar_term_double(R as Flt);
+    if (isrational(R)) normalize_polar_term_rational(R);
+    else normalize_polar_term_double(R as Flt);
 }
 
 function normalize_polar_term_rational(R: unknown): void {
-
     // R = R mod 2
 
     push(R);
@@ -13916,10 +13570,8 @@ function normalize_polar_term_rational(R: unknown): void {
     R = pop(); // remainder
 
     switch (n) {
-
         case 0:
-            if (iszero(R))
-                push_integer(1);
+            if (iszero(R)) push_integer(1);
             else {
                 push_symbol(POWER);
                 push_symbol(EXP1);
@@ -13933,8 +13585,7 @@ function normalize_polar_term_rational(R: unknown): void {
             break;
 
         case 1:
-            if (iszero(R))
-                push(imaginaryunit);
+            if (iszero(R)) push(imaginaryunit);
             else {
                 push_symbol(MULTIPLY);
                 push(imaginaryunit);
@@ -13951,8 +13602,7 @@ function normalize_polar_term_rational(R: unknown): void {
             break;
 
         case 2:
-            if (iszero(R))
-                push_integer(-1);
+            if (iszero(R)) push_integer(-1);
             else {
                 push_symbol(MULTIPLY);
                 push_integer(-1);
@@ -13974,8 +13624,7 @@ function normalize_polar_term_rational(R: unknown): void {
                 push_integer(-1);
                 push(imaginaryunit);
                 list(3);
-            }
-            else {
+            } else {
                 push_symbol(MULTIPLY);
                 push_integer(-1);
                 push(imaginaryunit);
@@ -13994,7 +13643,6 @@ function normalize_polar_term_rational(R: unknown): void {
 }
 
 function normalize_polar_term_double(R: Flt): void {
-
     let coeff = R.d;
 
     // coeff = coeff mod 2
@@ -14003,18 +13651,15 @@ function normalize_polar_term_double(R: Flt): void {
 
     // convert negative rotation to positive
 
-    if (coeff < 0)
-        coeff += 2;
+    if (coeff < 0) coeff += 2;
 
     const n = Math.floor(2 * coeff); // number of 1/4 turns
 
     const r = coeff - n / 2; // remainder
 
     switch (n) {
-
         case 0:
-            if (r == 0)
-                push_integer(1);
+            if (r == 0) push_integer(1);
             else {
                 push_symbol(POWER);
                 push_symbol(EXP1);
@@ -14028,8 +13673,7 @@ function normalize_polar_term_double(R: Flt): void {
             break;
 
         case 1:
-            if (r == 0)
-                push(imaginaryunit);
+            if (r == 0) push(imaginaryunit);
             else {
                 push_symbol(MULTIPLY);
                 push(imaginaryunit);
@@ -14046,8 +13690,7 @@ function normalize_polar_term_double(R: Flt): void {
             break;
 
         case 2:
-            if (r == 0)
-                push_integer(-1);
+            if (r == 0) push_integer(-1);
             else {
                 push_symbol(MULTIPLY);
                 push_integer(-1);
@@ -14069,8 +13712,7 @@ function normalize_polar_term_double(R: Flt): void {
                 push_integer(-1);
                 push(imaginaryunit);
                 list(3);
-            }
-            else {
+            } else {
                 push_symbol(MULTIPLY);
                 push_integer(-1);
                 push(imaginaryunit);
@@ -14105,9 +13747,7 @@ function normalize_power_factors(h: number): void {
                     push(car(p1));
                     p1 = cdr(p1);
                 }
-            }
-            else
-                stack[i] = p1;
+            } else stack[i] = p1;
         }
     }
 }
@@ -14119,42 +13759,33 @@ function normalize_power_factors(h: number): void {
  *  4   other factor (symbol, power, func, etc)
  *  5   exponential
  *  6   derivative
- * 
- * @param p 
- * @returns 
+ *
+ * @param p
+ * @returns
  */
 function order_factor(p: unknown): 1 | 2 | 3 | 4 | 5 | 6 {
-    if (isnum(p))
-        return 1;
+    if (isnum(p)) return 1;
 
-    if (p == symbol(EXP1))
-        return 5;
+    if (p == symbol(EXP1)) return 5;
 
-    if (car(p) == symbol(DERIVATIVE) || car(p) == symbol(D_LOWER))
-        return 6;
+    if (car(p) == symbol(DERIVATIVE) || car(p) == symbol(D_LOWER)) return 6;
 
     if (car(p) == symbol(POWER)) {
-
         p = cadr(p); // p = base
 
-        if (isminusone(p))
-            return 3;
+        if (isminusone(p)) return 3;
 
-        if (isnum(p))
-            return 2;
+        if (isnum(p)) return 2;
 
-        if (p == symbol(EXP1))
-            return 5;
+        if (p == symbol(EXP1)) return 5;
 
-        if (car(p) == symbol(DERIVATIVE) || car(p) == symbol(D_LOWER))
-            return 6;
+        if (car(p) == symbol(DERIVATIVE) || car(p) == symbol(D_LOWER)) return 6;
     }
 
     return 4;
 }
 
 function partition_term(): void {
-
     const X = pop();
     const F = pop();
 
@@ -14163,15 +13794,13 @@ function partition_term(): void {
     let h = stack.length;
     let p1 = cdr(F);
     while (iscons(p1)) {
-        if (!findf(car(p1), X))
-            push(car(p1));
+        if (!findf(car(p1), X)) push(car(p1));
         p1 = cdr(p1);
     }
 
     let n = stack.length - h;
 
-    if (n == 0)
-        push_integer(1);
+    if (n == 0) push_integer(1);
     else if (n > 1) {
         list(n);
         push_symbol(MULTIPLY);
@@ -14184,15 +13813,13 @@ function partition_term(): void {
     h = stack.length;
     p1 = cdr(F);
     while (iscons(p1)) {
-        if (findf(car(p1), X))
-            push(car(p1));
+        if (findf(car(p1), X)) push(car(p1));
         p1 = cdr(p1);
     }
 
     n = stack.length - h;
 
-    if (n == 0)
-        push_integer(1);
+    if (n == 0) push_integer(1);
     else if (n > 1) {
         list(n);
         push_symbol(MULTIPLY);
@@ -14203,8 +13830,7 @@ function partition_term(): void {
 // https://github.com/ghewgill/picomath
 
 function erf(x: number): number {
-    if (x == 0)
-        return 0;
+    if (x == 0) return 0;
 
     // constants
     const a1 = 0.254829592;
@@ -14216,13 +13842,12 @@ function erf(x: number): number {
 
     // Save the sign of x
     let sign = 1;
-    if (x < 0)
-        sign = -1;
+    if (x < 0) sign = -1;
     x = Math.abs(x);
 
     // A&S formula 7.1.26
     const t = 1.0 / (1.0 + p * x);
-    const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+    const y = 1.0 - ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
 
     return sign * y;
 }
@@ -14232,39 +13857,32 @@ function erfc(x: number): number {
 }
 
 function pop(): unknown {
-    if (stack.length == 0)
-        stopf("stack error");
+    if (stack.length == 0) stopf("stack error");
     return stack.pop();
 }
 
 function pop_double(): number {
-
     const p = pop();
 
-    if (!isnum(p))
-        stopf("number expected");
+    if (!isnum(p)) stopf("number expected");
 
     let d: number;
 
-    if (isdouble(p))
-        d = p.d;
+    if (isdouble(p)) d = p.d;
     else {
         const a = bignum_float(p.a);
         const b = bignum_float(p.b);
         d = a / b;
-        if (isnegativenumber(p))
-            d = -d;
+        if (isnegativenumber(p)) d = -d;
     }
 
     return d;
 }
 
 function pop_integer(): number {
-
     const p = pop();
 
-    if (!issmallinteger(p))
-        stopf("small integer expected");
+    if (!issmallinteger(p)) stopf("small integer expected");
 
     let n: number;
 
@@ -14272,12 +13890,10 @@ function pop_integer(): number {
         const n = bignum_smallnum(p.a);
         if (isnegativenumber(p)) {
             return -n;
-        }
-        else {
+        } else {
             return n;
         }
-    }
-    else {
+    } else {
         return (p as Flt).d;
     }
 
@@ -14285,7 +13901,6 @@ function pop_integer(): number {
 }
 
 function power_complex_double(_BASE: unknown, EXPO: unknown, X: unknown, Y: unknown): void {
-
     push(X);
     let x = pop_double();
 
@@ -14312,7 +13927,6 @@ function power_complex_double(_BASE: unknown, EXPO: unknown, X: unknown, Y: unkn
 }
 
 function power_complex_minus(X: unknown, Y: unknown, n: number): void {
-
     // R = X^2 + Y^2
 
     push(X);
@@ -14343,7 +13957,6 @@ function power_complex_minus(X: unknown, Y: unknown, n: number): void {
     let PY = Y;
 
     for (let i = 1; i < n; i++) {
-
         push(PX);
         push(X);
         multiply();
@@ -14387,16 +14000,12 @@ function power_complex_number(BASE: unknown, EXPO: unknown): void {
 
     if (car(BASE) == symbol(ADD)) {
         X = cadr(BASE);
-        if (caaddr(BASE) == symbol(MULTIPLY))
-            Y = cadaddr(BASE);
-        else
-            Y = one;
-    }
-    else if (car(BASE) == symbol(MULTIPLY)) {
+        if (caaddr(BASE) == symbol(MULTIPLY)) Y = cadaddr(BASE);
+        else Y = one;
+    } else if (car(BASE) == symbol(MULTIPLY)) {
         X = zero;
         Y = cadr(BASE);
-    }
-    else {
+    } else {
         X = zero;
         Y = one;
     }
@@ -14422,21 +14031,16 @@ function power_complex_number(BASE: unknown, EXPO: unknown): void {
     push(EXPO);
     const n = pop_integer();
 
-    if (n > 0)
-        power_complex_plus(X, Y, n);
-    else if (n < 0)
-        power_complex_minus(X, Y, -n);
-    else
-        push_integer(1);
+    if (n > 0) power_complex_plus(X, Y, n);
+    else if (n < 0) power_complex_minus(X, Y, -n);
+    else push_integer(1);
 }
 
 function power_complex_plus(X: unknown, Y: unknown, n: number): void {
-
     let PX = X;
     let PY = Y;
 
     for (let i = 1; i < n; i++) {
-
         push(PX);
         push(X);
         multiply();
@@ -14509,10 +14113,8 @@ function power_minusone(EXPO: unknown): void {
     // root is an odd number?
 
     if (isrational(EXPO) && bignum_odd(EXPO.b)) {
-        if (bignum_odd(EXPO.a))
-            push_integer(-1);
-        else
-            push_integer(1);
+        if (bignum_odd(EXPO.a)) push_integer(-1);
+        else push_integer(1);
         return;
     }
 
@@ -14534,7 +14136,6 @@ function power_minusone(EXPO: unknown): void {
 }
 
 function normalize_clock_rational(EXPO: unknown): void {
-
     // R = EXPO mod 2
 
     push(EXPO);
@@ -14565,10 +14166,8 @@ function normalize_clock_rational(EXPO: unknown): void {
     R = pop(); // remainder
 
     switch (n) {
-
         case 0:
-            if (iszero(R))
-                push_integer(1);
+            if (iszero(R)) push_integer(1);
             else {
                 push_symbol(POWER);
                 push_integer(-1);
@@ -14578,8 +14177,7 @@ function normalize_clock_rational(EXPO: unknown): void {
             break;
 
         case 1:
-            if (iszero(R))
-                push(imaginaryunit);
+            if (iszero(R)) push(imaginaryunit);
             else {
                 push_symbol(MULTIPLY);
                 push_integer(-1);
@@ -14594,8 +14192,7 @@ function normalize_clock_rational(EXPO: unknown): void {
             break;
 
         case 2:
-            if (iszero(R))
-                push_integer(-1);
+            if (iszero(R)) push_integer(-1);
             else {
                 push_symbol(MULTIPLY);
                 push_integer(-1);
@@ -14613,8 +14210,7 @@ function normalize_clock_rational(EXPO: unknown): void {
                 push_integer(-1);
                 push(imaginaryunit);
                 list(3);
-            }
-            else {
+            } else {
                 push_symbol(POWER);
                 push_integer(-1);
                 push(R);
@@ -14627,7 +14223,6 @@ function normalize_clock_rational(EXPO: unknown): void {
 }
 
 function normalize_clock_double(EXPO: Flt): void {
-
     let expo = EXPO.d;
 
     // expo = expo mod 2
@@ -14636,18 +14231,15 @@ function normalize_clock_double(EXPO: Flt): void {
 
     // convert negative rotation to positive
 
-    if (expo < 0)
-        expo += 2;
+    if (expo < 0) expo += 2;
 
     const n = Math.floor(2 * expo); // number of 90 degree turns
 
     const r = expo - n / 2; // remainder
 
     switch (n) {
-
         case 0:
-            if (r == 0)
-                push_integer(1);
+            if (r == 0) push_integer(1);
             else {
                 push_symbol(POWER);
                 push_integer(-1);
@@ -14657,8 +14249,7 @@ function normalize_clock_double(EXPO: Flt): void {
             break;
 
         case 1:
-            if (r == 0)
-                push(imaginaryunit);
+            if (r == 0) push(imaginaryunit);
             else {
                 push_symbol(MULTIPLY);
                 push_integer(-1);
@@ -14671,8 +14262,7 @@ function normalize_clock_double(EXPO: Flt): void {
             break;
 
         case 2:
-            if (r == 0)
-                push_integer(-1);
+            if (r == 0) push_integer(-1);
             else {
                 push_symbol(MULTIPLY);
                 push_integer(-1);
@@ -14690,8 +14280,7 @@ function normalize_clock_double(EXPO: Flt): void {
                 push_integer(-1);
                 push(imaginaryunit);
                 list(3);
-            }
-            else {
+            } else {
                 push_symbol(POWER);
                 push_integer(-1);
                 push_double(r - 0.5);
@@ -14702,7 +14291,6 @@ function normalize_clock_double(EXPO: Flt): void {
 }
 
 function power_natural_number(EXPO: unknown): void {
-
     // exp(x + i y) = exp(x) (cos(y) + i sin(y))
     let x: number;
     let y: number;
@@ -14711,8 +14299,7 @@ function power_natural_number(EXPO: unknown): void {
         if (car(EXPO) == symbol(ADD)) {
             x = (cadr(EXPO) as Flt).d;
             y = (cadaddr(EXPO) as Flt).d;
-        }
-        else {
+        } else {
             x = 0.0;
             y = (cadr(EXPO) as Flt).d;
         }
@@ -14748,7 +14335,6 @@ function power_natural_number(EXPO: unknown): void {
 // BASE and EXPO are numbers
 
 function power_numbers(BASE: Num, EXPO: Num) {
-
     // n^0
 
     if (iszero(EXPO)) {
@@ -14759,8 +14345,7 @@ function power_numbers(BASE: Num, EXPO: Num) {
     // 0^n
 
     if (iszero(BASE)) {
-        if (isnegativenumber(EXPO))
-            stopf("divide by zero");
+        if (isnegativenumber(EXPO)) stopf("divide by zero");
         push_integer(0);
         return;
     }
@@ -14792,13 +14377,10 @@ function power_numbers(BASE: Num, EXPO: Num) {
         if (isnegativenumber(BASE) && bignum_odd(EXPO.a))
             if (isnegativenumber(EXPO))
                 push_bignum(-1, b, a); // reciprocate
-            else
-                push_bignum(-1, a, b);
-        else
-            if (isnegativenumber(EXPO))
-                push_bignum(1, b, a); // reciprocate
-            else
-                push_bignum(1, a, b);
+            else push_bignum(-1, a, b);
+        else if (isnegativenumber(EXPO))
+            push_bignum(1, b, a); // reciprocate
+        else push_bignum(1, a, b);
         return;
     }
 
@@ -14854,8 +14436,7 @@ function power_numbers(BASE: Num, EXPO: Num) {
         n++;
     }
 
-    if (n == 1)
-        return;
+    if (n == 1) return;
 
     sort_factors(h);
     list(n);
@@ -14867,7 +14448,6 @@ function power_numbers(BASE: Num, EXPO: Num) {
 // BASE is an integer
 
 function power_numbers_factor(BASE: Rat, EXPO: Rat): void {
-
     if (isminusone(BASE)) {
         power_minusone(EXPO);
         let p0 = pop();
@@ -14877,21 +14457,17 @@ function power_numbers_factor(BASE: Rat, EXPO: Rat): void {
                 push(car(p0));
                 p0 = cdr(p0);
             }
-        }
-        else
-            push(p0);
+        } else push(p0);
         return;
     }
 
     if (isinteger(EXPO)) {
-
         const a = bignum_pow(BASE.a, EXPO.a);
         const b = bignum_int(1);
 
         if (isnegativenumber(EXPO))
             push_bignum(1, b, a); // reciprocate
-        else
-            push_bignum(1, a, b);
+        else push_bignum(1, a, b);
 
         return;
     }
@@ -14906,14 +14482,12 @@ function power_numbers_factor(BASE: Rat, EXPO: Rat): void {
     // process q
 
     if (!bignum_iszero(q)) {
-
         const a = bignum_pow(BASE.a, q);
         const b = bignum_int(1);
 
         if (isnegativenumber(EXPO))
             push_bignum(1, b, a); // reciprocate
-        else
-            push_bignum(1, a, b);
+        else push_bignum(1, a, b);
     }
 
     // process r
@@ -14948,12 +14522,10 @@ function power_numbers_factor(BASE: Rat, EXPO: Rat): void {
 
     if (isnegativenumber(EXPO))
         push_bignum(1, bignum_int(1), n); // reciprocate
-    else
-        push_bignum(1, n, bignum_int(1));
+    else push_bignum(1, n, bignum_int(1));
 }
 
 function power_double(BASE: unknown, EXPO: unknown) {
-
     push(BASE);
     const base = pop_double();
 
@@ -14970,8 +14542,7 @@ function power_double(BASE: unknown, EXPO: unknown) {
 
     power_minusone(EXPO);
 
-    if (base == -1)
-        return;
+    if (base == -1) return;
 
     const d = Math.pow(-base, expo);
     push_double(d);
@@ -14981,7 +14552,6 @@ function power_double(BASE: unknown, EXPO: unknown) {
 // BASE is a sum of terms
 
 function power_sum(BASE: unknown, EXPO: unknown): void {
-
     if (iscomplexnumber(BASE) && isnum(EXPO)) {
         power_complex_number(BASE, EXPO);
         return;
@@ -15036,33 +14606,22 @@ function prefixform(p: unknown) {
             p = cdr(p);
         }
         outbuf += ")";
-    }
-    else if (isrational(p)) {
-        if (isnegativenumber(p))
-            outbuf += '-';
+    } else if (isrational(p)) {
+        if (isnegativenumber(p)) outbuf += "-";
         outbuf += bignum_itoa(p.a);
-        if (isfraction(p))
-            outbuf += "/" + bignum_itoa(p.b);
-    }
-    else if (isdouble(p)) {
+        if (isfraction(p)) outbuf += "/" + bignum_itoa(p.b);
+    } else if (isdouble(p)) {
         let s = p.d.toPrecision(6);
         if (s.indexOf("E") < 0 && s.indexOf("e") < 0 && s.indexOf(".") >= 0) {
             // remove trailing zeroes
-            while (s.charAt(s.length - 1) == "0")
-                s = s.substring(0, s.length - 1);
-            if (s.charAt(s.length - 1) == '.')
-                s += "0";
+            while (s.charAt(s.length - 1) == "0") s = s.substring(0, s.length - 1);
+            if (s.charAt(s.length - 1) == ".") s += "0";
         }
         outbuf += s;
-    }
-    else if (issymbol(p))
-        outbuf += p.printname;
-    else if (isstring(p))
-        outbuf += "'" + p.string + "'";
-    else if (istensor(p))
-        outbuf += "[ ]";
-    else
-        outbuf += " ? ";
+    } else if (issymbol(p)) outbuf += p.printname;
+    else if (isstring(p)) outbuf += "'" + p.string + "'";
+    else if (istensor(p)) outbuf += "[ ]";
+    else outbuf += " ? ";
 }
 
 function print_infixform(p: unknown): void {
@@ -15082,11 +14641,9 @@ function printbuf(s: string, color: 1 | 2 | 3): void {
     s = s.replace(/\n/g, "<br>");
     s = s.replace(/\r/g, "");
 
-    if (!s.endsWith("<br>"))
-        s += "<br>";
+    if (!s.endsWith("<br>")) s += "<br>";
 
     switch (color) {
-
         case BLACK:
             s = "<span style='color:black;font-family:courier'>" + s + "</span>";
             break;
@@ -15104,14 +14661,11 @@ function printbuf(s: string, color: 1 | 2 | 3): void {
 }
 
 function printname(p: Sym) {
-    if ("printname" in p)
-        return p.printname;
-    else
-        return "?";
+    if ("printname" in p) return p.printname;
+    else return "?";
 }
 
 function promote_tensor(): void {
-
     const p1 = pop();
 
     if (!istensor(p1)) {
@@ -15128,8 +14682,7 @@ function promote_tensor(): void {
 
     for (let i = 1; i < nelem1; i++) {
         const p3 = p1.elem[i];
-        if (!compatible_dimensions(p2, p3))
-            stopf("tensor dimensions");
+        if (!compatible_dimensions(p2, p3)) stopf("tensor dimensions");
     }
 
     if (!istensor(p2)) {
@@ -15148,11 +14701,9 @@ function promote_tensor(): void {
 
     let k = 0;
 
-    for (let i = 0; i < ndim1; i++)
-        p3.dim[k++] = p1.dim[i];
+    for (let i = 0; i < ndim1; i++) p3.dim[k++] = p1.dim[i];
 
-    for (let i = 0; i < ndim2; i++)
-        p3.dim[k++] = p2.dim[i];
+    for (let i = 0; i < ndim2; i++) p3.dim[k++] = p2.dim[i];
 
     // merge elements
 
@@ -15160,8 +14711,7 @@ function promote_tensor(): void {
 
     for (let i = 0; i < nelem1; i++) {
         p2 = p1.elem[i];
-        for (let j = 0; j < nelem2; j++)
-            p3.elem[k++] = (p2 as Tensor).elem[j];
+        for (let j = 0; j < nelem2; j++) p3.elem[k++] = (p2 as Tensor).elem[j];
     }
 
     push(p3);
@@ -15176,23 +14726,21 @@ function push_double(d: number): void {
 }
 /**
  * Pushes a Rat onto the stack.
- * @param n 
+ * @param n
  */
 function push_integer(n: number): void {
     push_rational(n, 1);
 }
 /**
  * Pushes a Rat onto the stack.
- * @param a 
- * @param b 
+ * @param a
+ * @param b
  */
 function push_rational(a: number, b: number): void {
     let sign: 1 | -1;
 
-    if (a < 0)
-        sign = -1;
-    else
-        sign = 1;
+    if (a < 0) sign = -1;
+    else sign = 1;
 
     a = Math.abs(a);
 
@@ -15210,24 +14758,20 @@ function push_symbol(p: string): void {
     push(symbol(p));
 }
 
-function
-    reciprocate() {
+function reciprocate() {
     push_integer(-1);
     power();
 }
 
 function reduce_radical_double(h: number, COEFF: Flt) {
-
     let c = COEFF.d;
 
     let n = stack.length;
 
     for (let i = h; i < n; i++) {
-
         const p1 = stack[i];
 
         if (isradical(p1)) {
-
             push(cadr(p1)); // base
             const a = pop_double();
 
@@ -15250,19 +14794,14 @@ function reduce_radical_double(h: number, COEFF: Flt) {
 }
 
 function reduce_radical_factors(h: number, COEFF: unknown) {
-    if (!any_radical_factors(h))
-        return COEFF;
+    if (!any_radical_factors(h)) return COEFF;
 
-    if (isrational(COEFF))
-        return reduce_radical_rational(h, COEFF);
-    else
-        return reduce_radical_double(h, COEFF as Flt);
+    if (isrational(COEFF)) return reduce_radical_rational(h, COEFF);
+    else return reduce_radical_double(h, COEFF as Flt);
 }
 
 function reduce_radical_rational(h: number, COEFF: Rat) {
-
-    if (isplusone(COEFF) || isminusone(COEFF))
-        return COEFF; // COEFF has no factors, no cancellation is possible
+    if (isplusone(COEFF) || isminusone(COEFF)) return COEFF; // COEFF has no factors, no cancellation is possible
 
     push(COEFF);
     absfunc();
@@ -15282,8 +14821,7 @@ function reduce_radical_rational(h: number, COEFF: Rat) {
 
     for (let i = h; i < n; i++) {
         p1 = stack[i];
-        if (!isradical(p1))
-            continue;
+        if (!isradical(p1)) continue;
         const BASE = cadr(p1);
         const EXPO = caddr(p1);
         if (isnum(EXPO) && isnegativenumber(EXPO)) {
@@ -15303,8 +14841,7 @@ function reduce_radical_rational(h: number, COEFF: Rat) {
                 stack[i] = pop();
                 k++;
             }
-        }
-        else {
+        } else {
             mod_integers(DENOM as Rat, BASE as Rat);
             const p2 = pop();
             if (iszero(p2)) {
@@ -15328,8 +14865,7 @@ function reduce_radical_rational(h: number, COEFF: Rat) {
         push(NUMER);
         push(DENOM);
         divide();
-        if (isnegativenumber(COEFF))
-            negate();
+        if (isnegativenumber(COEFF)) negate();
         COEFF = pop() as Rat;
     }
 
@@ -15353,16 +14889,14 @@ export function run(): void {
     stdout.innerHTML = "";
     try {
         executeScript(scriptText);
-    }
-    catch (errmsg) {
+    } catch (errmsg) {
         if ((errmsg as string).length > 0) {
-            if (trace1 < trace2 && inbuf[trace2 - 1] == '\n') {
+            if (trace1 < trace2 && inbuf[trace2 - 1] == "\n") {
                 trace2--;
             }
             printbuf(inbuf.substring(trace1, trace2) + "\nStop: " + errmsg, RED);
         }
-    }
-    finally {
+    } finally {
         for (const output of outputs) {
             stdout.innerHTML += output;
         }
@@ -15370,11 +14904,10 @@ export function run(): void {
 }
 /**
  * Work In Progress
- * @param scriptText 
- * @returns 
+ * @param scriptText
+ * @returns
  */
 export function executeScript(scriptText: string): string[] {
-
     inbuf = scriptText;
 
     init();
@@ -15382,8 +14915,7 @@ export function executeScript(scriptText: string): string[] {
 
     let k = 0;
 
-    for (; ;) {
-
+    for (;;) {
         k = scan_inbuf(k);
 
         if (k == 0) {
@@ -15415,15 +14947,13 @@ function sample(F: unknown, T: unknown, t: number) {
     if (istensor(p1)) {
         X = p1.elem[0];
         Y = p1.elem[1];
-    }
-    else {
+    } else {
         push_double(t);
         X = pop();
         Y = p1;
     }
 
-    if (!isnum(X) || !isnum(Y))
-        return;
+    if (!isnum(X) || !isnum(Y)) return;
 
     push(X);
     let x = pop_double();
@@ -15431,11 +14961,10 @@ function sample(F: unknown, T: unknown, t: number) {
     push(Y);
     let y = pop_double();
 
-    if (!isFinite(x) || !isFinite(y))
-        return;
+    if (!isFinite(x) || !isFinite(y)) return;
 
-    x = DRAW_WIDTH * (x - xmin) / (xmax - xmin);
-    y = DRAW_HEIGHT * (y - ymin) / (ymax - ymin);
+    x = (DRAW_WIDTH * (x - xmin)) / (xmax - xmin);
+    y = (DRAW_HEIGHT * (y - ymin)) / (ymax - ymin);
 
     draw_array.push({ t: t, x: x, y: y });
 }
@@ -15481,19 +15010,16 @@ function scan_nib(s: string, k: number): number {
 
     get_token_skip_newlines();
 
-    if (token == T_END)
-        return 0;
+    if (token == T_END) return 0;
 
     scan_stmt();
 
-    if (token != T_NEWLINE && token != T_END)
-        scan_error("expected newline");
+    if (token != T_NEWLINE && token != T_END) scan_error("expected newline");
 
     return scan_index;
 }
 
-function
-    scan_stmt() {
+function scan_stmt() {
     scan_comparison();
     if (token == "=") {
         get_token_skip_newlines(); // get token after =
@@ -15504,8 +15030,7 @@ function
     }
 }
 
-function
-    scan_comparison() {
+function scan_comparison() {
     scan_expression();
     switch (token) {
         case T_EQ:
@@ -15535,17 +15060,14 @@ function
 function scan_expression(): void {
     const h = stack.length;
     let t = token;
-    if (token == "+" || token == "-")
-        get_token_skip_newlines();
+    if (token == "+" || token == "-") get_token_skip_newlines();
     scan_term();
-    if (t == "-")
-        static_negate();
+    if (t == "-") static_negate();
     while (token == "+" || token == "-") {
         t = token;
         get_token_skip_newlines(); // get token after + or -
         scan_term();
-        if (t == "-")
-            static_negate();
+        if (t == "-") static_negate();
     }
     if (stack.length - h > 1) {
         list(stack.length - h);
@@ -15561,16 +15083,13 @@ function scan_term(): void {
     scan_power();
 
     while (scan_factor_pending()) {
-
         const t = token;
 
-        if (token == "*" || token == "/")
-            get_token_skip_newlines();
+        if (token == "*" || token == "/") get_token_skip_newlines();
 
         scan_power();
 
-        if (t == "/")
-            static_reciprocate();
+        if (t == "/") static_reciprocate();
     }
 
     if (stack.length - h > 1) {
@@ -15598,12 +15117,10 @@ function scan_factor_pending(): 0 | 1 {
     return 0;
 }
 
-function
-    scan_power() {
+function scan_power() {
     scan_factor();
 
     if (token == "^") {
-
         get_token_skip_newlines();
 
         push_symbol(POWER);
@@ -15614,11 +15131,9 @@ function
 }
 
 function scan_factor(): void {
-
     const h = stack.length;
 
     switch (token) {
-
         case "(":
             scan_subexpr();
             break;
@@ -15656,7 +15171,6 @@ function scan_factor(): void {
     // index
 
     if ((token as string) == "[") {
-
         scan_level++;
 
         get_token(); // get token after [
@@ -15665,13 +15179,12 @@ function scan_factor(): void {
 
         scan_expression();
 
-        while (token as string == ",") {
+        while ((token as string) == ",") {
             get_token(); // get token after ,
             scan_expression();
         }
 
-        if (token as string != "]")
-            scan_error("expected ]");
+        if ((token as string) != "]") scan_error("expected ]");
 
         scan_level--;
 
@@ -15704,8 +15217,7 @@ function scan_symbol(): void {
                 push(lookup(token_buf));
                 break;
         }
-    }
-    else {
+    } else {
         push(lookup(token_buf));
     }
     get_token();
@@ -15733,8 +15245,7 @@ function scan_function_call(): void {
         get_token(); // get token after ,
         scan_stmt();
     }
-    if (token != ")")
-        scan_error("expected )");
+    if (token != ")") scan_error("expected )");
     scan_level--;
     get_token(); // get token after )
     list(stack.length - h);
@@ -15754,15 +15265,13 @@ function scan_subexpr(): void {
         scan_stmt();
     }
 
-    if (token != ")")
-        scan_error("expected )");
+    if (token != ")") scan_error("expected )");
 
     scan_level--;
 
     get_token(); // get token after )
 
-    if (stack.length - h > 1)
-        vector(h);
+    if (stack.length - h > 1) vector(h);
 }
 
 function get_token_skip_newlines(): void {
@@ -15774,9 +15283,7 @@ function get_token_skip_newlines(): void {
 function get_token(): void {
     get_token_nib();
 
-    if (scan_level)
-        while (token == T_NEWLINE)
-            get_token_nib(); // skip over newlines
+    if (scan_level) while (token == T_NEWLINE) get_token_nib(); // skip over newlines
 }
 
 function get_token_nib(): void {
@@ -15784,10 +15291,9 @@ function get_token_nib(): void {
 
     // skip spaces
 
-    for (; ;) {
+    for (;;) {
         c = inchar();
-        if (c == "" || c == "\n" || c == "\r" || (c.charCodeAt(0) > 32 && c.charCodeAt(0) < 127))
-            break;
+        if (c == "" || c == "\n" || c == "\r" || (c.charCodeAt(0) > 32 && c.charCodeAt(0) < 127)) break;
         scan_index++;
     }
 
@@ -15812,15 +15318,12 @@ function get_token_nib(): void {
     // comment?
 
     if (c == "#" || (c == "-" && inchar() == "-")) {
-
-        while (inchar() != "" && inchar() != "\n")
-            scan_index++;
+        while (inchar() != "" && inchar() != "\n") scan_index++;
 
         if (inchar() == "\n") {
             scan_index++;
             token = T_NEWLINE;
-        }
-        else {
+        } else {
             token = T_END;
         }
 
@@ -15830,23 +15333,17 @@ function get_token_nib(): void {
     // number?
 
     if (isdigit(c) || c == ".") {
-
-        while (isdigit(inchar()))
-            scan_index++;
+        while (isdigit(inchar())) scan_index++;
 
         if (inchar() == ".") {
-
             scan_index++;
 
-            while (isdigit(inchar()))
-                scan_index++;
+            while (isdigit(inchar())) scan_index++;
 
-            if (scan_index - token_index == 1)
-                scan_error("expected decimal digit"); // only a decimal point
+            if (scan_index - token_index == 1) scan_error("expected decimal digit"); // only a decimal point
 
             token = T_DOUBLE;
-        }
-        else {
+        } else {
             token = T_INTEGER;
         }
 
@@ -15858,14 +15355,10 @@ function get_token_nib(): void {
     // symbol?
 
     if (isalpha(c)) {
+        while (isalnum(inchar())) scan_index++;
 
-        while (isalnum(inchar()))
-            scan_index++;
-
-        if (inchar() == "(")
-            token = T_FUNCTION;
-        else
-            token = T_SYMBOL;
+        if (inchar() == "(") token = T_FUNCTION;
+        else token = T_SYMBOL;
 
         update_token_buf(token_index, scan_index);
 
@@ -15874,10 +15367,9 @@ function get_token_nib(): void {
 
     // string ?
 
-    if (c == "\"") {
-        while (inchar() != "" && inchar() != "\n" && inchar() != "\"")
-            scan_index++;
-        if (inchar() != "\"") {
+    if (c == '"') {
+        while (inchar() != "" && inchar() != "\n" && inchar() != '"') scan_index++;
+        if (inchar() != '"') {
             token_index = scan_index; // no token
             scan_error("runaway string");
         }
@@ -15946,14 +15438,12 @@ function scan_inbuf(k: number): number {
 }
 
 function set_symbol(p1: Sym, p2: unknown, p3: unknown): void {
-    if (!isusersymbol(p1))
-        stopf("symbol error");
+    if (!isusersymbol(p1)) stopf("symbol error");
     binding[p1.printname] = p2;
     usrfunc[p1.printname] = p3;
 }
 
 function setup_final(F: unknown, T: Sym): void {
-
     push_double(tmin);
     let p1 = pop();
     set_symbol(T, p1, symbol(NIL));
@@ -15969,7 +15459,6 @@ function setup_final(F: unknown, T: Sym): void {
 }
 
 function setup_trange(): void {
-
     tmin = -Math.PI;
     tmax = Math.PI;
 
@@ -15979,14 +15468,12 @@ function setup_trange(): void {
     floatfunc();
     p1 = pop();
 
-    if (!istensor(p1) || p1.dim.length != 1 || p1.dim[0] != 2)
-        return;
+    if (!istensor(p1) || p1.dim.length != 1 || p1.dim[0] != 2) return;
 
     const p2 = p1.elem[0];
     const p3 = p1.elem[1];
 
-    if (!isnum(p2) || !isnum(p3))
-        return;
+    if (!isnum(p2) || !isnum(p3)) return;
 
     push(p2);
     tmin = pop_double();
@@ -15996,7 +15483,6 @@ function setup_trange(): void {
 }
 
 function setup_xrange(): void {
-
     xmin = -10;
     xmax = 10;
 
@@ -16006,14 +15492,12 @@ function setup_xrange(): void {
     floatfunc();
     p1 = pop();
 
-    if (!istensor(p1) || p1.dim.length != 1 || p1.dim[0] != 2)
-        return;
+    if (!istensor(p1) || p1.dim.length != 1 || p1.dim[0] != 2) return;
 
     const p2 = p1.elem[0];
     const p3 = p1.elem[1];
 
-    if (!isnum(p2) || !isnum(p3))
-        return;
+    if (!isnum(p2) || !isnum(p3)) return;
 
     push(p2);
     xmin = pop_double();
@@ -16023,7 +15507,6 @@ function setup_xrange(): void {
 }
 
 function setup_yrange(): void {
-
     ymin = -10;
     ymax = 10;
 
@@ -16033,14 +15516,12 @@ function setup_yrange(): void {
     floatfunc();
     p1 = pop();
 
-    if (!istensor(p1) || p1.dim.length != 1 || p1.dim[0] != 2)
-        return;
+    if (!istensor(p1) || p1.dim.length != 1 || p1.dim[0] != 2) return;
 
     const p2 = p1.elem[0];
     const p3 = p1.elem[1];
 
-    if (!isnum(p2) || !isnum(p3))
-        return;
+    if (!isnum(p2) || !isnum(p3)) return;
 
     push(p2);
     ymin = pop_double();
@@ -16079,8 +15560,7 @@ function static_negate(): void {
             push(cadr(p1));
             negate();
             push(cddr(p1));
-        }
-        else {
+        } else {
             push_integer(-1);
             push(cdr(p1));
         }
@@ -16102,8 +15582,7 @@ function static_reciprocate(): void {
     // save divide by zero error for runtime
 
     if (iszero(p2)) {
-        if (!(isrational(p1) && isinteger1(p1)))
-            push(p1);
+        if (!(isrational(p1) && isinteger1(p1))) push(p1);
         push_symbol(POWER);
         push(p2);
         push_integer(-1);
@@ -16119,16 +15598,14 @@ function static_reciprocate(): void {
     }
 
     if (isnum(p2)) {
-        if (!(isrational(p1) && isinteger1(p1)))
-            push(p1);
+        if (!(isrational(p1) && isinteger1(p1))) push(p1);
         push(p2);
         reciprocate();
         return;
     }
 
     if (car(p2) == symbol(POWER) && isnum(caddr(p2))) {
-        if (!(isrational(p1) && isinteger1(p1)))
-            push(p1);
+        if (!(isrational(p1) && isinteger1(p1))) push(p1);
         push_symbol(POWER);
         push(cadr(p2));
         push(caddr(p2));
@@ -16137,8 +15614,7 @@ function static_reciprocate(): void {
         return;
     }
 
-    if (!(isrational(p1) && isinteger1(p1)))
-        push(p1);
+    if (!(isrational(p1) && isinteger1(p1))) push(p1);
 
     push_symbol(POWER);
     push(p2);
@@ -16192,104 +15668,104 @@ let trace1: number;
 let trace2: number;
 
 const symtab: { [name: string]: Sym } = {
-    "abs": { printname: ABS, func: eval_abs },
-    "adj": { printname: ADJ, func: eval_adj },
-    "and": { printname: AND, func: eval_and },
-    "arccos": { printname: ARCCOS, func: eval_arccos },
-    "arccosh": { printname: ARCCOSH, func: eval_arccosh },
-    "arcsin": { printname: ARCSIN, func: eval_arcsin },
-    "arcsinh": { printname: ARCSINH, func: eval_arcsinh },
-    "arctan": { printname: ARCTAN, func: eval_arctan },
-    "arctanh": { printname: ARCTANH, func: eval_arctanh },
-    "arg": { printname: ARG, func: eval_arg },
-    "binding": { printname: BINDING, func: eval_binding },
-    "ceiling": { printname: CEILING, func: eval_ceiling },
-    "check": { printname: CHECK, func: eval_check },
-    "circexp": { printname: CIRCEXP, func: eval_circexp },
-    "clear": { printname: CLEAR, func: eval_clear },
-    "clock": { printname: CLOCK, func: eval_clock },
-    "cofactor": { printname: COFACTOR, func: eval_cofactor },
-    "conj": { printname: CONJ, func: eval_conj },
-    "contract": { printname: CONTRACT, func: eval_contract },
-    "cos": { printname: COS, func: eval_cos },
-    "cosh": { printname: COSH, func: eval_cosh },
-    "defint": { printname: DEFINT, func: eval_defint },
-    "denominator": { printname: DENOMINATOR, func: eval_denominator },
-    "derivative": { printname: DERIVATIVE, func: eval_derivative },
-    "det": { printname: DET, func: eval_det },
-    "dim": { printname: DIM, func: eval_dim },
-    "do": { printname: DO, func: eval_do },
-    "dot": { printname: DOT, func: eval_dot },
-    "draw": { printname: DRAW, func: eval_draw },
-    "eigenvec": { printname: EIGENVEC, func: eval_eigenvec },
-    "erf": { printname: ERF, func: eval_erf },
-    "erfc": { printname: ERFC, func: eval_erfc },
-    "eval": { printname: EVAL, func: eval_eval },
-    "exit": { printname: EXIT, func: eval_exit },
-    "exp": { printname: EXP, func: eval_exp },
-    "expcos": { printname: EXPCOS, func: eval_expcos },
-    "expcosh": { printname: EXPCOSH, func: eval_expcosh },
-    "expsin": { printname: EXPSIN, func: eval_expsin },
-    "expsinh": { printname: EXPSINH, func: eval_expsinh },
-    "exptan": { printname: EXPTAN, func: eval_exptan },
-    "exptanh": { printname: EXPTANH, func: eval_exptanh },
-    "factorial": { printname: FACTORIAL, func: eval_factorial },
-    "float": { printname: FLOAT, func: eval_float },
-    "floor": { printname: FLOOR, func: eval_floor },
-    "for": { printname: FOR, func: eval_for },
-    "hadamard": { printname: HADAMARD, func: eval_hadamard },
-    "imag": { printname: IMAG, func: eval_imag },
-    "infixform": { printname: INFIXFORM, func: eval_infixform },
-    "inner": { printname: INNER, func: eval_inner },
-    "integral": { printname: INTEGRAL, func: eval_integral },
-    "inv": { printname: INV, func: eval_inv },
-    "kronecker": { printname: KRONECKER, func: eval_kronecker },
-    "log": { printname: LOG, func: eval_log },
-    "mag": { printname: MAG, func: eval_mag },
-    "minor": { printname: MINOR, func: eval_minor },
-    "minormatrix": { printname: MINORMATRIX, func: eval_minormatrix },
-    "mod": { printname: MOD, func: eval_mod },
-    "nil": { printname: NIL, func: eval_nil },
-    "noexpand": { printname: NOEXPAND, func: eval_noexpand },
-    "not": { printname: NOT, func: eval_not },
-    "nroots": { printname: NROOTS, func: eval_nroots },
-    "number": { printname: NUMBER, func: eval_number },
-    "numerator": { printname: NUMERATOR, func: eval_numerator },
-    "or": { printname: OR, func: eval_or },
-    "outer": { printname: OUTER, func: eval_outer },
-    "polar": { printname: POLAR, func: eval_polar },
-    "prefixform": { printname: PREFIXFORM, func: eval_prefixform },
-    "print": { printname: PRINT, func: eval_print },
-    "product": { printname: PRODUCT, func: eval_product },
-    "quote": { printname: QUOTE, func: eval_quote },
-    "rank": { printname: RANK, func: eval_rank },
-    "rationalize": { printname: RATIONALIZE, func: eval_rationalize },
-    "real": { printname: REAL, func: eval_real },
-    "rect": { printname: RECT, func: eval_rect },
-    "roots": { printname: ROOTS, func: eval_roots },
-    "rotate": { printname: ROTATE, func: eval_rotate },
-    "run": { printname: RUN, func: eval_run },
-    "sgn": { printname: SGN, func: eval_sgn },
-    "simplify": { printname: SIMPLIFY, func: eval_simplify },
-    "sin": { printname: SIN, func: eval_sin },
-    "sinh": { printname: SINH, func: eval_sinh },
-    "sqrt": { printname: SQRT, func: eval_sqrt },
-    "status": { printname: STATUS, func: eval_status },
-    "stop": { printname: STOP, func: eval_stop },
-    "subst": { printname: SUBST, func: eval_subst },
-    "sum": { printname: SUM, func: eval_sum },
-    "tan": { printname: TAN, func: eval_tan },
-    "tanh": { printname: TANH, func: eval_tanh },
-    "taylor": { printname: TAYLOR, func: eval_taylor },
-    "test": { printname: TEST, func: eval_test },
-    "testeq": { printname: TESTEQ, func: eval_testeq },
-    "testge": { printname: TESTGE, func: eval_testge },
-    "testgt": { printname: TESTGT, func: eval_testgt },
-    "testle": { printname: TESTLE, func: eval_testle },
-    "testlt": { printname: TESTLT, func: eval_testlt },
-    "transpose": { printname: TRANSPOSE, func: eval_transpose },
-    "unit": { printname: UNIT, func: eval_unit },
-    "zero": { printname: ZERO, func: eval_zero },
+    abs: { printname: ABS, func: eval_abs },
+    adj: { printname: ADJ, func: eval_adj },
+    and: { printname: AND, func: eval_and },
+    arccos: { printname: ARCCOS, func: eval_arccos },
+    arccosh: { printname: ARCCOSH, func: eval_arccosh },
+    arcsin: { printname: ARCSIN, func: eval_arcsin },
+    arcsinh: { printname: ARCSINH, func: eval_arcsinh },
+    arctan: { printname: ARCTAN, func: eval_arctan },
+    arctanh: { printname: ARCTANH, func: eval_arctanh },
+    arg: { printname: ARG, func: eval_arg },
+    binding: { printname: BINDING, func: eval_binding },
+    ceiling: { printname: CEILING, func: eval_ceiling },
+    check: { printname: CHECK, func: eval_check },
+    circexp: { printname: CIRCEXP, func: eval_circexp },
+    clear: { printname: CLEAR, func: eval_clear },
+    clock: { printname: CLOCK, func: eval_clock },
+    cofactor: { printname: COFACTOR, func: eval_cofactor },
+    conj: { printname: CONJ, func: eval_conj },
+    contract: { printname: CONTRACT, func: eval_contract },
+    cos: { printname: COS, func: eval_cos },
+    cosh: { printname: COSH, func: eval_cosh },
+    defint: { printname: DEFINT, func: eval_defint },
+    denominator: { printname: DENOMINATOR, func: eval_denominator },
+    derivative: { printname: DERIVATIVE, func: eval_derivative },
+    det: { printname: DET, func: eval_det },
+    dim: { printname: DIM, func: eval_dim },
+    do: { printname: DO, func: eval_do },
+    dot: { printname: DOT, func: eval_dot },
+    draw: { printname: DRAW, func: eval_draw },
+    eigenvec: { printname: EIGENVEC, func: eval_eigenvec },
+    erf: { printname: ERF, func: eval_erf },
+    erfc: { printname: ERFC, func: eval_erfc },
+    eval: { printname: EVAL, func: eval_eval },
+    exit: { printname: EXIT, func: eval_exit },
+    exp: { printname: EXP, func: eval_exp },
+    expcos: { printname: EXPCOS, func: eval_expcos },
+    expcosh: { printname: EXPCOSH, func: eval_expcosh },
+    expsin: { printname: EXPSIN, func: eval_expsin },
+    expsinh: { printname: EXPSINH, func: eval_expsinh },
+    exptan: { printname: EXPTAN, func: eval_exptan },
+    exptanh: { printname: EXPTANH, func: eval_exptanh },
+    factorial: { printname: FACTORIAL, func: eval_factorial },
+    float: { printname: FLOAT, func: eval_float },
+    floor: { printname: FLOOR, func: eval_floor },
+    for: { printname: FOR, func: eval_for },
+    hadamard: { printname: HADAMARD, func: eval_hadamard },
+    imag: { printname: IMAG, func: eval_imag },
+    infixform: { printname: INFIXFORM, func: eval_infixform },
+    inner: { printname: INNER, func: eval_inner },
+    integral: { printname: INTEGRAL, func: eval_integral },
+    inv: { printname: INV, func: eval_inv },
+    kronecker: { printname: KRONECKER, func: eval_kronecker },
+    log: { printname: LOG, func: eval_log },
+    mag: { printname: MAG, func: eval_mag },
+    minor: { printname: MINOR, func: eval_minor },
+    minormatrix: { printname: MINORMATRIX, func: eval_minormatrix },
+    mod: { printname: MOD, func: eval_mod },
+    nil: { printname: NIL, func: eval_nil },
+    noexpand: { printname: NOEXPAND, func: eval_noexpand },
+    not: { printname: NOT, func: eval_not },
+    nroots: { printname: NROOTS, func: eval_nroots },
+    number: { printname: NUMBER, func: eval_number },
+    numerator: { printname: NUMERATOR, func: eval_numerator },
+    or: { printname: OR, func: eval_or },
+    outer: { printname: OUTER, func: eval_outer },
+    polar: { printname: POLAR, func: eval_polar },
+    prefixform: { printname: PREFIXFORM, func: eval_prefixform },
+    print: { printname: PRINT, func: eval_print },
+    product: { printname: PRODUCT, func: eval_product },
+    quote: { printname: QUOTE, func: eval_quote },
+    rank: { printname: RANK, func: eval_rank },
+    rationalize: { printname: RATIONALIZE, func: eval_rationalize },
+    real: { printname: REAL, func: eval_real },
+    rect: { printname: RECT, func: eval_rect },
+    roots: { printname: ROOTS, func: eval_roots },
+    rotate: { printname: ROTATE, func: eval_rotate },
+    run: { printname: RUN, func: eval_run },
+    sgn: { printname: SGN, func: eval_sgn },
+    simplify: { printname: SIMPLIFY, func: eval_simplify },
+    sin: { printname: SIN, func: eval_sin },
+    sinh: { printname: SINH, func: eval_sinh },
+    sqrt: { printname: SQRT, func: eval_sqrt },
+    status: { printname: STATUS, func: eval_status },
+    stop: { printname: STOP, func: eval_stop },
+    subst: { printname: SUBST, func: eval_subst },
+    sum: { printname: SUM, func: eval_sum },
+    tan: { printname: TAN, func: eval_tan },
+    tanh: { printname: TANH, func: eval_tanh },
+    taylor: { printname: TAYLOR, func: eval_taylor },
+    test: { printname: TEST, func: eval_test },
+    testeq: { printname: TESTEQ, func: eval_testeq },
+    testge: { printname: TESTGE, func: eval_testge },
+    testgt: { printname: TESTGT, func: eval_testgt },
+    testle: { printname: TESTLE, func: eval_testle },
+    testlt: { printname: TESTLT, func: eval_testlt },
+    transpose: { printname: TRANSPOSE, func: eval_transpose },
+    unit: { printname: UNIT, func: eval_unit },
+    zero: { printname: ZERO, func: eval_zero },
 
     "+": { printname: ADD, func: eval_add },
     "*": { printname: MULTIPLY, func: eval_multiply },
@@ -16297,30 +15773,30 @@ const symtab: { [name: string]: Sym } = {
     "[": { printname: INDEX, func: eval_index },
     "=": { printname: SETQ, func: eval_setq },
 
-    "last": { printname: LAST, func: eval_user_symbol },
-    "pi": { printname: PI, func: eval_user_symbol },
-    "trace": { printname: TRACE, func: eval_user_symbol },
-    "tty": { printname: TTY, func: eval_user_symbol },
+    last: { printname: LAST, func: eval_user_symbol },
+    pi: { printname: PI, func: eval_user_symbol },
+    trace: { printname: TRACE, func: eval_user_symbol },
+    tty: { printname: TTY, func: eval_user_symbol },
 
-    "d": { printname: D_LOWER, func: eval_user_symbol },
-    "i": { printname: I_LOWER, func: eval_user_symbol },
-    "j": { printname: J_LOWER, func: eval_user_symbol },
-    "x": { printname: X_LOWER, func: eval_user_symbol },
+    d: { printname: D_LOWER, func: eval_user_symbol },
+    i: { printname: I_LOWER, func: eval_user_symbol },
+    j: { printname: J_LOWER, func: eval_user_symbol },
+    x: { printname: X_LOWER, func: eval_user_symbol },
 
-    "$e": { printname: EXP1, func: eval_user_symbol },
-    "$a": { printname: SA, func: eval_user_symbol },
-    "$b": { printname: SB, func: eval_user_symbol },
-    "$x": { printname: SX, func: eval_user_symbol },
+    $e: { printname: EXP1, func: eval_user_symbol },
+    $a: { printname: SA, func: eval_user_symbol },
+    $b: { printname: SB, func: eval_user_symbol },
+    $x: { printname: SX, func: eval_user_symbol },
 
-    "$1": { printname: ARG1, func: eval_user_symbol },
-    "$2": { printname: ARG2, func: eval_user_symbol },
-    "$3": { printname: ARG3, func: eval_user_symbol },
-    "$4": { printname: ARG4, func: eval_user_symbol },
-    "$5": { printname: ARG5, func: eval_user_symbol },
-    "$6": { printname: ARG6, func: eval_user_symbol },
-    "$7": { printname: ARG7, func: eval_user_symbol },
-    "$8": { printname: ARG8, func: eval_user_symbol },
-    "$9": { printname: ARG9, func: eval_user_symbol },
+    $1: { printname: ARG1, func: eval_user_symbol },
+    $2: { printname: ARG2, func: eval_user_symbol },
+    $3: { printname: ARG3, func: eval_user_symbol },
+    $4: { printname: ARG4, func: eval_user_symbol },
+    $5: { printname: ARG5, func: eval_user_symbol },
+    $6: { printname: ARG6, func: eval_user_symbol },
+    $7: { printname: ARG7, func: eval_user_symbol },
+    $8: { printname: ARG8, func: eval_user_symbol },
+    $9: { printname: ARG9, func: eval_user_symbol }
 };
 
 function vector(h: number): void {

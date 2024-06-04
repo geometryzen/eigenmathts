@@ -12,7 +12,7 @@ test("exported executeScript symbol should be a function", function () {
 
 test("x=0", function () {
     const lines = [`x=0`, `x`];
-    const scriptText = lines.join('\n');
+    const scriptText = lines.join("\n");
     const outputs = executeScript(scriptText);
     expect(outputs.length).toBe(1);
 });
