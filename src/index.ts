@@ -8095,7 +8095,7 @@ function eval_nonstop_nib(): void {
 
     try {
         evalf();
-    } catch (errmsg) {
+    } catch {
         stack.splice(save_tos);
         frame.splice(save_tof);
 
